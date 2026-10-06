@@ -1,0 +1,770 @@
+@{
+    ViewData["Title"] = "Hồ Sơ Người Hiến Máu & Chứng Nhận Điện Tử";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="flex flex-col w-full pb-12">
+    <!-- BREADCRUMB & PAGE HEADER -->
+    <div class="w-full max-w-[1366px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-4">
+        <!-- Breadcrumb -->
+        <nav aria-label="Breadcrumb" class="flex items-center gap-2 text-on-surface-variant font-body-sm text-xs sm:text-sm mb-3">
+            <a asp-controller="Home" asp-action="Index" class="hover:text-primary transition-colors flex items-center gap-1">
+                <span class="material-symbols-outlined text-[16px]">home</span>
+                <span>Trang chủ</span>
+            </a>
+            <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+            <span class="hover:text-primary transition-colors">Cổng tình nguyện viên</span>
+            <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+            <span class="font-title-md text-on-surface font-semibold">Hồ sơ &amp; Giấy chứng nhận điện tử</span>
+        </nav>
+
+        <!-- Header Actions Stack -->
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <div class="flex flex-col gap-1 max-w-3xl">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary text-[28px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+                    <h1 class="font-headline-lg text-xl sm:text-2xl lg:text-3xl text-on-surface tracking-tight font-extrabold">Hồ Sơ Người Hiến Máu &amp; Chứng Nhận Điện Tử</h1>
+                </div>
+                <p class="font-body-md text-sm sm:text-base text-on-surface-variant">
+                    Quản lý hành trình trao tặng sự sống, tra cứu kết quả xét nghiệm an toàn sinh học và giấy chứng nhận hiến máu tình nguyện tích hợp VNeID.
+                </p>
+            </div>
+            <!-- Action Buttons -->
+            <div class="flex flex-wrap items-center gap-2 sm:gap-3 shrink-0">
+                <a asp-controller="DotHienMau" asp-action="Index" class="bg-primary hover:bg-primary-container text-on-primary font-label-lg text-sm px-4 py-2.5 rounded-xl shadow-md flex items-center gap-2 transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 cursor-pointer">
+                    <span class="material-symbols-outlined text-[20px]">bloodtype</span>
+                    <span>Đăng ký đợt hiến mới</span>
+                </a>
+                <button onclick="downloadCertificate()" class="bg-surface-container-lowest hover:bg-surface-container-high text-on-surface font-label-lg text-sm px-4 py-2.5 rounded-xl shadow-sm flex items-center gap-2 transition-colors cursor-pointer border border-outline-variant/40">
+                    <span class="material-symbols-outlined text-[20px] text-primary">download</span>
+                    <span>Tải chứng nhận (ZIP/PDF)</span>
+                </button>
+                <button onclick="shareBadge()" class="bg-surface-container-low hover:bg-surface-container text-primary font-label-lg text-sm px-4 py-2.5 rounded-xl flex items-center gap-2 transition-colors cursor-pointer">
+                    <span class="material-symbols-outlined text-[20px]">share</span>
+                    <span>Chia sẻ huy hiệu</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- DONOR PROFILE BANNER (Card thông tin cá nhân, nhóm máu và thời gian hiến tiếp theo nằm cùng hàng trên desktop) -->
+    <div class="w-full max-w-[1366px] mx-auto px-4 sm:px-6 lg:px-8 mb-6">
+        <div class="bg-surface-container-lowest rounded-2xl shadow-md p-5 sm:p-6 border border-surface-container-high/60">
+            <div class="flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-6">
+                <!-- Part 1: Avatar & Personal Identity Details -->
+                <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-5 flex-1 min-w-0">
+                    <!-- Avatar Frame with Badge -->
+                    <div class="relative shrink-0">
+                        <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden shadow-md bg-surface-container border-2 border-white">
+                            <img class="w-full h-full object-cover" src="~/images/donor_portrait.png" onerror="this.src='/images/hero_donor.png'" alt="Chân dung người hiến máu tình nguyện">
+                        </div>
+                        <div class="absolute -bottom-1.5 -right-1.5 bg-secondary text-on-secondary px-2 py-0.5 rounded-full font-label-sm text-[11px] shadow flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[13px]">military_tech</span>
+                            <span>Bạc (4 lần)</span>
+                        </div>
+                    </div>
+                    <!-- Identity Details -->
+                    <div class="flex flex-col gap-1 min-w-0">
+                        <div class="flex flex-wrap items-center gap-2">
+                            <h2 class="font-headline-md text-xl sm:text-2xl text-on-surface font-extrabold truncate">Nguyễn Hoàng Nam</h2>
+                            <div class="inline-flex items-center gap-1 bg-surface-container-high px-2 py-0.5 rounded-md text-on-surface">
+                                <span class="material-symbols-outlined text-[16px] text-primary" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+                                <span class="font-label-sm text-xs font-semibold">Đã định danh VNeID Mức 2</span>
+                            </div>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-x-3 gap-y-1 font-body-sm text-xs sm:text-sm text-on-surface-variant mt-0.5">
+                            <span class="font-medium text-on-surface">CCCD: <span class="font-mono font-bold">001099028891</span></span>
+                            <span>•</span>
+                            <span>18/06/1998 (27 tuổi)</span>
+                            <span>•</span>
+                            <span>Nam</span>
+                            <span>•</span>
+                            <span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px] text-primary">call</span>0988 123 456</span>
+                            <span>•</span>
+                            <span class="flex items-center gap-1 truncate"><span class="material-symbols-outlined text-[14px] text-primary">mail</span>hoangnam.vitalis@gmail.com</span>
+                        </div>
+                        <div class="flex items-center gap-1.5 text-on-surface-variant font-body-sm text-xs sm:text-sm mt-1">
+                            <span class="material-symbols-outlined text-[16px] text-primary shrink-0">event_available</span>
+                            <span class="truncate">Đợt hiến gần nhất: <strong class="text-on-surface font-semibold">15/11/2025</strong> tại <span class="italic">Giọt Hồng Thanh Niên - NTĐ Cầu Giấy</span></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Part 2 & Part 3: Blood Type Card + Donation Next Date (Nằm cùng hàng trên desktop) -->
+                <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 shrink-0">
+                    <!-- Part 2: Blood Type Card -->
+                    <div class="bg-primary-fixed text-on-primary-fixed rounded-2xl p-4 flex flex-col items-center justify-center min-w-[140px] shadow-sm text-center border border-primary-fixed-dim">
+                        <span class="font-label-sm text-xs text-primary uppercase font-bold tracking-wider">Nhóm Máu ABO/Rh</span>
+                        <span class="font-display-hero text-3xl sm:text-4xl leading-tight font-extrabold text-primary my-0.5">O Rh(+)</span>
+                        <span class="font-label-sm text-[11px] text-on-primary-fixed-variant bg-surface-container-lowest/90 px-2 py-0.5 rounded-full font-semibold">Phổ biến &amp; Cấp cứu</span>
+                    </div>
+
+                    <!-- Part 3: Next Donation Eligibility Cooldown Box -->
+                    <div class="bg-surface-container-low rounded-2xl p-4 flex flex-col justify-between sm:w-72 lg:w-80 border border-surface-container-high/60 shadow-sm">
+                        <div class="flex items-start justify-between gap-2 mb-1">
+                            <div class="flex items-center gap-1 text-primary">
+                                <span class="material-symbols-outlined text-[18px]">timelapse</span>
+                                <span class="font-label-md text-xs sm:text-sm font-bold">Chu kỳ hiến tiếp theo</span>
+                            </div>
+                            <span class="bg-secondary-fixed text-on-secondary-fixed font-label-sm text-xs px-2 py-0.5 rounded font-bold">12/84 ngày</span>
+                        </div>
+                        <p class="font-body-sm text-xs sm:text-sm text-on-surface-variant leading-relaxed">
+                            Đủ điều kiện hiến lần tiếp theo sau <strong class="text-primary font-bold">72 ngày</strong> nữa.
+                            <span class="block text-[11px] text-on-surface-variant/80 mt-0.5">Dự kiến: <strong class="text-on-surface font-semibold">08/02/2026</strong> (Quy chuẩn 84 ngày BYT)</span>
+                        </p>
+                        <!-- Progress Bar -->
+                        <div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden mt-2">
+                            <div class="bg-primary h-full rounded-full transition-all duration-500" style="width: 14.3%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- IMPACT METRICS: 4 METRIC CARDS -->
+    <div class="w-full max-w-[1366px] mx-auto px-4 sm:px-6 lg:px-8 mb-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <!-- Metric 1: Total Donations -->
+            <div class="bg-surface-container-lowest rounded-2xl p-4 sm:p-5 shadow-sm border border-surface-container flex items-center justify-between group hover:shadow-md transition-shadow">
+                <div class="flex flex-col">
+                    <span class="font-label-sm text-xs text-on-surface-variant uppercase font-semibold">Tổng số lần hiến</span>
+                    <div class="flex items-baseline gap-1 mt-1">
+                        <span class="font-display-hero text-2xl sm:text-3xl font-extrabold text-primary">04</span>
+                        <span class="font-label-md text-xs sm:text-sm text-on-surface-variant font-bold">lần</span>
+                    </div>
+                    <span class="font-body-sm text-xs text-on-surface-variant mt-1">Đã trao tặng 1,300 mL máu</span>
+                </div>
+                <div class="w-12 h-12 rounded-xl bg-primary-fixed flex items-center justify-center text-primary group-hover:scale-105 transition-transform shrink-0">
+                    <span class="material-symbols-outlined text-[26px]" style="font-variation-settings: 'FILL' 1;">volunteer_activism</span>
+                </div>
+            </div>
+
+            <!-- Metric 2: Estimated Lives Impacted -->
+            <div class="bg-surface-container-lowest rounded-2xl p-4 sm:p-5 shadow-sm border border-surface-container flex items-center justify-between group hover:shadow-md transition-shadow">
+                <div class="flex flex-col">
+                    <span class="font-label-sm text-xs text-on-surface-variant uppercase font-semibold">Bệnh nhân được tiếp sức</span>
+                    <div class="flex items-baseline gap-1 mt-1">
+                        <span class="font-display-hero text-2xl sm:text-3xl font-extrabold text-tertiary">12</span>
+                        <span class="font-label-md text-xs sm:text-sm text-on-surface-variant font-bold">người</span>
+                    </div>
+                    <span class="font-body-sm text-xs text-on-surface-variant mt-1">Quy đổi: 1 túi cứu 3 sinh mệnh</span>
+                </div>
+                <div class="w-12 h-12 rounded-xl bg-secondary-fixed flex items-center justify-center text-tertiary group-hover:scale-105 transition-transform shrink-0">
+                    <span class="material-symbols-outlined text-[26px]" style="font-variation-settings: 'FILL' 1;">cardiology</span>
+                </div>
+            </div>
+
+            <!-- Metric 3: Contribution Rank Badge -->
+            <div class="bg-surface-container-lowest rounded-2xl p-4 sm:p-5 shadow-sm border border-surface-container flex items-center justify-between group hover:shadow-md transition-shadow">
+                <div class="flex flex-col">
+                    <span class="font-label-sm text-xs text-on-surface-variant uppercase font-semibold">Hạng cống hiến</span>
+                    <div class="flex items-center gap-1.5 mt-1">
+                        <span class="font-headline-md text-lg sm:text-xl font-extrabold text-on-surface">Huy Hiệu Bạc</span>
+                    </div>
+                    <span class="font-body-sm text-xs text-primary font-semibold mt-1">Còn 1 lần để nhận Huy Hiệu Vàng</span>
+                </div>
+                <div class="w-12 h-12 rounded-xl bg-surface-container flex items-center justify-center text-secondary group-hover:scale-105 transition-transform shrink-0">
+                    <span class="material-symbols-outlined text-[26px]" style="font-variation-settings: 'FILL' 1;">military_tech</span>
+                </div>
+            </div>
+
+            <!-- Metric 4: Biological Safety Score -->
+            <div class="bg-surface-container-lowest rounded-2xl p-4 sm:p-5 shadow-sm border border-surface-container flex items-center justify-between group hover:shadow-md transition-shadow">
+                <div class="flex flex-col">
+                    <span class="font-label-sm text-xs text-on-surface-variant uppercase font-semibold">An toàn sinh học</span>
+                    <div class="flex items-baseline gap-1 mt-1">
+                        <span class="font-display-hero text-2xl sm:text-3xl font-extrabold text-primary">100%</span>
+                        <span class="font-label-md text-xs sm:text-sm text-on-surface-variant font-bold">chuẩn y tế</span>
+                    </div>
+                    <span class="font-body-sm text-xs text-on-surface-variant mt-1">NAT &amp; ELISA âm tính hoàn toàn</span>
+                </div>
+                <div class="w-12 h-12 rounded-xl bg-surface-container-low flex items-center justify-center text-primary group-hover:scale-105 transition-transform shrink-0">
+                    <span class="material-symbols-outlined text-[26px]">health_and_safety</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN 2-COLUMN SECTION: TỶ LỆ CỘT 60% (LỊCH SỬ HIẾN MÁU) / 40% (GIẤY CHỨNG NHẬN) -->
+    <div class="w-full max-w-[1366px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 lg:grid-cols-5 gap-6 items-start">
+            <!-- LEFT COLUMN: 3 COLS (~60%) -> Tabs, Donation History, Live Blood Journey & Lab Results -->
+            <div class="lg:col-span-3 flex flex-col gap-6 w-full">
+                <!-- Interactive Tabs Container -->
+                <div class="bg-surface-container-lowest rounded-2xl shadow-sm p-5 sm:p-6 border border-surface-container">
+                    <!-- Tab Navigation -->
+                    <div class="flex items-center gap-2 pb-4 overflow-x-auto border-b border-surface-container">
+                        <button id="btn-tab-history" onclick="switchDonorTab('history')" class="bg-primary text-on-primary font-label-md text-sm px-4 py-2.5 rounded-xl shrink-0 transition-colors shadow-sm flex items-center gap-1.5 cursor-pointer font-bold">
+                            <span class="material-symbols-outlined text-[18px]">history_edu</span>
+                            <span>Lịch sử hiến máu (4)</span>
+                        </button>
+                        <button id="btn-tab-journey" onclick="switchDonorTab('journey')" class="bg-surface-container-low hover:bg-surface-container text-on-surface font-label-md text-sm px-4 py-2.5 rounded-xl shrink-0 transition-colors flex items-center gap-1.5 cursor-pointer font-semibold">
+                            <span class="material-symbols-outlined text-[18px] text-primary">timeline</span>
+                            <span>Hành trình giọt máu</span>
+                        </button>
+                        <button id="btn-tab-lab" onclick="switchDonorTab('lab')" class="bg-surface-container-low hover:bg-surface-container text-on-surface font-label-md text-sm px-4 py-2.5 rounded-xl shrink-0 transition-colors flex items-center gap-1.5 cursor-pointer font-semibold">
+                            <span class="material-symbols-outlined text-[18px] text-primary">biotech</span>
+                            <span>Hồ sơ xét nghiệm</span>
+                        </button>
+                    </div>
+
+                    <!-- TAB 1: DONATION HISTORY LIST -->
+                    <div id="tab-content-history" class="flex flex-col gap-4 mt-4">
+                        <!-- Item 1: Lần 4 (Gần nhất) -->
+                        <div class="bg-surface-container-low rounded-2xl p-4 sm:p-5 relative overflow-hidden transition-all duration-200 hover:shadow-md border border-primary/20">
+                            <div class="flex items-start justify-between gap-2 flex-wrap">
+                                <div class="flex items-center gap-2">
+                                    <span class="bg-primary text-on-primary font-label-md text-xs px-2.5 py-1 rounded-lg font-bold">Lần 4</span>
+                                    <span class="font-title-md text-sm sm:text-base text-on-surface font-extrabold">Giọt Hồng Thanh Niên - Trao Đời Sự Sống 2025</span>
+                                </div>
+                                <span class="bg-surface-container-high text-on-surface font-label-sm text-xs px-2.5 py-1 rounded-full flex items-center gap-1 font-semibold">
+                                    <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+                                    <span>15/11/2025</span>
+                                </span>
+                            </div>
+                            <!-- Metadata Grid -->
+                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 my-3 bg-surface-container-lowest/90 p-3 rounded-xl border border-surface-container">
+                                <div class="flex flex-col">
+                                    <span class="font-body-sm text-[11px] text-on-surface-variant">Mã túi máu ISBT 128</span>
+                                    <span class="font-label-md text-xs sm:text-sm font-mono text-primary font-bold">#BAG-2025-08991</span>
+                                </div>
+                                <div class="flex flex-col">
+                                    <span class="font-body-sm text-[11px] text-on-surface-variant">Thể tích máu</span>
+                                    <span class="font-title-md text-xs sm:text-sm text-on-surface font-bold">350 mL</span>
+                                </div>
+                                <div class="flex flex-col">
+                                    <span class="font-body-sm text-[11px] text-on-surface-variant">Nhóm máu ghi nhận</span>
+                                    <span class="font-title-md text-xs sm:text-sm text-primary font-bold">O Rh(+)</span>
+                                </div>
+                                <div class="flex flex-col">
+                                    <span class="font-body-sm text-[11px] text-on-surface-variant">Huyết sắc tố (Hb)</span>
+                                    <span class="font-title-md text-xs sm:text-sm text-on-surface font-bold">13.8 g/dL</span>
+                                </div>
+                            </div>
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
+                                <div class="flex items-center gap-1.5 text-on-surface">
+                                    <span class="material-symbols-outlined text-[18px] text-primary" style="font-variation-settings: 'FILL' 1;">task_alt</span>
+                                    <span class="font-body-sm text-xs sm:text-sm font-medium">Đã xét nghiệm an toàn &amp; Nhập kho lạnh Viện Huyết học TW</span>
+                                </div>
+                                <div class="flex items-center gap-2 shrink-0">
+                                    <button onclick="previewCertificate()" class="bg-primary text-on-primary font-label-sm text-xs px-3 py-1.5 rounded-lg flex items-center gap-1 hover:bg-primary-container transition-colors cursor-pointer font-semibold">
+                                        <span class="material-symbols-outlined text-[16px]">visibility</span>
+                                        <span>Xem GCN</span>
+                                    </button>
+                                    <button onclick="alert('Kết quả xét nghiệm Lần 4:\nHIV: Âm tính\nViêm gan B: Âm tính\nViêm gan C: Âm tính\nGiang mai: Âm tính\nSốt rét: Âm tính\n=> Đạt tiêu chuẩn an toàn truyền máu quốc gia.')" class="bg-surface-container-high hover:bg-surface-container text-on-surface font-label-sm text-xs px-3 py-1.5 rounded-lg flex items-center gap-1 transition-colors cursor-pointer font-semibold">
+                                        <span class="material-symbols-outlined text-[16px] text-primary">clinical_notes</span>
+                                        <span>5 Bệnh truyền nhiễm</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Item 2: Lần 3 -->
+                        <div class="bg-surface-container-lowest rounded-2xl p-4 sm:p-5 shadow-sm hover:shadow-md transition-shadow border border-surface-container">
+                            <div class="flex items-start justify-between gap-2 flex-wrap">
+                                <div class="flex items-center gap-2">
+                                    <span class="bg-surface-container-high text-on-surface font-label-md text-xs px-2.5 py-1 rounded-lg font-bold">Lần 3</span>
+                                    <span class="font-title-md text-sm sm:text-base text-on-surface font-bold">Hành Trình Đỏ Thủ Đô - Hè 2025</span>
+                                </div>
+                                <span class="font-label-sm text-xs text-on-surface-variant font-semibold">20/06/2025 • 350 mL</span>
+                            </div>
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mt-2 pt-1">
+                                <div class="flex items-center gap-1.5 text-tertiary">
+                                    <span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">favorite</span>
+                                    <span class="font-body-sm text-xs sm:text-sm font-semibold">Đã truyền cứu người bệnh phẫu thuật tim tại BV Bạch Mai (05/07/2025)</span>
+                                </div>
+                                <button onclick="alert('Túi máu #BAG-2025-04512 đã truyền thành công ngày 05/07/2025 tại BV Bạch Mai.')" class="text-primary hover:text-primary-container font-label-sm text-xs flex items-center gap-1 self-start sm:self-auto cursor-pointer font-bold">
+                                    <span>Chi tiết túi máu</span>
+                                    <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Item 3: Lần 2 -->
+                        <div class="bg-surface-container-lowest rounded-2xl p-4 sm:p-5 shadow-sm hover:shadow-md transition-shadow border border-surface-container">
+                            <div class="flex items-start justify-between gap-2 flex-wrap">
+                                <div class="flex items-center gap-2">
+                                    <span class="bg-surface-container-high text-on-surface font-label-md text-xs px-2.5 py-1 rounded-lg font-bold">Lần 2</span>
+                                    <span class="font-title-md text-sm sm:text-base text-on-surface font-bold">Giọt Máu Nghĩa Tình 2024</span>
+                                </div>
+                                <span class="font-label-sm text-xs text-on-surface-variant font-semibold">12/11/2024 • 350 mL</span>
+                            </div>
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mt-2 pt-1">
+                                <div class="flex items-center gap-1.5 text-on-surface-variant">
+                                    <span class="material-symbols-outlined text-[18px] text-primary">local_hospital</span>
+                                    <span class="font-body-sm text-xs sm:text-sm">Đã lưu trữ và điều phối Viện Nhi TW cho bệnh nhi tan máu bẩm sinh</span>
+                                </div>
+                                <button onclick="alert('Túi máu #BAG-2024-09923 đã điều phối tại Viện Nhi Trung Ương.')" class="text-primary hover:text-primary-container font-label-sm text-xs flex items-center gap-1 self-start sm:self-auto cursor-pointer font-bold">
+                                    <span>Chi tiết túi máu</span>
+                                    <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Item 4: Lần 1 -->
+                        <div class="bg-surface-container-lowest rounded-2xl p-4 sm:p-5 shadow-sm hover:shadow-md transition-shadow border border-surface-container">
+                            <div class="flex items-start justify-between gap-2 flex-wrap">
+                                <div class="flex items-center gap-2">
+                                    <span class="bg-surface-container-high text-on-surface font-label-md text-xs px-2.5 py-1 rounded-lg font-bold">Lần 1</span>
+                                    <span class="font-title-md text-sm sm:text-base text-on-surface font-bold">Trái Tim Cho Em - ĐHQG Hà Nội</span>
+                                </div>
+                                <span class="font-label-sm text-xs text-on-surface-variant font-semibold">08/03/2024 • 250 mL</span>
+                            </div>
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mt-2 pt-1">
+                                <div class="flex items-center gap-1.5 text-on-surface-variant">
+                                    <span class="material-symbols-outlined text-[18px] text-primary">check_circle</span>
+                                    <span class="font-body-sm text-xs sm:text-sm">Hoàn thành hiến lần đầu • Đã cấp GCN bản giấy &amp; số hóa</span>
+                                </div>
+                                <button onclick="alert('Túi máu #BAG-2024-01201 hiến lần đầu thành công.')" class="text-primary hover:text-primary-container font-label-sm text-xs flex items-center gap-1 self-start sm:self-auto cursor-pointer font-bold">
+                                    <span>Chi tiết túi máu</span>
+                                    <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TAB 2: LIVE BLOOD JOURNEY (Túi #BAG-2025-08991) -->
+                    <div id="tab-content-journey" class="hidden flex-col gap-4 mt-4">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                            <div class="flex items-center gap-2">
+                                <span class="material-symbols-outlined text-primary text-[24px]">route</span>
+                                <h3 class="font-headline-md text-base sm:text-lg text-on-surface font-bold">Hành Trình Giọt Máu Của Bạn</h3>
+                            </div>
+                            <span class="font-label-md text-xs sm:text-sm font-mono text-primary bg-primary-fixed px-2.5 py-0.5 rounded-md font-bold">Túi máu: #BAG-2025-08991</span>
+                        </div>
+                        <p class="font-body-sm text-xs sm:text-sm text-on-surface-variant mb-2">
+                            Hệ thống phân tách và vận chuyển máu thời gian thực theo tiêu chuẩn quản lý ngân hàng máu quốc gia.
+                        </p>
+
+                        <!-- Stepper Flow -->
+                        <div class="relative pl-6 flex flex-col gap-5">
+                            <div class="absolute left-2.5 top-3 bottom-3 w-0.5 bg-surface-container-high"></div>
+
+                            <!-- Step 1 -->
+                            <div class="relative flex items-start gap-4">
+                                <div class="absolute -left-6 top-0 w-6 h-6 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-sm">
+                                    <span class="material-symbols-outlined text-[14px]">check</span>
+                                </div>
+                                <div class="flex flex-col">
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-title-md text-sm sm:text-base text-on-surface font-bold">Tiếp nhận &amp; Lấy máu toàn phần</span>
+                                        <span class="font-label-sm text-xs text-primary font-semibold">15/11/2025 09:45</span>
+                                    </div>
+                                    <p class="font-body-sm text-xs sm:text-sm text-on-surface-variant mt-0.5">
+                                        Thực hiện tại Bàn lấy máu số 04, Điểm lưu động NTĐ Cầu Giấy. Lấy thành công 350 mL không có biến cố sau hiến.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Step 2 -->
+                            <div class="relative flex items-start gap-4">
+                                <div class="absolute -left-6 top-0 w-6 h-6 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-sm">
+                                    <span class="material-symbols-outlined text-[14px]">check</span>
+                                </div>
+                                <div class="flex flex-col">
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-title-md text-sm sm:text-base text-on-surface font-bold">Xét nghiệm sinh học sàng lọc (NAT &amp; ELISA)</span>
+                                        <span class="font-label-sm text-xs text-primary font-semibold">15/11/2025 15:20</span>
+                                    </div>
+                                    <p class="font-body-sm text-xs sm:text-sm text-on-surface-variant mt-0.5">
+                                        Tại Lab kiểm định ISO 15189 Viện Huyết học TW. Kết quả: Âm tính HIV, HBV, HCV, Giang mai, KST Sốt rét. Đạt chuẩn lưu thông.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Step 3 -->
+                            <div class="relative flex items-start gap-4">
+                                <div class="absolute -left-6 top-0 w-6 h-6 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-sm">
+                                    <span class="material-symbols-outlined text-[14px]">check</span>
+                                </div>
+                                <div class="flex flex-col">
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-title-md text-sm sm:text-base text-on-surface font-bold">Nhập kho lạnh bảo quản trung tâm (2°C - 6°C)</span>
+                                        <span class="font-label-sm text-xs text-primary font-semibold">16/11/2025 08:30</span>
+                                    </div>
+                                    <p class="font-body-sm text-xs sm:text-sm text-on-surface-variant mt-0.5">
+                                        Phân tách thành Khối hồng cầu, Huyết tương đông lạnh và Khối tiểu cầu. Lưu trữ tại Ngân hàng Máu Quốc gia.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Step 4 -->
+                            <div class="relative flex items-start gap-4">
+                                <div class="absolute -left-6 top-0 w-6 h-6 rounded-full bg-tertiary text-on-tertiary flex items-center justify-center shadow-sm animate-pulse">
+                                    <span class="material-symbols-outlined text-[14px]">local_shipping</span>
+                                </div>
+                                <div class="flex flex-col">
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-title-md text-sm sm:text-base text-tertiary font-bold">Điều phối khẩn cấp tới BV Hữu nghị Việt Đức</span>
+                                        <span class="bg-secondary-fixed text-on-secondary-fixed font-label-sm text-[11px] px-2 py-0.5 rounded-full font-bold">Đang điều phối</span>
+                                    </div>
+                                    <p class="font-body-sm text-xs sm:text-sm text-on-surface-variant mt-0.5">
+                                        Dự kiến tiếp nhận phục vụ kíp mổ cấp cứu chấn thương ngoại khoa ngày 18/11/2025. Bạn sẽ nhận thông báo khi truyền máu hoàn tất!
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TAB 3: LAB RESULTS -->
+                    <div id="tab-content-lab" class="hidden flex-col gap-4 mt-4">
+                        <div class="flex items-center justify-between">
+                            <h4 class="font-title-md text-sm sm:text-base font-bold text-on-surface">Kết Quả Xét Nghiệm Sinh Học Gần Nhất (15/11/2025)</h4>
+                            <span class="bg-emerald-100 text-emerald-800 font-label-sm text-xs px-2.5 py-1 rounded-full font-bold">Chuẩn ISO 15189</span>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left font-body-sm text-xs sm:text-sm">
+                                <thead class="bg-surface-container text-on-surface font-label-md">
+                                    <tr>
+                                        <th class="p-3 rounded-l-lg">Chỉ tiêu xét nghiệm</th>
+                                        <th class="p-3">Phương pháp</th>
+                                        <th class="p-3">Ngưỡng tham chiếu</th>
+                                        <th class="p-3">Kết quả</th>
+                                        <th class="p-3 rounded-r-lg">Đánh giá</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-surface-container">
+                                    <tr>
+                                        <td class="p-3 font-semibold">Kháng nguyên HIV Ag/Ab combo</td>
+                                        <td class="p-3 text-secondary">ELISA thế hệ 4</td>
+                                        <td class="p-3 text-secondary">S/CO &lt; 1.0</td>
+                                        <td class="p-3 font-mono font-bold text-emerald-700">Âm tính (0.12)</td>
+                                        <td class="p-3"><span class="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 font-bold text-xs">Đạt</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-3 font-semibold">Kháng nguyên HBsAg (Viêm gan B)</td>
+                                        <td class="p-3 text-secondary">NAT Nucleic Acid</td>
+                                        <td class="p-3 text-secondary">Âm tính</td>
+                                        <td class="p-3 font-mono font-bold text-emerald-700">Âm tính</td>
+                                        <td class="p-3"><span class="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 font-bold text-xs">Đạt</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-3 font-semibold">Kháng thể HCV Ab (Viêm gan C)</td>
+                                        <td class="p-3 text-secondary">NAT Nucleic Acid</td>
+                                        <td class="p-3 text-secondary">Âm tính</td>
+                                        <td class="p-3 font-mono font-bold text-emerald-700">Âm tính</td>
+                                        <td class="p-3"><span class="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 font-bold text-xs">Đạt</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-3 font-semibold">Giang mai (Syphilis TP)</td>
+                                        <td class="p-3 text-secondary">ECLIA Miễn dịch</td>
+                                        <td class="p-3 text-secondary">Âm tính</td>
+                                        <td class="p-3 font-mono font-bold text-emerald-700">Âm tính</td>
+                                        <td class="p-3"><span class="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 font-bold text-xs">Đạt</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td class="p-3 font-semibold">Ký sinh trùng Sốt rét</td>
+                                        <td class="p-3 text-secondary">Kính hiển vi &amp; Test nhanh</td>
+                                        <td class="p-3 text-secondary">Âm tính</td>
+                                        <td class="p-3 font-mono font-bold text-emerald-700">Âm tính</td>
+                                        <td class="p-3"><span class="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 font-bold text-xs">Đạt</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT COLUMN: 2 COLS (~40%) -> Digital Certificate Card (KHÔNG CÓ THANH CUỘN BÊN TRONG, KHÔNG OVERLAP) -->
+            <div class="lg:col-span-2 flex flex-col gap-4 w-full">
+                <!-- Certificate Frame Card: Pure flexbox layout, fully visible content without inner scrollbar -->
+                <div id="digital-certificate-card" class="bg-surface-container-lowest rounded-2xl shadow-lg p-5 sm:p-6 relative border-2 border-primary/20">
+                    <!-- Certificate Watermark (pointer-events-none, safe opacity) -->
+                    <div class="absolute inset-0 opacity-[0.03] pointer-events-none flex items-center justify-center overflow-hidden">
+                        <span class="material-symbols-outlined text-[280px] text-primary">health_and_safety</span>
+                    </div>
+
+                    <!-- Certificate Header -->
+                    <div class="text-center pb-3 relative z-10">
+                        <span class="font-label-sm text-[10px] sm:text-xs text-on-surface-variant font-bold tracking-widest uppercase block">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</span>
+                        <span class="font-label-sm text-[10px] sm:text-xs text-on-surface italic block">Độc lập - Tự do - Hạnh phúc</span>
+                        <div class="w-16 h-0.5 bg-primary/40 mx-auto my-1.5 rounded-full"></div>
+                        <div class="mt-2">
+                            <span class="font-label-sm text-[10px] sm:text-xs text-primary tracking-wider uppercase font-bold block">BAN CHỈ ĐẠO QUỐC GIA VẬN ĐỘNG HIẾN MÁU TÌNH NGUYỆN</span>
+                            <h3 class="font-headline-md text-base sm:text-lg text-primary font-extrabold uppercase mt-0.5 tracking-tight">
+                                GIẤY CHỨNG NHẬN
+                            </h3>
+                            <span class="font-title-md text-xs sm:text-sm text-on-surface font-extrabold uppercase tracking-wider block">
+                                HIẾN MÁU TÌNH NGUYỆN
+                            </span>
+                            <span class="inline-block mt-1 font-mono text-[10px] sm:text-[11px] text-on-surface-variant bg-surface-container-high px-2.5 py-0.5 rounded-full font-bold">
+                                SỐ ĐỊNH DANH GCN: #GCN-VTL-2025-08991-HN
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Certificate Body Content -->
+                    <div class="py-3 relative z-10 flex flex-col gap-2.5 text-center">
+                        <p class="font-body-sm text-xs text-on-surface-variant italic">
+                            Ban Chỉ Đạo Vận Động Hiến Máu Tình Nguyện Trân Trọng Chứng Nhận:
+                        </p>
+                        <div class="bg-surface-container-low py-2.5 px-3 rounded-xl border border-surface-container-high">
+                            <span class="font-headline-sm text-sm sm:text-base text-on-surface font-extrabold uppercase tracking-wide block">
+                                NGUYỄN HOÀNG NAM
+                            </span>
+                            <div class="flex items-center justify-center gap-3 font-body-sm text-xs text-on-surface-variant mt-0.5">
+                                <span>Ngày sinh: <strong class="text-on-surface">18/06/1998</strong></span>
+                                <span>•</span>
+                                <span>CCCD: <strong class="text-on-surface font-mono font-bold">001099028891</strong></span>
+                            </div>
+                        </div>
+                        <div class="text-on-surface font-body-md text-xs sm:text-sm leading-relaxed px-1">
+                            Đã tình nguyện hiến <strong class="text-primary font-bold">350 mL Máu toàn phần</strong> (Nhóm máu O Rh+) vì sự sống của người bệnh.
+                            <span class="block text-xs text-on-surface-variant mt-0.5">
+                                Tại đợt: <strong class="text-on-surface font-bold">Giọt Hồng Thanh Niên 2025</strong> - Ngày 15/11/2025.
+                            </span>
+                        </div>
+
+                        <!-- Legal Donor Right Clause -->
+                        <div class="bg-surface-container p-2.5 rounded-xl text-left mt-1 border border-surface-container-high">
+                            <div class="flex items-start gap-1.5">
+                                <span class="material-symbols-outlined text-[16px] text-primary shrink-0 mt-0.5">policy</span>
+                                <p class="font-body-sm text-[11px] sm:text-xs text-on-surface leading-normal">
+                                    <strong class="font-bold">Quyền lợi quốc gia:</strong> Được bồi hoàn máu miễn phí tại tất cả các bệnh viện và cơ sở y tế công lập trên toàn quốc tương đương số lượng máu đã hiến theo quy định Bộ Y Tế.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Certificate Footer: QR Code & Digital Signature Stamp -->
+                    <div class="pt-3 relative z-10 grid grid-cols-2 gap-3 items-center border-t border-surface-container-high/60">
+                        <!-- QR Verification -->
+                        <div class="flex flex-col items-center text-center">
+                            <div class="w-16 h-16 bg-surface-container-lowest p-1 rounded-lg shadow-sm flex items-center justify-center border border-surface-container">
+                                <svg class="w-full h-full text-on-surface" fill="currentColor" viewBox="0 0 100 100">
+                                    <path d="M0 0h30v30H0zM10 10h10v10H10zM70 0h30v30H70zM80 10h10v10H80zM0 70h30v30H0zM10 80h10v10H10zM40 10h10v10H40zM50 20h10v10H50zM10 40h10v10H10zM20 50h10v10H20zM40 40h20v20H40zM70 40h10v10H70zM90 40h10v10H90zM80 50h10v10H80zM40 70h10v20H40zM60 70h10v10H60zM80 70h20v10H80zM50 90h20v10H50zM80 90h10v10H80z"></path>
+                                </svg>
+                            </div>
+                            <span class="font-label-sm text-[9px] text-on-surface-variant mt-1 font-semibold">Quét kiểm tra trên VNeID</span>
+                        </div>
+                        <!-- Digital Seal Stamp -->
+                        <div class="flex flex-col items-end text-right">
+                            <div class="p-2 rounded-xl bg-surface-container-high/60 flex flex-col items-end border border-surface-container-high">
+                                <div class="flex items-center gap-1 text-primary">
+                                    <span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+                                    <span class="font-label-sm text-[10px] uppercase font-extrabold">KÝ SỐ HỢP LỆ</span>
+                                </div>
+                                <span class="font-label-sm text-[10px] text-on-surface font-bold mt-0.5">VIỆN HUYẾT HỌC TW</span>
+                                <span class="font-mono text-[9px] text-on-surface-variant">15/11/2025 18:22:04</span>
+                                <span class="font-mono text-[8px] text-on-surface-variant">SHA256: 7f8a...9c4b</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Direct Certificate Action Buttons -->
+                    <div class="mt-4 pt-3 flex flex-col sm:flex-row items-center gap-2 relative z-10">
+                        <button onclick="downloadPdf()" class="w-full bg-primary hover:bg-primary-container text-on-primary font-label-md text-xs sm:text-sm py-2 px-3 rounded-xl flex items-center justify-center gap-1.5 transition-colors shadow-sm cursor-pointer font-bold">
+                            <span class="material-symbols-outlined text-[16px]">picture_as_pdf</span>
+                            <span>Tải PDF ký số</span>
+                        </button>
+                        <button onclick="saveToVNeID()" class="w-full bg-surface-container-high hover:bg-surface-container text-on-surface font-label-md text-xs sm:text-sm py-2 px-3 rounded-xl flex items-center justify-center gap-1.5 transition-colors cursor-pointer font-bold">
+                            <span class="material-symbols-outlined text-[16px] text-primary">wallet</span>
+                            <span>Lưu vào VNeID</span>
+                        </button>
+                        <button onclick="window.print()" class="bg-surface-container-low hover:bg-surface-container text-on-surface p-2 rounded-xl shrink-0 transition-colors cursor-pointer" title="In trực tiếp">
+                            <span class="material-symbols-outlined text-[18px]">print</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- VNeID Security Assurance Card -->
+                <div class="bg-surface-container-low rounded-2xl p-4 shadow-sm flex items-start gap-3 border border-surface-container-high/60">
+                    <div class="w-9 h-9 rounded-xl bg-surface-container-high flex items-center justify-center text-primary shrink-0">
+                        <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">security</span>
+                    </div>
+                    <div class="flex flex-col">
+                        <h4 class="font-title-md text-xs sm:text-sm text-on-surface font-bold">Dữ Liệu Quốc Gia Đồng Bộ</h4>
+                        <p class="font-body-sm text-xs text-on-surface-variant mt-0.5 leading-relaxed">
+                            Mã chứng nhận điện tử được tự động liên thông với Hồ sơ sức khỏe điện tử trên VNeID, có giá trị pháp lý tương đương bản gốc phôi đỏ trên toàn quốc.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECTION: HEALTH MONITORING INSIGHTS -->
+    <div class="w-full max-w-[1366px] mx-auto px-4 sm:px-6 lg:px-8 mt-6">
+        <div class="bg-surface-container-lowest rounded-2xl shadow-sm p-5 sm:p-6 border border-surface-container">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-5">
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary text-[24px]">vital_signs</span>
+                        <h3 class="font-headline-md text-lg sm:text-xl text-on-surface font-extrabold">Chỉ Số Sức Khỏe Huyết Học Cá Nhân Qua Các Lần Hiến</h3>
+                    </div>
+                    <p class="font-body-sm text-xs sm:text-sm text-on-surface-variant mt-1">
+                        Tổng hợp dữ liệu xét nghiệm lâm sàng trước và sau mỗi lần hiến máu, lưu trữ bảo mật theo tiêu chuẩn y tế quốc gia.
+                    </p>
+                </div>
+                <div class="flex items-center gap-2 bg-surface-container-low px-3 py-1.5 rounded-xl border border-surface-container-high self-start md:self-auto">
+                    <span class="font-label-sm text-xs text-on-surface-variant font-medium">Bác sĩ phụ trách theo dõi:</span>
+                    <span class="font-title-md text-xs sm:text-sm text-primary font-bold">BS.CKII Phạm Hồng Sơn</span>
+                </div>
+            </div>
+
+            <!-- 3 Key Parameter Metric Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
+                <!-- Hb Metric -->
+                <div class="bg-surface-container-low rounded-2xl p-4 flex flex-col justify-between border border-surface-container-high/60">
+                    <div class="flex items-center justify-between">
+                        <span class="font-label-md text-xs sm:text-sm text-on-surface-variant font-semibold">Huyết sắc tố (Hemoglobin)</span>
+                        <span class="material-symbols-outlined text-primary text-[20px]" style="font-variation-settings: 'FILL' 1;">water_drop</span>
+                    </div>
+                    <div class="flex items-baseline gap-2 my-2">
+                        <span class="font-display-hero text-2xl sm:text-3xl font-extrabold text-on-surface">13.8</span>
+                        <span class="font-label-md text-xs sm:text-sm text-on-surface-variant font-bold">g/dL</span>
+                    </div>
+                    <!-- Sparkline SVG -->
+                    <div class="w-full h-8 flex items-center">
+                        <svg class="w-full h-full text-primary" fill="none" viewBox="0 0 100 25">
+                            <path d="M0 18 L33 14 L66 16 L100 8" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path>
+                            <circle cx="0" cy="18" fill="currentColor" r="2.5"></circle>
+                            <circle cx="33" cy="14" fill="currentColor" r="2.5"></circle>
+                            <circle cx="66" cy="16" fill="currentColor" r="2.5"></circle>
+                            <circle cx="100" cy="8" fill="currentColor" r="3.5"></circle>
+                        </svg>
+                    </div>
+                    <span class="font-body-sm text-xs text-primary font-bold mt-1">Ổn định tuyệt vời (Ngưỡng an toàn &gt; 12.5 g/dL)</span>
+                </div>
+
+                <!-- Blood Pressure Metric -->
+                <div class="bg-surface-container-low rounded-2xl p-4 flex flex-col justify-between border border-surface-container-high/60">
+                    <div class="flex items-center justify-between">
+                        <span class="font-label-md text-xs sm:text-sm text-on-surface-variant font-semibold">Huyết áp trung bình</span>
+                        <span class="material-symbols-outlined text-primary text-[20px]">monitor_heart</span>
+                    </div>
+                    <div class="flex items-baseline gap-2 my-2">
+                        <span class="font-display-hero text-2xl sm:text-3xl font-extrabold text-on-surface">115 / 75</span>
+                        <span class="font-label-md text-xs sm:text-sm text-on-surface-variant font-bold">mmHg</span>
+                    </div>
+                    <!-- Sparkline SVG -->
+                    <div class="w-full h-8 flex items-center">
+                        <svg class="w-full h-full text-tertiary" fill="none" viewBox="0 0 100 25">
+                            <path d="M0 12 L33 10 L66 14 L100 11" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path>
+                            <circle cx="0" cy="12" fill="currentColor" r="2.5"></circle>
+                            <circle cx="33" cy="10" fill="currentColor" r="2.5"></circle>
+                            <circle cx="66" cy="14" fill="currentColor" r="2.5"></circle>
+                            <circle cx="100" cy="11" fill="currentColor" r="3.5"></circle>
+                        </svg>
+                    </div>
+                    <span class="font-body-sm text-xs text-on-surface-variant font-semibold mt-1">Chỉ số lý tưởng cho hoạt động thể thao &amp; hiến máu</span>
+                </div>
+
+                <!-- Body Weight Metric -->
+                <div class="bg-surface-container-low rounded-2xl p-4 flex flex-col justify-between border border-surface-container-high/60">
+                    <div class="flex items-center justify-between">
+                        <span class="font-label-md text-xs sm:text-sm text-on-surface-variant font-semibold">Cân nặng duy trì</span>
+                        <span class="material-symbols-outlined text-primary text-[20px]">scale</span>
+                    </div>
+                    <div class="flex items-baseline gap-2 my-2">
+                        <span class="font-display-hero text-2xl sm:text-3xl font-extrabold text-on-surface">64.0</span>
+                        <span class="font-label-md text-xs sm:text-sm text-on-surface-variant font-bold">kg (BMI: 21.8)</span>
+                    </div>
+                    <!-- Sparkline SVG -->
+                    <div class="w-full h-8 flex items-center">
+                        <svg class="w-full h-full text-primary" fill="none" viewBox="0 0 100 25">
+                            <path d="M0 16 L33 15 L66 13 L100 13" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path>
+                            <circle cx="0" cy="16" fill="currentColor" r="2.5"></circle>
+                            <circle cx="33" cy="15" fill="currentColor" r="2.5"></circle>
+                            <circle cx="66" cy="13" fill="currentColor" r="2.5"></circle>
+                            <circle cx="100" cy="13" fill="currentColor" r="3.5"></circle>
+                        </svg>
+                    </div>
+                    <span class="font-body-sm text-xs text-on-surface-variant font-semibold mt-1">Đủ điều kiện thể tích hiến 350 - 450 mL</span>
+                </div>
+            </div>
+
+            <!-- Personalized Doctor Advisory Box -->
+            <div class="bg-primary-fixed/30 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4 border border-primary-fixed-dim">
+                <div class="w-12 h-12 rounded-2xl bg-primary text-on-primary flex items-center justify-center shrink-0 shadow-sm">
+                    <span class="material-symbols-outlined text-[24px]">support_agent</span>
+                </div>
+                <div class="flex flex-col flex-1">
+                    <div class="flex items-center gap-2">
+                        <span class="font-title-md text-sm sm:text-base text-primary font-extrabold">Lời khuyên cá nhân hóa từ Bác sĩ điều phối:</span>
+                        <span class="font-label-sm text-[11px] bg-primary text-on-primary px-2.5 py-0.5 rounded-full font-bold">Tự động</span>
+                    </div>
+                    <p class="font-body-md text-xs sm:text-sm text-on-surface mt-1 leading-relaxed">
+                        "Sức khỏe và chất lượng máu của bạn rất tốt, lượng huyết sắc tố tăng đều phản ánh lối sống lành mạnh. Hãy tiếp tục duy trì chế độ dinh dưỡng giàu sắt (thịt đỏ, rau lá xanh đậm), uống đủ 2 lít nước mỗi ngày và bạn có thể an tâm đăng ký đợt hiến máu tiếp theo từ ngày <strong class="text-primary font-bold">08/02/2026</strong>."
+                    </p>
+                </div>
+                <button onclick="askDoctor()" class="bg-surface-container-lowest hover:bg-surface-container-high text-primary font-label-md text-xs sm:text-sm px-4 py-2.5 rounded-xl shrink-0 transition-colors shadow-sm cursor-pointer font-bold border border-primary/20 self-start sm:self-auto">
+                    Đặt câu hỏi cho Bác sĩ
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    function switchDonorTab(tab) {
+        const btnHistory = document.getElementById('btn-tab-history');
+        const btnJourney = document.getElementById('btn-tab-journey');
+        const btnLab = document.getElementById('btn-tab-lab');
+        const contentHistory = document.getElementById('tab-content-history');
+        const contentJourney = document.getElementById('tab-content-journey');
+        const contentLab = document.getElementById('tab-content-lab');
+
+        // Reset classes
+        [btnHistory, btnJourney, btnLab].forEach(btn => {
+            if (btn) btn.className = "bg-surface-container-low hover:bg-surface-container text-on-surface font-label-md text-sm px-4 py-2.5 rounded-xl shrink-0 transition-colors flex items-center gap-1.5 cursor-pointer font-semibold";
+        });
+        [contentHistory, contentJourney, contentLab].forEach(c => {
+            if (c) {
+                c.classList.add('hidden');
+                c.classList.remove('flex');
+            }
+        });
+
+        if (tab === 'history' && btnHistory && contentHistory) {
+            btnHistory.className = "bg-primary text-on-primary font-label-md text-sm px-4 py-2.5 rounded-xl shrink-0 transition-colors shadow-sm flex items-center gap-1.5 cursor-pointer font-bold";
+            contentHistory.classList.remove('hidden');
+            contentHistory.classList.add('flex');
+        } else if (tab === 'journey' && btnJourney && contentJourney) {
+            btnJourney.className = "bg-primary text-on-primary font-label-md text-sm px-4 py-2.5 rounded-xl shrink-0 transition-colors shadow-sm flex items-center gap-1.5 cursor-pointer font-bold";
+            contentJourney.classList.remove('hidden');
+            contentJourney.classList.add('flex');
+        } else if (tab === 'lab' && btnLab && contentLab) {
+            btnLab.className = "bg-primary text-on-primary font-label-md text-sm px-4 py-2.5 rounded-xl shrink-0 transition-colors shadow-sm flex items-center gap-1.5 cursor-pointer font-bold";
+            contentLab.classList.remove('hidden');
+            contentLab.classList.add('flex');
+        }
+    }
+
+    function downloadCertificate() {
+        alert("Đang chuẩn bị gói dữ liệu chứng nhận hiến máu điện tử (PDF ký số + Giấy chứng nhận phôi đỏ số hóa). File ZIP sẽ tự động tải xuống.");
+    }
+
+    function downloadPdf() {
+        alert("Đang tải file PDF Giấy Chứng Nhận Hiến Máu Tình Nguyện có chữ ký số xác thực SHA-256 từ Viện Huyết Học - Truyền Máu TW.");
+    }
+
+    function saveToVNeID() {
+        alert("Đã gửi yêu cầu đồng bộ Giấy Chứng Nhận #GCN-VTL-2025-08991-HN vào Ví Giấy Tờ trên ứng dụng VNeID (Mức 2).");
+    }
+
+    function shareBadge() {
+        if (navigator.share) {
+            navigator.share({
+                title: 'Huy Hiệu Hiến Máu Vitalis - Nguyễn Hoàng Nam',
+                text: 'Tôi vừa hoàn thành lần hiến máu thứ 4 tại Vitalis Blood Community! Mỗi giọt máu cho đi, một cuộc đời ở lại.',
+                url: window.location.href
+            }).catch(() => {});
+        } else {
+            alert('Đã sao chép liên kết chia sẻ huy hiệu hiến máu của bạn vào bộ nhớ tạm!');
+        }
+    }
+
+    function previewCertificate() {
+        const cert = document.getElementById('digital-certificate-card');
+        if (cert) cert.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function askDoctor() {
+        alert("Hệ thống kết nối bác sĩ trực tuyến: Vui lòng liên hệ tổng đài 1900 6868 hoặc gửi câu hỏi qua hòm thư y tế chuyên môn.");
+    }
+</script>
+}

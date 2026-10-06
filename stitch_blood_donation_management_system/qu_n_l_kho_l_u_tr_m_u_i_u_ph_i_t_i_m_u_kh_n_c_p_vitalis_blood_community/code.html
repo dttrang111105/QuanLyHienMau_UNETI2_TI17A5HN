@@ -1,0 +1,956 @@
+<!DOCTYPE html><html lang="vi"><head><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0" name="viewport"><meta content="web_dashboard" name="shell-type"><title>Vitalis Blood Community - Medical Staff Portal</title><link href="https://fonts.googleapis.com" rel="preconnect"><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@600;700&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{colors:{"tertiary-fixed":"#ffdad8","on-primary":"#ffffff","error":"#ba1a1a","secondary":"#685b5e","on-primary-container":"#ffe1e1","tertiary":"#8d3033","primary-fixed":"#ffdad9","inverse-on-surface":"#e6f3fb","surface-variant":"#d7e4ec","tertiary-fixed-dim":"#ffb3b1","surface-bright":"#f4faff","surface-dim":"#cfdce4","surface-container-highest":"#d7e4ec","inverse-primary":"#ffb3b3","primary":"#a30428","outline":"#8e706f","inverse-surface":"#263238","surface-container":"#e3f0f8","surface-tint":"#b81c34","surface":"#f4faff","on-background":"#111d23","on-tertiary-fixed-variant":"#81272b","on-secondary-fixed":"#23191c","primary-fixed-dim":"#ffb3b3","surface-container-high":"#ddeaf2","on-tertiary-container":"#ffe1df","on-primary-fixed-variant":"#920022","surface-container-lowest":"#ffffff","surface-container-low":"#e9f6fd","on-secondary-fixed-variant":"#504447","secondary-fixed-dim":"#d4c2c6","on-error-container":"#93000a","on-secondary":"#ffffff","on-primary-fixed":"#400009","on-secondary-container":"#6f6164","on-tertiary-fixed":"#410007","on-error":"#ffffff","tertiary-container":"#ac4749","on-tertiary":"#ffffff","background":"#f4faff","secondary-fixed":"#f1dee2","error-container":"#ffdad6","outline-variant":"#e2bebd","secondary-container":"#f1dee2","on-surface":"#111d23","on-surface-variant":"#5a4040","primary-container":"#c6283d"},borderRadius:{DEFAULT:"0.25rem",lg:"0.5rem",xl:"0.75rem",full:"9999px"},spacing:{"margin-mobile":"1rem",margin:"2rem","space-md":"1rem","gutter-mobile":"1rem","space-xl":"2.5rem","space-lg":"1.5rem",gutter:"1.5rem","space-xs":"0.25rem","space-sm":"0.5rem"},fontFamily:{"body-lg":["Inter"],"headline-sm":["Plus Jakarta Sans"],"title-md":["Plus Jakarta Sans"],"display-hero":["Plus Jakarta Sans"],"body-sm":["Inter"],"label-lg":["Plus Jakarta Sans"],"display-hero-mobile":["Plus Jakarta Sans"],"headline-lg-mobile":["Plus Jakarta Sans"],"headline-md":["Plus Jakarta Sans"],"label-sm":["Plus Jakarta Sans"],"headline-lg":["Plus Jakarta Sans"],"label-md":["Plus Jakarta Sans"],"body-md":["Inter"]},fontSize:{"body-lg":["18px",{lineHeight:"28px",fontWeight:"400"}],"headline-sm":["20px",{lineHeight:"28px",fontWeight:"600"}],"title-md":["16px",{lineHeight:"24px",fontWeight:"600"}],"display-hero":["48px",{lineHeight:"56px",letterSpacing:"-0.02em",fontWeight:"700"}],"body-sm":["13px",{lineHeight:"20px",fontWeight:"400"}],"label-lg":["15px",{lineHeight:"20px",fontWeight:"600"}],"display-hero-mobile":["32px",{lineHeight:"40px",letterSpacing:"-0.01em",fontWeight:"700"}],"headline-lg-mobile":["24px",{lineHeight:"32px",letterSpacing:"-0.01em",fontWeight:"700"}],"headline-md":["24px",{lineHeight:"32px",letterSpacing:"-0.01em",fontWeight:"600"}],"label-sm":["11px",{lineHeight:"16px",letterSpacing:"0.04em",fontWeight:"700"}],"headline-lg":["32px",{lineHeight:"40px",letterSpacing:"-0.015em",fontWeight:"700"}],"label-md":["13px",{lineHeight:"18px",fontWeight:"600"}],"body-md":["15px",{lineHeight:"24px",fontWeight:"400"}]}}}}</script></head><body class="bg-surface font-body-md text-on-surface antialiased"><aside class="fixed left-0 top-0 h-screen w-72 bg-inverse-surface text-inverse-on-surface z-50 flex flex-col justify-between shadow-[0_1px_8px_rgba(0,0,0,0.06)]"><div class="flex flex-col h-full overflow-hidden"><div class="h-16 px-space-lg flex items-center gap-space-sm shrink-0 bg-inverse-surface"><img alt="Brand logo. - Primary color: #c6283d
+- Font: plusJakartaSans
+- Mode: light
+- Roundness: rounded-md
+" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida/AEtjO1XMAnpwzAoiZfIb2ps07L5-qPxD01D5Afsv6hH8cTtMsue5VjoEtavGToUPZ6V1OavAUvc0eHKgEdN-nxL-isiibHim0XC8YAcfrg8qpMdlEoumN5-jlmS_4qmKro4EBKm1SSz2ytO0KDSejWPciQcI0WRPlGH0Jf7A5qvjE8xdLS5peTLM5x80ju9yl69YkhfYvaklOVOisizxxbfONr3Y_gpSm6VBYp3lpltkq3kHe6gUt3B333X9HN5z"><div class="flex flex-col"><span class="font-label-lg text-label-lg text-white font-bold leading-tight tracking-tight">Vitalis Blood</span><span class="font-label-sm text-label-sm text-surface-variant uppercase tracking-wider">Medical Portal</span></div></div><div class="flex-1 overflow-y-auto px-space-md py-space-sm space-y-space-md"><nav class="space-y-space-xs" data-active-classes="bg-primary text-on-primary font-bold shadow-md rounded-xl"><p class="px-space-sm font-label-sm text-label-sm text-surface-variant uppercase tracking-wider font-semibold mb-space-xs">Tổng quan</p><a class="flex items-center gap-space-sm px-space-md py-2.5 rounded-xl text-inverse-on-surface hover:bg-surface-container-highest hover:text-on-surface transition-all duration-150" data-path="tong-quan-dashboard" href="#"><span class="material-symbols-outlined text-[20px]">dashboard</span><span class="font-label-md text-label-md">Dashboard Điều hành</span></a><a class="flex items-center gap-space-sm px-space-md py-2.5 rounded-xl text-inverse-on-surface hover:bg-surface-container-highest hover:text-on-surface transition-all duration-150" data-path="thong-ke-bao-cao" href="#"><span class="material-symbols-outlined text-[20px]">analytics</span><span class="font-label-md text-label-md">Thống kê &amp; Báo cáo</span></a></nav><nav class="space-y-space-xs" data-active-classes="bg-primary text-on-primary font-bold shadow-md rounded-xl"><p class="px-space-sm font-label-sm text-label-sm text-surface-variant uppercase tracking-wider font-semibold mb-space-xs">Quản lý y tế</p><a class="flex items-center gap-space-sm px-space-md py-2.5 rounded-xl text-inverse-on-surface hover:bg-surface-container-highest hover:text-on-surface transition-all duration-150" data-path="dot-hien-mau" href="#"><span class="material-symbols-outlined text-[20px]">event_available</span><span class="font-label-md text-label-md">Đợt hiến máu (Campaigns)</span></a><a class="flex items-center justify-between px-space-md py-2.5 rounded-xl text-inverse-on-surface hover:bg-surface-container-highest hover:text-on-surface transition-all duration-150" data-path="phieu-dang-ky-duyet" href="#"><div class="flex items-center gap-space-sm"><span class="material-symbols-outlined text-[20px]">assignment_turned_in</span><span class="font-label-md text-label-md">Phiếu đăng ký &amp; Duyệt</span></div><span class="px-2 py-0.5 rounded-full bg-error text-on-error font-label-sm text-label-sm font-bold">14</span></a><a class="flex items-center gap-space-sm px-space-md py-2.5 rounded-xl text-inverse-on-surface hover:bg-surface-container-highest hover:text-on-surface transition-all duration-150" data-path="lich-kham-sang-loc" href="#"><span class="material-symbols-outlined text-[20px]">medical_services</span><span class="font-label-md text-label-md">Lịch khám sàng lọc</span></a><a class="flex items-center gap-space-sm px-space-md py-2.5 rounded-xl text-inverse-on-surface hover:bg-surface-container-highest hover:text-on-surface transition-all duration-150" data-path="ket-qua-hien-mau" href="#"><span class="material-symbols-outlined text-[20px]">biotech</span><span class="font-label-md text-label-md">Kết quả hiến máu</span></a></nav><nav class="space-y-space-xs" data-active-classes="bg-primary text-on-primary font-bold shadow-md rounded-xl"><p class="px-space-sm font-label-sm text-label-sm text-surface-variant uppercase tracking-wider font-semibold mb-space-xs">Đối tác &amp; Dữ liệu</p><a class="flex items-center gap-space-sm px-space-md py-2.5 rounded-xl text-inverse-on-surface hover:bg-surface-container-highest hover:text-on-surface transition-all duration-150" data-path="don-vi-to-chuc" href="#"><span class="material-symbols-outlined text-[20px]">apartment</span><span class="font-label-md text-label-md">Đơn vị tổ chức</span></a><a class="flex items-center gap-space-sm px-space-md py-2.5 rounded-xl text-inverse-on-surface hover:bg-surface-container-highest hover:text-on-surface transition-all duration-150" data-path="nguoi-hien-mau" href="#"><span class="material-symbols-outlined text-[20px]">groups</span><span class="font-label-md text-label-md">Người hiến máu (Donors)</span></a><a class="flex items-center gap-space-sm px-space-md py-2.5 rounded-xl text-inverse-on-surface hover:bg-surface-container-highest hover:text-on-surface transition-all duration-150" data-path="kho-luu-tru-mau" href="#"><span class="material-symbols-outlined text-[20px]">bloodtype</span><span class="font-label-md text-label-md">Kho lưu trữ máu</span></a></nav><nav class="space-y-space-xs" data-active-classes="bg-primary text-on-primary font-bold shadow-md rounded-xl"><p class="px-space-sm font-label-sm text-label-sm text-surface-variant uppercase tracking-wider font-semibold mb-space-xs">Hệ thống</p><a class="flex items-center gap-space-sm px-space-md py-2.5 rounded-xl text-inverse-on-surface hover:bg-surface-container-highest hover:text-on-surface transition-all duration-150" data-path="cai-dat-he-thong" href="#"><span class="material-symbols-outlined text-[20px]">tune</span><span class="font-label-md text-label-md">Cài đặt hệ thống</span></a><a class="flex items-center gap-space-sm px-space-md py-2.5 rounded-xl text-inverse-on-surface hover:bg-surface-container-highest hover:text-on-surface transition-all duration-150" data-path="phan-quyen-nhan-su" href="#"><span class="material-symbols-outlined text-[20px]">shield_person</span><span class="font-label-md text-label-md">Phân quyền nhân sự</span></a></nav></div></div><div class="p-space-md shrink-0 bg-inverse-surface/80"><div class="flex items-center justify-between text-surface-variant font-label-sm text-label-sm mb-space-xs"><span class="flex items-center gap-1"><span class="h-2 w-2 rounded-full bg-emerald-500 inline-block"></span> ASP.NET Core 10</span><span class="px-1.5 py-0.5 rounded bg-surface-container-highest text-inverse-surface font-semibold">v2.4.0</span></div><div class="flex items-center justify-between pt-space-xs"><span class="font-label-sm text-label-sm text-surface-variant">Chế độ trạm y tế</span><button aria-label="Chế độ hiển thị" class="w-8 h-8 rounded-lg flex items-center justify-center text-surface-variant hover:bg-surface-container-highest hover:text-inverse-surface transition-colors" type="button"><span class="material-symbols-outlined text-[18px]">light_mode</span></button></div></div></aside><div class="pl-72 flex flex-col min-h-screen"><header class="fixed top-0 left-72 right-0 h-16 bg-surface-container-lowest/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-40 flex items-center justify-between px-space-lg"><div class="flex items-center gap-space-lg flex-1 max-w-2xl"><div class="relative w-full max-w-md"><span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">search</span><input class="w-full h-10 pl-10 pr-space-md bg-surface-container-low rounded-xl font-body-sm text-body-sm text-on-surface placeholder:text-on-surface-variant/70 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:bg-surface-container-lowest transition-all" placeholder="Tìm mã phiếu, CCCD/VNeID, họ tên người hiến, tên đợt..." type="search"></div><div class="hidden xl:flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-container font-label-sm text-label-sm text-on-surface-variant"><span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span><span>VNeID Live Sync: <strong class="text-on-surface font-semibold">Kết nối an toàn</strong></span></div></div><div class="flex items-center gap-space-md shrink-0"><button aria-label="Thông báo khẩn cấp" class="relative p-2 rounded-xl text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors" type="button"><span class="material-symbols-outlined text-[22px]">notifications</span><span class="absolute top-1.5 right-1.5 flex h-4 min-w-4 px-1 items-center justify-center rounded-full bg-primary font-label-sm text-[10px] font-bold text-on-primary leading-none">14</span></button><div class="h-8 w-px bg-surface-container"></div><div class="flex items-center gap-space-sm pl-space-xs"><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div><div class="hidden md:flex flex-col text-left"><span class="font-label-md text-label-md text-on-surface font-semibold leading-tight">BS. CKI Trần Mai Linh</span><span class="font-label-sm text-label-sm text-on-surface-variant leading-tight">Trưởng kíp • Viện Huyết học TW</span></div><a class="p-2 text-on-surface-variant hover:text-error hover:bg-error-container/40 rounded-xl transition-colors ml-1" data-path="dang-xuat" href="#" title="Đăng xuất"><span class="material-symbols-outlined text-[20px]">logout</span></a></div></div></header><main class="w-full pt-16 flex-1 bg-surface"><div class="flex flex-col w-full">
+<!-- Active Sidebar Script Helper -->
+<script>
+    (function activateBloodBankNav() {
+      const activeLink = document.querySelector('a[data-path="kho-luu-tru-mau"]');
+      if (activeLink) {
+        activeLink.classList.remove('text-inverse-on-surface', 'hover:bg-surface-container-highest', 'hover:text-on-surface');
+        activeLink.classList.add('bg-primary', 'text-on-primary', 'font-bold', 'shadow-md', 'rounded-xl');
+      }
+    })();
+  </script>
+<!-- Top Hero & Breadcrumbs Section -->
+<div class="w-full px-space-lg py-space-md">
+<!-- Breadcrumb & System State Indicator -->
+<div class="flex flex-wrap items-center justify-between gap-space-sm mb-space-sm">
+<div class="flex items-center gap-2 font-label-sm text-label-sm text-on-surface-variant">
+<span>Hệ thống Quản trị Y tế</span>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span>Đối tác &amp; Dữ liệu</span>
+<span class="material-symbols-outlined text-[14px]">chevron_right</span>
+<span class="text-primary font-semibold">Kho lưu trữ máu &amp; Điều phối khẩn cấp</span>
+</div>
+<div class="flex items-center gap-3">
+<div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface-container-high text-on-surface font-label-sm text-label-sm">
+<span class="w-2 h-2 rounded-full bg-primary animate-ping"></span>
+<span>Hệ thống ISBT 128: <strong class="text-primary">Đồng bộ Thời Gian Thực (Active)</strong></span>
+</div>
+<span class="text-on-surface-variant font-label-sm text-label-sm">Cập nhật: <span class="font-mono font-semibold text-on-surface" id="clock-ticker">14:42:19 - 18/11/2025</span></span>
+</div>
+</div>
+<!-- Title & Primary Command Controls -->
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md pb-space-md">
+<div class="space-y-1">
+<h1 class="font-headline-lg text-headline-lg text-on-surface flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-[34px] text-primary" style="font-variation-settings: 'FILL' 1;">bloodtype</span>
+          Quản Lý Kho Lưu Trữ Máu &amp; Điều Phối Túi Máu Khẩn Cấp
+        </h1>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-4xl">
+          Giám sát chuỗi lạnh tiêu chuẩn ISBT 128, kiểm soát tồn trữ theo hạn dùng sinh học của từng chế phẩm máu và điều hành mạng lưới cấp cứu liên viện 24/7 (Code Red Hotline).
+        </p>
+</div>
+<!-- Quick Action Buttons -->
+<div class="flex flex-wrap items-center gap-space-sm shrink-0">
+<button class="inline-flex items-center gap-2 h-11 px-4 rounded-xl bg-surface-container-lowest text-on-surface font-label-md text-label-md shadow-sm hover:bg-surface-container-low transition-all" type="button">
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant">file_download</span>
+          Xuất kiểm kê (PDF/XLSX)
+        </button>
+<button class="inline-flex items-center gap-2 h-11 px-4 rounded-xl bg-surface-container-low text-primary font-label-md text-label-md shadow-sm hover:bg-surface-container transition-all" type="button">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">sensors</span>
+          Nhật ký Cảm biến IoT
+        </button>
+<button class="inline-flex items-center gap-2 h-11 px-5 rounded-xl bg-primary-container text-on-primary font-label-lg text-label-lg shadow-md hover:bg-primary transition-all" type="button">
+<span class="material-symbols-outlined text-[20px] animate-pulse">crisis_alert</span>
+          + Lệnh Điều Phối Khẩn Cấp (Code Red)
+        </button>
+</div>
+</div>
+<!-- 4 Dynamic Metric KPI Cards -->
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-space-md mt-2">
+<!-- KPI 1 -->
+<div class="relative overflow-hidden rounded-xl bg-surface-container-lowest p-space-lg shadow-sm">
+<div class="flex items-start justify-between">
+<div>
+<p class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant font-semibold">Tổng Dung Lượng Tồn Kho</p>
+<h3 class="font-headline-lg text-headline-lg text-on-surface mt-1">2,480 <span class="font-title-md text-title-md font-normal text-on-surface-variant">Đơn Vị</span></h3>
+</div>
+<div class="w-12 h-12 rounded-xl bg-primary-fixed flex items-center justify-center text-primary shrink-0">
+<span class="material-symbols-outlined text-[26px]">inventory_2</span>
+</div>
+</div>
+<div class="mt-4 flex items-center justify-between text-on-surface-variant font-body-sm text-body-sm">
+<span class="inline-flex items-center text-primary font-semibold gap-1">
+<span class="material-symbols-outlined text-[16px]">arrow_upward</span> +120 ĐV nhập hôm nay
+          </span>
+<span class="font-mono text-on-surface font-semibold">Tỷ lệ lấp đầy: 78%</span>
+</div>
+<div class="w-full bg-surface-container-high h-2 rounded-full mt-2 overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 78%;"></div>
+</div>
+</div>
+<!-- KPI 2 -->
+<div class="relative overflow-hidden rounded-xl bg-surface-container-lowest p-space-lg shadow-sm">
+<div class="flex items-start justify-between">
+<div>
+<p class="font-label-sm text-label-sm uppercase tracking-wider text-error font-semibold">Cảnh Báo Hết Hạn</p>
+<h3 class="font-headline-lg text-headline-lg text-error mt-1">14 <span class="font-title-md text-title-md font-normal text-on-surface-variant">Túi Chế Phẩm</span></h3>
+</div>
+<div class="w-12 h-12 rounded-xl bg-error-container flex items-center justify-center text-error shrink-0">
+<span class="material-symbols-outlined text-[26px]" style="font-variation-settings: 'FILL' 1;">warning</span>
+</div>
+</div>
+<div class="mt-4 flex items-center justify-between text-on-surface-variant font-body-sm text-body-sm">
+<span class="text-error font-semibold inline-flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">timer</span> Tiểu cầu &lt; 48h
+          </span>
+<span class="px-2 py-0.5 rounded-full bg-error-container text-on-error-container font-label-sm text-label-sm font-bold">Ưu tiên luân chuyển</span>
+</div>
+<div class="w-full bg-surface-container-high h-2 rounded-full mt-2 overflow-hidden">
+<div class="bg-error h-full rounded-full" style="width: 45%;"></div>
+</div>
+</div>
+<!-- KPI 3 -->
+<div class="relative overflow-hidden rounded-xl bg-surface-container-lowest p-space-lg shadow-sm">
+<div class="flex items-start justify-between">
+<div>
+<p class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant font-semibold">Giám Sát Chuỗi Lạnh IoT</p>
+<h3 class="font-headline-lg text-headline-lg text-on-surface mt-1">2.8°C <span class="text-on-surface-variant font-light text-headline-sm">/ -26.5°C</span></h3>
+</div>
+<div class="w-12 h-12 rounded-xl bg-surface-container flex items-center justify-center text-on-surface shrink-0">
+<span class="material-symbols-outlined text-[26px]">ac_unit</span>
+</div>
+</div>
+<div class="mt-4 flex items-center justify-between font-body-sm text-body-sm">
+<span class="inline-flex items-center gap-1 text-on-surface">
+<span class="w-2 h-2 rounded-full bg-emerald-500"></span> 10 Tủ bảo quản ổn định
+          </span>
+<span class="font-mono text-on-surface-variant text-label-sm">ISO 15189:2022</span>
+</div>
+<div class="w-full bg-surface-container-high h-2 rounded-full mt-2 overflow-hidden">
+<div class="bg-emerald-600 h-full rounded-full" style="width: 100%;"></div>
+</div>
+</div>
+<!-- KPI 4 -->
+<div class="relative overflow-hidden rounded-xl bg-surface-container-lowest p-space-lg shadow-sm">
+<div class="flex items-start justify-between">
+<div>
+<p class="font-label-sm text-label-sm uppercase tracking-wider text-primary font-semibold">Cấp Cứu Cần Điều Phối</p>
+<h3 class="font-headline-lg text-headline-lg text-primary mt-1">03 <span class="font-title-md text-title-md font-normal text-on-surface-variant">Lệnh Khẩn SOS</span></h3>
+</div>
+<div class="w-12 h-12 rounded-xl bg-secondary-fixed flex items-center justify-center text-primary shrink-0 animate-bounce">
+<span class="material-symbols-outlined text-[26px]">e911_emergency</span>
+</div>
+</div>
+<div class="mt-4 flex items-center justify-between text-on-surface font-body-sm text-body-sm">
+<span class="text-primary font-semibold">Việt Đức • Bạch Mai • Nhi TW</span>
+<span class="px-2 py-0.5 rounded-full bg-primary text-on-primary font-label-sm text-label-sm font-bold">Code Red</span>
+</div>
+<div class="w-full bg-surface-container-high h-2 rounded-full mt-2 overflow-hidden">
+<div class="bg-primary h-full rounded-full" style="width: 85%;"></div>
+</div>
+</div>
+</div>
+</div>
+<!-- Main Workstation Layout: 2 Columns (7:5 Split) -->
+<div class="w-full px-space-lg pb-space-xl grid grid-cols-1 xl:grid-cols-12 gap-space-lg">
+<!-- LEFT PANEL (Col 1-7): Matrix & Cold Chain Monitors -->
+<div class="xl:col-span-7 flex flex-col gap-space-lg">
+<!-- SECTION 2: BẢNG MA TRẬN TỒN KHO THEO NHÓM MÁU VÀ CHẾ PHẨM MÁU -->
+<div class="rounded-xl bg-surface-container-lowest p-space-lg shadow-sm flex flex-col">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm mb-space-md">
+<div>
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-primary"></span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Ma Trận Dự Trữ Chế Phẩm &amp; Phân Loại Nhóm Máu</h2>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Phân loại chi tiết hệ ABO / Rh(+/-) gắn định mức dự trữ an toàn quốc gia</p>
+</div>
+<div class="flex items-center gap-2">
+<span class="inline-flex items-center gap-1 font-label-sm text-label-sm px-2.5 py-1 rounded bg-surface-container text-on-surface-variant">
+<span class="w-2 h-2 rounded-full bg-emerald-500"></span> An toàn
+            </span>
+<span class="inline-flex items-center gap-1 font-label-sm text-label-sm px-2.5 py-1 rounded bg-secondary-fixed text-primary font-semibold">
+<span class="w-2 h-2 rounded-full bg-amber-500"></span> Cần tiếp ứng
+            </span>
+<span class="inline-flex items-center gap-1 font-label-sm text-label-sm px-2.5 py-1 rounded bg-error-container text-error font-bold">
+<span class="w-2 h-2 rounded-full bg-error"></span> Báo động đỏ
+            </span>
+</div>
+</div>
+<!-- Inventory Table Grid -->
+<div class="overflow-x-auto">
+<table class="w-full text-left font-body-sm text-body-sm border-collapse">
+<thead>
+<tr class="bg-surface-container-low text-on-surface-variant font-label-md text-label-md">
+<th class="py-3 px-3 rounded-l-xl">Hệ Máu (ABO/Rh)</th>
+<th class="py-3 px-3">
+<div class="flex flex-col">
+<span>Hồng cầu lắng (RBC)</span>
+<span class="font-label-sm text-label-sm font-normal text-on-surface-variant">2-6°C • 42 ngày</span>
+</div>
+</th>
+<th class="py-3 px-3">
+<div class="flex flex-col">
+<span>Huyết tương đông (FFP)</span>
+<span class="font-label-sm text-label-sm font-normal text-on-surface-variant">≤ -25°C • 12 tháng</span>
+</div>
+</th>
+<th class="py-3 px-3">
+<div class="flex flex-col">
+<span>Khối tiểu cầu (PC)</span>
+<span class="font-label-sm text-label-sm font-normal text-on-surface-variant">20-24°C • 5 ngày</span>
+</div>
+</th>
+<th class="py-3 px-3">
+<div class="flex flex-col">
+<span>Tủa lạnh (CRYO)</span>
+<span class="font-label-sm text-label-sm font-normal text-on-surface-variant">≤ -20°C • 12 tháng</span>
+</div>
+</th>
+<th class="py-3 px-3 rounded-r-xl text-right">Tổng &amp; Chỉ số dự trữ</th>
+</tr>
+</thead>
+<tbody class="text-on-surface">
+<!-- ROW 1: O Rh- (CRITICAL EMERGENCY) -->
+<tr class="bg-error-container/30 transition-colors">
+<td class="py-3.5 px-3">
+<div class="flex items-center gap-2">
+<span class="px-2.5 py-1 rounded-lg bg-primary text-on-primary font-headline-sm text-headline-sm font-bold leading-none">O-</span>
+<div>
+<span class="font-label-md text-label-md font-bold text-error flex items-center gap-1">
+                        O Rh âm <span class="material-symbols-outlined text-[16px]">priority_high</span>
+</span>
+<span class="font-label-sm text-label-sm text-error">Nhóm máu hiếm tối cấp</span>
+</div>
+</div>
+</td>
+<td class="py-3.5 px-3">
+<div class="font-mono font-bold text-error">03 ĐV</div>
+<span class="font-label-sm text-label-sm text-error font-semibold">15% định mức</span>
+</td>
+<td class="py-3.5 px-3 font-mono">08 ĐV</td>
+<td class="py-3.5 px-3">
+<span class="font-mono font-bold text-error">01 ĐV</span>
+<div class="font-label-sm text-label-sm text-error">Gần cạn kiệt</div>
+</td>
+<td class="py-3.5 px-3 font-mono">04 ĐV</td>
+<td class="py-3.5 px-3 text-right">
+<span class="font-mono font-bold text-error text-title-md">16 ĐV</span>
+<div class="font-label-sm text-label-sm font-bold text-error">BÁO ĐỘNG ĐỎ</div>
+</td>
+</tr>
+<!-- ROW 2: O Rh+ (DEFICIT) -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-3 px-3">
+<div class="flex items-center gap-2">
+<span class="px-2.5 py-1 rounded-lg bg-surface-container-high text-primary font-headline-sm text-headline-sm font-bold leading-none">O+</span>
+<div>
+<span class="font-label-md text-label-md font-semibold text-on-surface">O Rh dương</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant block">Nhu cầu dùng cao</span>
+</div>
+</div>
+</td>
+<td class="py-3 px-3">
+<div class="font-mono font-semibold text-on-surface">342 ĐV</div>
+<span class="font-label-sm text-label-sm text-secondary font-semibold">45% định mức (Thiếu hụt)</span>
+</td>
+<td class="py-3 px-3 font-mono">410 ĐV</td>
+<td class="py-3 px-3 font-mono">24 ĐV</td>
+<td class="py-3 px-3 font-mono">82 ĐV</td>
+<td class="py-3 px-3 text-right">
+<span class="font-mono font-bold text-on-surface text-title-md">858 ĐV</span>
+<div class="font-label-sm text-label-sm text-secondary font-semibold">Cần tiếp viện</div>
+</td>
+</tr>
+<!-- ROW 3: A Rh+ (SAFE) -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-3 px-3">
+<div class="flex items-center gap-2">
+<span class="px-2.5 py-1 rounded-lg bg-surface-container text-on-surface font-headline-sm text-headline-sm font-bold leading-none">A+</span>
+<div>
+<span class="font-label-md text-label-md font-semibold text-on-surface">A Rh dương</span>
+<span class="font-label-sm text-label-sm text-emerald-700 block">Ổn định</span>
+</div>
+</div>
+</td>
+<td class="py-3 px-3 font-mono">285 ĐV</td>
+<td class="py-3 px-3 font-mono">312 ĐV</td>
+<td class="py-3 px-3 font-mono">19 ĐV</td>
+<td class="py-3 px-3 font-mono">44 ĐV</td>
+<td class="py-3 px-3 text-right">
+<span class="font-mono font-bold text-on-surface text-title-md">660 ĐV</span>
+<div class="font-label-sm text-label-sm text-emerald-700 font-semibold">88% định mức (Đạt)</div>
+</td>
+</tr>
+<!-- ROW 4: B Rh+ (SAFE) -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-3 px-3">
+<div class="flex items-center gap-2">
+<span class="px-2.5 py-1 rounded-lg bg-surface-container text-on-surface font-headline-sm text-headline-sm font-bold leading-none">B+</span>
+<div>
+<span class="font-label-md text-label-md font-semibold text-on-surface">B Rh dương</span>
+<span class="font-label-sm text-label-sm text-emerald-700 block">Dồi dào</span>
+</div>
+</div>
+</td>
+<td class="py-3 px-3 font-mono">298 ĐV</td>
+<td class="py-3 px-3 font-mono">280 ĐV</td>
+<td class="py-3 px-3 font-mono">16 ĐV</td>
+<td class="py-3 px-3 font-mono">51 ĐV</td>
+<td class="py-3 px-3 text-right">
+<span class="font-mono font-bold text-on-surface text-title-md">645 ĐV</span>
+<div class="font-label-sm text-label-sm text-emerald-700 font-semibold">92% định mức (Đạt)</div>
+</td>
+</tr>
+<!-- ROW 5: AB Rh+ & Hiếm Rh- khác -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-3 px-3">
+<div class="flex items-center gap-2">
+<span class="px-2.5 py-1 rounded-lg bg-surface-container text-on-surface font-headline-sm text-headline-sm font-bold leading-none">AB</span>
+<div>
+<span class="font-label-md text-label-md font-semibold text-on-surface">AB (+/-) &amp; Nhóm phụ</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant block">Lưu trữ mục tiêu</span>
+</div>
+</div>
+</td>
+<td class="py-3 px-3 font-mono">124 ĐV</td>
+<td class="py-3 px-3 font-mono">146 ĐV</td>
+<td class="py-3 px-3 font-mono">08 ĐV</td>
+<td class="py-3 px-3 font-mono">23 ĐV</td>
+<td class="py-3 px-3 text-right">
+<span class="font-mono font-bold text-on-surface text-title-md">301 ĐV</span>
+<div class="font-label-sm text-label-sm text-on-surface-variant font-semibold">75% định mức</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Inventory Urgency Banner -->
+<div class="mt-space-md p-space-sm rounded-xl bg-primary/10 flex items-center justify-between gap-space-sm">
+<div class="flex items-center gap-2 text-primary font-body-sm text-body-sm font-medium">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">campaign</span>
+<span>Khuyến nghị tiếp nhận: Đang thiếu hụt nghiêm trọng <strong>O Rh(-)</strong> và <strong>O Rh(+)</strong>. Kích hoạt thông báo mời gọi người hiến máu tình nguyện hệ thống.</span>
+</div>
+<button class="shrink-0 px-3 py-1.5 rounded-lg bg-primary text-on-primary font-label-sm text-label-sm font-semibold hover:bg-primary-container transition-colors" type="button">
+            Gửi SMS Khẩn Cấp
+          </button>
+</div>
+</div>
+<!-- SECTION 3: GIÁM SÁT 4 PHÂN KHU TỦ BẢO QUẢN IOT THỜI GIAN THỰC -->
+<div class="rounded-xl bg-surface-container-lowest p-space-lg shadow-sm flex flex-col">
+<div class="flex items-center justify-between mb-space-md">
+<div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[22px] text-primary">device_thermostat</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Giám Sát Chuỗi Lạnh 4 Phân Khu Tủ Bảo Quản (Cold Chain IoT)</h2>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Truyền dữ liệu không dây Modbus/LoRaWAN • Cảm biến kép sai số ±0.1°C</p>
+</div>
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container text-on-surface font-label-sm text-label-sm">
+<span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> IoT Gateway Online
+          </span>
+</div>
+<!-- 4 Refrigerator Pods Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-space-md">
+<!-- Pod 1: Tủ hồng cầu 01 & 02 -->
+<div class="p-space-md rounded-xl bg-surface-container-low hover:bg-surface-container transition-all">
+<div class="flex items-start justify-between">
+<div>
+<span class="px-2 py-0.5 rounded bg-surface-container text-primary font-label-sm text-label-sm font-bold">Khu Vực A1</span>
+<h4 class="font-title-md text-title-md text-on-surface mt-1">Tủ Lưu Hồng Cầu 01 &amp; 02</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Chế phẩm: Khối hồng cầu lắng (RBC)</p>
+</div>
+<span class="px-2 py-1 rounded-md bg-emerald-100 text-emerald-800 font-label-sm text-label-sm font-bold">Chuẩn: 2 - 6°C</span>
+</div>
+<div class="my-3 flex items-baseline gap-2">
+<span class="font-headline-lg text-headline-lg font-bold text-on-surface font-mono">3.2°C</span>
+<span class="font-body-sm text-body-sm text-emerald-700 font-medium">• Ổn định</span>
+</div>
+<!-- Mini Sparkline SVG Chart (Temperature Stability) -->
+<div class="w-full h-10 flex items-end">
+<svg class="w-full h-8 text-primary overflow-visible" preserveAspectRatio="none" viewBox="0 0 200 30">
+<path d="M 0,16 Q 25,12 50,15 T 100,14 T 150,17 T 200,15" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2.5"></path>
+<circle class="fill-primary animate-ping" cx="200" cy="15" r="3.5"></circle>
+<circle class="fill-primary" cx="200" cy="15" r="3"></circle>
+</svg>
+</div>
+<div class="mt-3 pt-3 flex items-center justify-between text-on-surface-variant font-label-sm text-label-sm">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">water_drop</span> Độ ẩm: 65%</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">lock</span> Khóa vân tay: Đóng</span>
+<span class="font-bold text-on-surface">920 / 1,200 Túi</span>
+</div>
+</div>
+<!-- Pod 2: Tủ âm sâu 03 -->
+<div class="p-space-md rounded-xl bg-surface-container-low hover:bg-surface-container transition-all">
+<div class="flex items-start justify-between">
+<div>
+<span class="px-2 py-0.5 rounded bg-surface-container text-on-surface font-label-sm text-label-sm font-bold">Khu Vực B2</span>
+<h4 class="font-title-md text-title-md text-on-surface mt-1">Tủ Cực Âm Huyết Tương 03</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Chế phẩm: Huyết tương đông lạnh (FFP)</p>
+</div>
+<span class="px-2 py-1 rounded-md bg-emerald-100 text-emerald-800 font-label-sm text-label-sm font-bold">Chuẩn: ≤ -25°C</span>
+</div>
+<div class="my-3 flex items-baseline gap-2">
+<span class="font-headline-lg text-headline-lg font-bold text-on-surface font-mono">-27.8°C</span>
+<span class="font-body-sm text-body-sm text-emerald-700 font-medium">• Tối ưu</span>
+</div>
+<!-- Mini Sparkline SVG Chart -->
+<div class="w-full h-10 flex items-end">
+<svg class="w-full h-8 text-on-surface-variant overflow-visible" preserveAspectRatio="none" viewBox="0 0 200 30">
+<path d="M 0,15 Q 30,18 60,14 T 120,16 T 170,13 T 200,15" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2.5"></path>
+<circle class="fill-on-surface" cx="200" cy="15" r="3"></circle>
+</svg>
+</div>
+<div class="mt-3 pt-3 flex items-center justify-between text-on-surface-variant font-label-sm text-label-sm">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">sensors</span> Ghi nhận: 1 phút/lần</span>
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">battery_charging_full</span> Dự phòng: 99%</span>
+<span class="font-bold text-on-surface">1,156 Túi</span>
+</div>
+</div>
+<!-- Pod 3: Máy lắc & ủ tiểu cầu 04 -->
+<div class="p-space-md rounded-xl bg-surface-container-low hover:bg-surface-container transition-all">
+<div class="flex items-start justify-between">
+<div>
+<span class="px-2 py-0.5 rounded bg-surface-container text-primary font-label-sm text-label-sm font-bold">Khu Vực C1</span>
+<h4 class="font-title-md text-title-md text-on-surface mt-1">Máy Lắc &amp; Ủ Tiểu Cầu 04</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Chế phẩm: Khối tiểu cầu đậm đặc (PC)</p>
+</div>
+<span class="px-2 py-1 rounded-md bg-secondary-fixed text-primary font-label-sm text-label-sm font-bold">Chuẩn: 20 - 24°C</span>
+</div>
+<div class="my-3 flex items-baseline gap-2">
+<span class="font-headline-lg text-headline-lg font-bold text-on-surface font-mono">22.4°C</span>
+<span class="font-body-sm text-body-sm text-emerald-700 font-medium">• Lắc 60 v/phút</span>
+</div>
+<!-- Platelet Agitator Pulse Wave SVG -->
+<div class="w-full h-10 flex items-end">
+<svg class="w-full h-8 text-primary overflow-visible" preserveAspectRatio="none" viewBox="0 0 200 30">
+<path d="M 0,15 L 20,15 L 30,5 L 40,25 L 50,15 L 80,15 L 90,5 L 100,25 L 110,15 L 150,15 L 160,5 L 170,25 L 180,15 L 200,15" fill="none" stroke="currentColor" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+<div class="mt-3 pt-3 flex items-center justify-between text-on-surface-variant font-label-sm text-label-sm">
+<span class="flex items-center gap-1"><span class="material-symbols-outlined text-[16px]">sync</span> Cơ cấu: Con lăn phẳng</span>
+<span class="text-error font-semibold">14 túi sắp hết hạn</span>
+<span class="font-bold text-on-surface">68 / 100 Túi</span>
+</div>
+</div>
+<!-- Pod 4: Tủ cách ly & chờ xử lý 05 -->
+<div class="p-space-md rounded-xl bg-error-container/30 hover:bg-error-container/40 transition-all">
+<div class="flex items-start justify-between">
+<div>
+<span class="px-2 py-0.5 rounded bg-error text-on-error font-label-sm text-label-sm font-bold">Khu Vực Cách Ly Z0</span>
+<h4 class="font-title-md text-title-md text-error mt-1">Tủ Cách Ly &amp; Chờ Tiêu Hủy 05</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Lỗi kiểm tra vi sinh / Vỡ niêm phong túi</p>
+</div>
+<span class="px-2 py-1 rounded-md bg-error text-on-error font-label-sm text-label-sm font-bold">Niêm Phong</span>
+</div>
+<div class="my-3 flex items-baseline gap-2">
+<span class="font-headline-lg text-headline-lg font-bold text-error font-mono">4.0°C</span>
+<span class="font-body-sm text-body-sm text-error font-medium">• Khóa điện tử kép</span>
+</div>
+<div class="w-full bg-error/20 h-2 rounded-full overflow-hidden mt-6 mb-2">
+<div class="bg-error h-full rounded-full" style="width: 25%;"></div>
+</div>
+<div class="mt-3 pt-3 flex items-center justify-between text-on-surface-variant font-label-sm text-label-sm">
+<span class="flex items-center gap-1 text-error"><span class="material-symbols-outlined text-[16px]">verified_user</span> Kiểm dịch Y tế TW</span>
+<span class="font-bold text-error">05 Túi cách ly</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- RIGHT PANEL (Col 8-12): Emergency Dispatch Console (Code Red Dispatcher) -->
+<div class="xl:col-span-5 flex flex-col gap-space-lg">
+<!-- SECTION 4: BẢNG ĐIỀU PHỐI CẤP CỨU LIÊN VIỆN KHẨN CẤP -->
+<div class="rounded-xl bg-surface-container-lowest p-space-lg shadow-sm flex flex-col">
+<div class="flex items-center justify-between pb-space-sm">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[24px] text-primary animate-pulse" style="font-variation-settings: 'FILL' 1;">e911_emergency</span>
+<div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Điều Phối Khẩn Cấp Liên Viện (Code Red)</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Hạ tầng cấp cứu máu khẩn cấp • Giám sát định vị xe lạnh</p>
+</div>
+</div>
+<span class="px-2.5 py-1 rounded-full bg-primary text-on-primary font-label-sm text-label-sm font-bold">3 Ca Cấp Cứu</span>
+</div>
+<div class="space-y-space-md mt-space-sm">
+<!-- EMERGENCY CARD 1: VIET DUC HOSPITAL (CODE RED IN TRANSIT) -->
+<div class="rounded-xl bg-surface-container-low p-space-md relative overflow-hidden transition-all">
+<div class="flex items-start justify-between">
+<div>
+<div class="flex items-center gap-2">
+<span class="px-2 py-0.5 rounded bg-primary text-on-primary font-label-sm text-label-sm font-bold uppercase tracking-wider">Mức Tối Khẩn</span>
+<span class="font-mono text-on-surface-variant font-label-sm text-label-sm">Mã Lệnh: #DISP-2025-901</span>
+</div>
+<h3 class="font-title-md text-title-md text-on-surface mt-1.5 font-bold">Bệnh Viện Hữu Nghị Việt Đức</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Cấp cứu đa chấn thương tai nạn giao thông nghiêm trọng</p>
+</div>
+<span class="flex h-3 w-3 relative">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+<span class="relative inline-flex rounded-full h-3 w-3 bg-primary"></span>
+</span>
+</div>
+<!-- Requirement Details -->
+<div class="mt-3 p-3 rounded-lg bg-surface-container-lowest flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="px-2.5 py-1 rounded-md bg-error text-on-error font-headline-sm text-headline-sm font-bold">O-</span>
+<div>
+<div class="font-label-md text-label-md font-bold text-on-surface">04 Đơn Vị Khối Hồng Cầu O Rh(-)</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant">Yêu cầu bởi: <span class="font-semibold text-on-surface">TS. BS Nguyễn Văn Bình</span></div>
+</div>
+</div>
+<div class="text-right">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Nhiệt độ hòm vận chuyển</span>
+<div class="font-mono font-bold text-primary">3.1°C (Chuẩn)</div>
+</div>
+</div>
+<!-- Live GPS Ambulance Tracker -->
+<div class="mt-3 p-3 rounded-lg bg-primary-fixed/30">
+<div class="flex items-center justify-between text-on-surface font-label-sm text-label-sm mb-1.5">
+<span class="flex items-center gap-1 font-semibold text-primary">
+<span class="material-symbols-outlined text-[18px]">local_shipping</span>
+                  Xe cứu thương chuyên dụng 29A-688.99
+                </span>
+<span class="font-bold text-primary">Dự kiến đến: 8 phút</span>
+</div>
+<!-- Progress Route Bar -->
+<div class="w-full bg-surface-container-highest h-2 rounded-full overflow-hidden">
+<div class="bg-primary h-full rounded-full transition-all duration-500" style="width: 72%;"></div>
+</div>
+<div class="mt-2 flex items-center justify-between text-on-surface-variant font-label-sm text-label-sm">
+<span>Kho Viện Huyết Học TW</span>
+<span class="font-mono text-on-surface font-semibold">Tốc độ: 54 km/h (Còi ưu tiên)</span>
+<span>Cổng Cấp Cứu BV Việt Đức</span>
+</div>
+</div>
+<!-- Actions Bar -->
+<div class="mt-3 flex items-center justify-between pt-2">
+<div class="flex items-center gap-2 font-label-sm text-label-sm text-on-surface-variant">
+<span class="material-symbols-outlined text-[16px] text-emerald-600">verified</span>
+<span>Niêm phong: <strong class="font-mono text-on-surface">SEAL-899120</strong></span>
+</div>
+<div class="flex gap-2">
+<button class="px-3 py-1.5 rounded-lg bg-surface-container-lowest text-on-surface hover:bg-surface-container font-label-sm text-label-sm font-semibold transition-colors" type="button">
+                  Xem Lộ Trình Live
+                </button>
+<button class="px-3 py-1.5 rounded-lg bg-primary text-on-primary hover:bg-primary-container font-label-sm text-label-sm font-semibold transition-colors" type="button">
+                  In Biên Bản Bàn Giao
+                </button>
+</div>
+</div>
+</div>
+<!-- EMERGENCY CARD 2: NHI TRUNG ƯƠNG -->
+<div class="rounded-xl bg-surface-container-low p-space-md relative overflow-hidden transition-all">
+<div class="flex items-start justify-between">
+<div>
+<div class="flex items-center gap-2">
+<span class="px-2 py-0.5 rounded bg-secondary text-on-secondary font-label-sm text-label-sm font-bold uppercase tracking-wider">Khẩn Cấp</span>
+<span class="font-mono text-on-surface-variant font-label-sm text-label-sm">#DISP-2025-902</span>
+</div>
+<h3 class="font-title-md text-title-md text-on-surface mt-1.5 font-bold">Bệnh Viện Nhi Trung Ương</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Phẫu thuật tim bẩm sinh nhi khoa cấp cứu</p>
+</div>
+<span class="px-2.5 py-0.5 rounded-full bg-secondary-fixed text-primary font-label-sm text-label-sm font-bold">Đang Đóng Hòm</span>
+</div>
+<div class="mt-3 p-3 rounded-lg bg-surface-container-lowest flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="px-2.5 py-1 rounded-md bg-surface-container text-on-surface font-headline-sm text-headline-sm font-bold">A+</span>
+<div>
+<div class="font-label-md text-label-md font-bold text-on-surface">02 Đơn Vị Khối Tiểu Cầu A Rh(+)</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant">Hòm nhiệt chuyên dụng: <span class="font-semibold text-on-surface">22.0°C</span></div>
+</div>
+</div>
+<span class="material-symbols-outlined text-[24px] text-on-surface-variant">inventory</span>
+</div>
+<div class="mt-3 flex items-center justify-between pt-1">
+<span class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-primary">barcode_scanner</span>
+                Đang đối soát mã vạch ISBT 128
+              </span>
+<button class="px-3 py-1.5 rounded-lg bg-surface-container text-on-surface hover:bg-surface-container-highest font-label-sm text-label-sm font-semibold transition-colors" type="button">
+                Xác Nhận Xuất Kho
+              </button>
+</div>
+</div>
+<!-- EMERGENCY CARD 3: BACH MAI HOSPITAL -->
+<div class="rounded-xl bg-surface-container-low p-space-md relative overflow-hidden transition-all">
+<div class="flex items-start justify-between">
+<div>
+<div class="flex items-center gap-2">
+<span class="px-2 py-0.5 rounded bg-surface-container text-on-surface font-label-sm text-label-sm font-semibold">Ưu Tiên 2</span>
+<span class="font-mono text-on-surface-variant font-label-sm text-label-sm">#DISP-2025-903</span>
+</div>
+<h3 class="font-title-md text-title-md text-on-surface mt-1.5 font-bold">Bệnh Viện Bạch Mai</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Xuất huyết tiêu hóa nặng - Khoa Hồi sức tích cực (ICU)</p>
+</div>
+<span class="px-2.5 py-0.5 rounded-full bg-surface-container text-on-surface font-label-sm text-label-sm">Chờ Ký Số</span>
+</div>
+<div class="mt-3 p-3 rounded-lg bg-surface-container-lowest flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="px-2.5 py-1 rounded-md bg-surface-container text-on-surface font-headline-sm text-headline-sm font-bold">B+</span>
+<div>
+<div class="font-label-md text-label-md font-bold text-on-surface">06 Đơn Vị Huyết Tương Đông Lạnh B Rh(+)</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant">Thời gian rã đông tự động: <span class="font-semibold text-on-surface">15 phút</span></div>
+</div>
+</div>
+<span class="material-symbols-outlined text-[24px] text-on-surface-variant">draw</span>
+</div>
+<div class="mt-3 flex items-center justify-between pt-1">
+<span class="font-label-sm text-label-sm text-on-surface-variant flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">person_check</span>
+                Phê duyệt: BS. CKI Trần Mai Linh
+              </span>
+<button class="px-3 py-1.5 rounded-lg bg-primary text-on-primary hover:bg-primary-container font-label-sm text-label-sm font-semibold transition-colors" type="button">
+                Ký Số Phê Duyệt Lệnh
+              </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- FULL WIDTH SECTION 5: BẢNG TRA CỨU & KIỂM SOÁT TÚI MÁU THEO TIÊU CHUẨN ISBT 128 -->
+<div class="w-full px-space-lg pb-space-xl">
+<div class="rounded-xl bg-surface-container-lowest p-space-lg shadow-sm flex flex-col">
+<div class="flex flex-col md:flex-row md:items-center justify-between gap-space-md mb-space-md">
+<div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[24px] text-primary">qr_code_scanner</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Danh Mục &amp; Sổ Kiểm Soát Túi Máu Chuẩn ISBT 128</h2>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Mã số định danh hiến máu toàn cầu DIN (Donation Identification Number) • Truy vết chuỗi hành trình</p>
+</div>
+<!-- Quick Filter Pills -->
+<div class="flex flex-wrap items-center gap-2">
+<button class="px-3 py-1.5 rounded-xl bg-primary text-on-primary font-label-sm text-label-sm font-semibold shadow-sm" type="button">
+            Tất cả chế phẩm (2,480)
+          </button>
+<button class="px-3 py-1.5 rounded-xl bg-surface-container-low text-on-surface hover:bg-surface-container font-label-sm text-label-sm transition-colors" type="button">
+            Sắp hết hạn &lt; 7 ngày (14)
+          </button>
+<button class="px-3 py-1.5 rounded-xl bg-surface-container-low text-on-surface hover:bg-surface-container font-label-sm text-label-sm transition-colors" type="button">
+            Đang khóa điều phối (08)
+          </button>
+<button class="px-3 py-1.5 rounded-xl bg-surface-container-low text-primary hover:bg-surface-container font-label-sm text-label-sm font-semibold transition-colors" type="button">
+            Máu hiếm Rh(-) (19)
+          </button>
+</div>
+</div>
+<!-- Search & Attribute Filter Bar -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-space-sm p-space-sm rounded-xl bg-surface-container-low mb-space-md">
+<div class="relative md:col-span-2">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">search</span>
+<input class="w-full h-10 pl-10 pr-3 rounded-lg bg-surface-container-lowest font-body-sm text-body-sm text-on-surface placeholder:text-on-surface-variant/70 focus:outline-none focus:ring-2 focus:ring-primary/20" placeholder="Nhập DIN barcode (=W0123...), CCCD người hiến, tên túi..." type="search">
+</div>
+<div>
+<select class="w-full h-10 px-3 rounded-lg bg-surface-container-lowest font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20">
+<option value="">Tất cả vị trí tủ lưu trữ</option>
+<option value="tu-01">Tủ Lưu Hồng Cầu 01</option>
+<option value="tu-02">Tủ Lưu Hồng Cầu 02</option>
+<option value="tu-03">Tủ Âm Sâu Huyết Tương 03</option>
+<option value="tu-04">Máy Lắc Tiểu Cầu 04</option>
+<option value="tu-05">Tủ Cách Ly 05</option>
+</select>
+</div>
+<div>
+<select class="w-full h-10 px-3 rounded-lg bg-surface-container-lowest font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20">
+<option value="">Trạng thái xuất kho</option>
+<option value="kha-dung">Khả dụng xuất kho (Sẵn sàng)</option>
+<option value="dang-dieu-phoi">Đang điều phối khẩn cấp</option>
+<option value="khoa-bao-luu">Khóa bảo lưu / Đối soát</option>
+</select>
+</div>
+</div>
+<!-- Blood Bags Table -->
+<div class="overflow-x-auto">
+<table class="w-full text-left font-body-sm text-body-sm border-collapse">
+<thead>
+<tr class="bg-surface-container-low text-on-surface-variant font-label-md text-label-md">
+<th class="py-3 px-3 rounded-l-xl">Mã Túi (DIN ISBT)</th>
+<th class="py-3 px-3">Người Hiến Máu</th>
+<th class="py-3 px-3">Nhóm Máu</th>
+<th class="py-3 px-3">Loại Chế Phẩm &amp; Dung Tích</th>
+<th class="py-3 px-3">Vị Trí Lưu Kho</th>
+<th class="py-3 px-3">Ngày Lấy &amp; Hạn Dùng</th>
+<th class="py-3 px-3">Trạng Thái</th>
+<th class="py-3 px-3 rounded-r-xl text-right">Thao Tác</th>
+</tr>
+</thead>
+<tbody class="text-on-surface">
+<!-- ITEM 1 -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-3.5 px-3">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px] text-primary">barcode</span>
+<div>
+<span class="font-mono font-bold text-on-surface">#BAG-2025-08991</span>
+<span class="block font-mono text-label-sm text-on-surface-variant">=W0425250899100</span>
+</div>
+</div>
+</td>
+<td class="py-3.5 px-3">
+<div class="font-semibold text-on-surface">Nguyễn Hoàng Nam</div>
+<div class="text-label-sm text-on-surface-variant font-mono">001094002381 (VNeID)</div>
+</td>
+<td class="py-3.5 px-3">
+<span class="px-2 py-0.5 rounded-md bg-surface-container-high text-primary font-headline-sm text-headline-sm font-bold">O+</span>
+</td>
+<td class="py-3.5 px-3">
+<span class="font-semibold text-on-surface">Khối hồng cầu lắng</span>
+<span class="block text-label-sm text-on-surface-variant font-mono">350 mL • CPDA-1</span>
+</td>
+<td class="py-3.5 px-3">
+<span class="font-mono font-semibold text-on-surface">Tủ 01 - Ngăn B3</span>
+<span class="block text-label-sm text-emerald-700">3.2°C (Chuẩn)</span>
+</td>
+<td class="py-3.5 px-3">
+<div class="text-on-surface font-mono">15/11/2025</div>
+<div class="text-label-sm text-emerald-700 font-mono font-semibold">Hạn: 27/12/2025 (Còn 39 ngày)</div>
+</td>
+<td class="py-3.5 px-3">
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 font-label-sm text-label-sm font-bold">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span> Khả dụng
+                </span>
+</td>
+<td class="py-3.5 px-3 text-right">
+<div class="inline-flex items-center gap-1">
+<button class="p-1.5 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors" title="Chi tiết túi máu" type="button">
+<span class="material-symbols-outlined text-[18px]">info</span>
+</button>
+<button class="p-1.5 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors" title="In nhãn ISBT 128" type="button">
+<span class="material-symbols-outlined text-[18px]">print</span>
+</button>
+<button class="px-2 py-1 rounded-md bg-surface-container text-primary font-label-sm text-label-sm font-bold hover:bg-primary hover:text-on-primary transition-colors" type="button">
+                    Điều Phối
+                  </button>
+</div>
+</td>
+</tr>
+<!-- ITEM 2 -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-3.5 px-3">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px] text-on-surface-variant">barcode</span>
+<div>
+<span class="font-mono font-bold text-on-surface">#BAG-2025-08992</span>
+<span class="block font-mono text-label-sm text-on-surface-variant">=W0425250899200</span>
+</div>
+</div>
+</td>
+<td class="py-3.5 px-3">
+<div class="font-semibold text-on-surface">Lê Thị Mai Hương</div>
+<div class="text-label-sm text-on-surface-variant font-mono">038198007241 (VNeID)</div>
+</td>
+<td class="py-3.5 px-3">
+<span class="px-2 py-0.5 rounded-md bg-surface-container text-on-surface font-headline-sm text-headline-sm font-bold">A+</span>
+</td>
+<td class="py-3.5 px-3">
+<span class="font-semibold text-on-surface">Khối hồng cầu lắng</span>
+<span class="block text-label-sm text-on-surface-variant font-mono">250 mL • SAGM</span>
+</td>
+<td class="py-3.5 px-3">
+<span class="font-mono font-semibold text-on-surface">Tủ 02 - Ngăn A1</span>
+<span class="block text-label-sm text-emerald-700">3.4°C (Chuẩn)</span>
+</td>
+<td class="py-3.5 px-3">
+<div class="text-on-surface font-mono">06/11/2025</div>
+<div class="text-label-sm text-on-surface-variant font-mono">Hạn: 18/12/2025 (Còn 30 ngày)</div>
+</td>
+<td class="py-3.5 px-3">
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 font-label-sm text-label-sm font-bold">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span> Khả dụng
+                </span>
+</td>
+<td class="py-3.5 px-3 text-right">
+<div class="inline-flex items-center gap-1">
+<button class="p-1.5 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors" title="Chi tiết" type="button">
+<span class="material-symbols-outlined text-[18px]">info</span>
+</button>
+<button class="p-1.5 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors" title="In nhãn" type="button">
+<span class="material-symbols-outlined text-[18px]">print</span>
+</button>
+<button class="px-2 py-1 rounded-md bg-surface-container text-primary font-label-sm text-label-sm font-bold hover:bg-primary hover:text-on-primary transition-colors" type="button">
+                    Điều Phối
+                  </button>
+</div>
+</td>
+</tr>
+<!-- ITEM 3: CRITICAL PLATELET EXPIRING -->
+<tr class="bg-error-container/20 transition-colors">
+<td class="py-3.5 px-3">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px] text-error">priority_high</span>
+<div>
+<span class="font-mono font-bold text-error">#BAG-2025-08993</span>
+<span class="block font-mono text-label-sm text-on-surface-variant">=W0425250899300</span>
+</div>
+</div>
+</td>
+<td class="py-3.5 px-3">
+<div class="font-semibold text-on-surface">Phạm Văn Tuấn</div>
+<div class="text-label-sm text-on-surface-variant font-mono">025091004129 (VNeID)</div>
+</td>
+<td class="py-3.5 px-3">
+<span class="px-2 py-0.5 rounded-md bg-error text-on-error font-headline-sm text-headline-sm font-bold">B-</span>
+</td>
+<td class="py-3.5 px-3">
+<span class="font-semibold text-error">Khối tiểu cầu gạn tách</span>
+<span class="block text-label-sm text-error font-mono">450 mL • Máy lắc liên tục</span>
+</td>
+<td class="py-3.5 px-3">
+<span class="font-mono font-semibold text-on-surface">Máy Lắc 04 - Kệ 2</span>
+<span class="block text-label-sm text-on-surface-variant">22.4°C • 60 rpm</span>
+</td>
+<td class="py-3.5 px-3">
+<div class="text-on-surface font-mono">15/11/2025</div>
+<div class="text-label-sm text-error font-mono font-bold">Hạn: 20/11/2025 (CÒN 36 GIỜ!)</div>
+</td>
+<td class="py-3.5 px-3">
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-error-container text-error font-label-sm text-label-sm font-bold">
+<span class="w-1.5 h-1.5 rounded-full bg-error animate-ping"></span> Cảnh báo hạn
+                </span>
+</td>
+<td class="py-3.5 px-3 text-right">
+<div class="inline-flex items-center gap-1">
+<button class="p-1.5 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors" title="Chi tiết" type="button">
+<span class="material-symbols-outlined text-[18px]">info</span>
+</button>
+<button class="px-3 py-1 rounded-md bg-error text-on-error font-label-sm text-label-sm font-bold hover:bg-primary transition-colors" type="button">
+                    Xuất Ngay
+                  </button>
+</div>
+</td>
+</tr>
+<!-- ITEM 4: ASSIGNED TO CODE RED AMBULANCE -->
+<tr class="bg-primary/5 transition-colors">
+<td class="py-3.5 px-3">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px] text-primary">local_shipping</span>
+<div>
+<span class="font-mono font-bold text-primary">#BAG-2025-08980</span>
+<span class="block font-mono text-label-sm text-on-surface-variant">=W0425250898000</span>
+</div>
+</div>
+</td>
+<td class="py-3.5 px-3">
+<div class="font-semibold text-on-surface">Trần Quang Hải</div>
+<div class="text-label-sm text-primary font-mono font-semibold">TNV Ngân hàng máu hiếm</div>
+</td>
+<td class="py-3.5 px-3">
+<span class="px-2 py-0.5 rounded-md bg-primary text-on-primary font-headline-sm text-headline-sm font-bold">O-</span>
+</td>
+<td class="py-3.5 px-3">
+<span class="font-semibold text-on-surface">Khối hồng cầu lắng hiếm</span>
+<span class="block text-label-sm text-on-surface-variant font-mono">350 mL • O Rh(-)</span>
+</td>
+<td class="py-3.5 px-3">
+<span class="font-mono font-semibold text-primary">Hòm Chuyên Dụng 09</span>
+<span class="block text-label-sm text-primary">Xe cấp cứu 29A-688.99</span>
+</td>
+<td class="py-3.5 px-3">
+<div class="text-on-surface font-mono">10/11/2025</div>
+<div class="text-label-sm text-on-surface-variant font-mono">Hạn: 22/12/2025</div>
+</td>
+<td class="py-3.5 px-3">
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary text-on-primary font-label-sm text-label-sm font-bold">
+<span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span> Gán Lệnh Việt Đức
+                </span>
+</td>
+<td class="py-3.5 px-3 text-right">
+<div class="inline-flex items-center gap-1">
+<button class="p-1.5 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors" title="Chi tiết" type="button">
+<span class="material-symbols-outlined text-[18px]">info</span>
+</button>
+<button class="p-1.5 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors" title="In nhãn" type="button">
+<span class="material-symbols-outlined text-[18px]">print</span>
+</button>
+<span class="px-2 py-1 rounded-md bg-surface-container text-on-surface-variant font-label-sm text-label-sm font-bold">
+                    Đã Khóa Lệnh
+                  </span>
+</div>
+</td>
+</tr>
+<!-- ITEM 5 -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-3.5 px-3">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px] text-on-surface-variant">barcode</span>
+<div>
+<span class="font-mono font-bold text-on-surface">#BAG-2025-08975</span>
+<span class="block font-mono text-label-sm text-on-surface-variant">=W0425250897500</span>
+</div>
+</div>
+</td>
+<td class="py-3.5 px-3">
+<div class="font-semibold text-on-surface">Hoàng Thu Trang</div>
+<div class="text-label-sm text-on-surface-variant font-mono">012196009812 (VNeID)</div>
+</td>
+<td class="py-3.5 px-3">
+<span class="px-2 py-0.5 rounded-md bg-surface-container text-on-surface font-headline-sm text-headline-sm font-bold">B+</span>
+</td>
+<td class="py-3.5 px-3">
+<span class="font-semibold text-on-surface">Huyết tương tươi đông lạnh</span>
+<span class="block text-label-sm text-on-surface-variant font-mono">200 mL • FFP</span>
+</td>
+<td class="py-3.5 px-3">
+<span class="font-mono font-semibold text-on-surface">Tủ Âm Sâu 03 - Kệ C</span>
+<span class="block text-label-sm text-emerald-700">-27.8°C (Chuẩn)</span>
+</td>
+<td class="py-3.5 px-3">
+<div class="text-on-surface font-mono">01/08/2025</div>
+<div class="text-label-sm text-emerald-700 font-mono">Hạn: 01/08/2026 (Còn 9 tháng)</div>
+</td>
+<td class="py-3.5 px-3">
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 font-label-sm text-label-sm font-bold">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span> Khả dụng
+                </span>
+</td>
+<td class="py-3.5 px-3 text-right">
+<div class="inline-flex items-center gap-1">
+<button class="p-1.5 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors" title="Chi tiết" type="button">
+<span class="material-symbols-outlined text-[18px]">info</span>
+</button>
+<button class="p-1.5 rounded-lg text-on-surface-variant hover:text-primary hover:bg-surface-container transition-colors" title="In nhãn" type="button">
+<span class="material-symbols-outlined text-[18px]">print</span>
+</button>
+<button class="px-2 py-1 rounded-md bg-surface-container text-primary font-label-sm text-label-sm font-bold hover:bg-primary hover:text-on-primary transition-colors" type="button">
+                    Điều Phối
+                  </button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Pagination Footer -->
+<div class="mt-space-md pt-space-sm flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm text-on-surface-variant font-body-sm text-body-sm">
+<div>
+          Hiển thị <span class="font-semibold text-on-surface">1 - 5</span> trên tổng số <span class="font-semibold text-on-surface">2,480</span> túi máu chế phẩm ISBT 128
+        </div>
+<div class="flex items-center gap-1">
+<button class="w-8 h-8 rounded-lg flex items-center justify-center bg-surface-container text-on-surface hover:bg-surface-container-highest transition-colors" type="button">
+<span class="material-symbols-outlined text-[16px]">chevron_left</span>
+</button>
+<button class="w-8 h-8 rounded-lg flex items-center justify-center bg-primary text-on-primary font-bold" type="button">1</button>
+<button class="w-8 h-8 rounded-lg flex items-center justify-center bg-surface-container-low text-on-surface hover:bg-surface-container transition-colors" type="button">2</button>
+<button class="w-8 h-8 rounded-lg flex items-center justify-center bg-surface-container-low text-on-surface hover:bg-surface-container transition-colors" type="button">3</button>
+<span class="px-1 text-on-surface-variant">...</span>
+<button class="w-8 h-8 rounded-lg flex items-center justify-center bg-surface-container-low text-on-surface hover:bg-surface-container transition-colors" type="button">496</button>
+<button class="w-8 h-8 rounded-lg flex items-center justify-center bg-surface-container text-on-surface hover:bg-surface-container-highest transition-colors" type="button">
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Real-time Clock Micro-Script -->
+<script>
+    (function initRealtimeClock() {
+      const clockEl = document.getElementById('clock-ticker');
+      if (!clockEl) return;
+      setInterval(() => {
+        const now = new Date();
+        const timeStr = now.toTimeString().split(' ')[0];
+        const dateStr = String(now.getDate()).padStart(2, '0') + '/' + String(now.getMonth() + 1).padStart(2, '0') + '/' + now.getFullYear();
+        clockEl.textContent = `${timeStr} - ${dateStr}`;
+      }, 1000);
+    })();
+  </script>
+</div></main></div></body></html>

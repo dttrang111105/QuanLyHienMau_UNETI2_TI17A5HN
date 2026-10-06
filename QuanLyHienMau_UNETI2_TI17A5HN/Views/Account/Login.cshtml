@@ -1,0 +1,487 @@
+@{
+    ViewData["Title"] = "Đăng Nhập & Đăng Ký Cổng Hiến Máu";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="flex-1 flex items-center justify-center py-8 lg:py-12 px-4 sm:px-6 lg:px-8">
+    <div class="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+        <!-- Left Column: Inspiring Blood Donation Banner & Community Impact -->
+        <section class="lg:col-span-5 flex flex-col gap-6 lg:pr-4">
+            <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-primary-fixed/60 border border-primary-fixed-dim w-fit">
+                <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+                <span class="font-label-sm text-primary font-bold tracking-wide uppercase">Chiến Dịch Giọt Hồng Yêu Thương 2026</span>
+            </div>
+            
+            <div class="space-y-3">
+                <h1 class="font-headline-lg lg:text-[40px] lg:leading-[48px] text-on-surface font-extrabold tracking-tight">
+                    Mỗi giọt máu cho đi - <span class="text-primary-container bg-gradient-to-r from-primary-container to-primary bg-clip-text text-transparent">Một cuộc đời</span> ở lại.
+                </h1>
+                <p class="font-body-md text-on-surface-variant leading-relaxed">
+                    Chỉ cần 15 phút sẻ chia giọt máu quý giá, bạn đã tiếp thêm hy vọng sống cho những bệnh nhân cần truyền máu cấp cứu. Hãy tham gia mạng lưới hiến máu nhân đạo lớn nhất toàn quốc.
+                </p>
+            </div>
+
+            <!-- Community Impact Numbers -->
+            <div class="grid grid-cols-3 gap-3 p-4 rounded-2xl bg-surface-container-low border border-surface-container-high/60 shadow-sm">
+                <div class="flex flex-col">
+                    <span class="font-headline-md font-extrabold text-primary tracking-tight">50.000+</span>
+                    <span class="font-body-sm text-[12px] text-on-surface-variant font-medium mt-0.5">Người hiến máu thân thiết</span>
+                </div>
+                <div class="flex flex-col border-l border-surface-container-high pl-3">
+                    <span class="font-headline-md font-extrabold text-primary tracking-tight">120+</span>
+                    <span class="font-body-sm text-[12px] text-on-surface-variant font-medium mt-0.5">Bệnh viện &amp; Viện huyết học</span>
+                </div>
+                <div class="flex flex-col border-l border-surface-container-high pl-3">
+                    <span class="font-headline-md font-extrabold text-primary tracking-tight">24/7</span>
+                    <span class="font-body-sm text-[12px] text-on-surface-variant font-medium mt-0.5">Điều phối cấp cứu khẩn</span>
+                </div>
+            </div>
+
+            <!-- Testimonial card -->
+            <div class="p-4 rounded-2xl bg-surface-container-lowest border border-surface-container shadow-sm flex items-start gap-3.5">
+                <div class="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center text-primary shrink-0 mt-0.5">
+                    <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">favorite</span>
+                </div>
+                <div class="space-y-1">
+                    <p class="font-body-sm text-on-surface italic leading-normal">
+                        "Nhờ ứng dụng Vitalis, tôi nhận thông báo kịp thời khi bệnh viện nhi cần nhóm máu O hiếm và đã kịp cứu sống một em nhỏ."
+                    </p>
+                    <div class="flex items-center gap-2">
+                        <span class="font-label-sm text-on-surface font-bold">Nguyễn Thảo My</span>
+                        <span class="text-xs text-secondary">• Người hiến máu 12 lần</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ministry of Health Safe guarantee -->
+            <div class="flex items-center gap-2 text-secondary text-xs">
+                <span class="material-symbols-outlined text-primary text-[18px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+                <span>Hệ thống bảo mật dữ liệu y tế cá nhân theo Thông tư 26/2013/TT-BYT</span>
+            </div>
+        </section>
+
+        <!-- Right Column: Simple Modern Auth Card (Split into Login / Register) -->
+        <section class="lg:col-span-7">
+            <div class="bg-surface-container-lowest rounded-3xl p-6 sm:p-8 shadow-xl border border-surface-container relative">
+                <!-- Segmented Tabs for Switch between Login & Register -->
+                <div class="flex p-1.5 bg-surface-container rounded-2xl mb-6">
+                    <button class="flex-1 py-2.5 rounded-xl font-label-md text-label-md transition-all font-bold flex items-center justify-center gap-2 bg-surface-container-lowest text-primary shadow-sm" id="btn-tab-login" onclick="switchAuthTab('login')" type="button">
+                        <span class="material-symbols-outlined text-[18px]">login</span>
+                        <span>Đăng Nhập</span>
+                    </button>
+                    <button class="flex-1 py-2.5 rounded-xl font-label-md text-label-md transition-all font-semibold flex items-center justify-center gap-2 text-secondary hover:text-on-surface" id="btn-tab-register" onclick="switchAuthTab('register')" type="button">
+                        <span class="material-symbols-outlined text-[18px]">person_add</span>
+                        <span>Đăng Ký Mới</span>
+                    </button>
+                </div>
+
+                <!-- ============================================== -->
+                <!-- TAB CONTENT 1: LOGIN (ĐĂNG NHẬP) -->
+                <!-- ============================================== -->
+                <div class="space-y-5" id="content-login">
+                    <!-- Quick 1-tap Social Login Section -->
+                    <div class="space-y-3">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <!-- Google Button -->
+                            <button onclick="alert('Tính năng liên kết Google OAuth 2.0 (Giai đoạn giao diện)')" class="flex items-center justify-center gap-3 px-4 py-3 rounded-xl border border-outline-variant/80 hover:border-outline bg-surface-container-lowest hover:bg-surface-container-low transition-all font-label-md text-on-surface shadow-sm group cursor-pointer" type="button">
+                                <svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24">
+                                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"></path>
+                                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"></path>
+                                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"></path>
+                                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335"></path>
+                                </svg>
+                                <span class="font-bold text-[14px]">Tiếp tục với Google</span>
+                            </button>
+
+                            <!-- VNeID Button -->
+                            <a asp-controller="Account" asp-action="VNeIDAuth" class="flex items-center justify-center gap-2.5 px-4 py-3 rounded-xl border border-red-200 bg-red-50/50 hover:bg-red-50 text-red-900 transition-all font-label-md shadow-sm group cursor-pointer">
+                                <div class="w-5 h-5 rounded-full bg-primary flex items-center justify-center text-yellow-300 font-extrabold text-[9px] shadow-xs">
+                                    <span class="material-symbols-outlined text-[13px]">shield</span>
+                                </div>
+                                <span class="font-bold text-[14px] text-primary">Đăng nhập qua VNeID</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Divider -->
+                    <div class="relative flex items-center justify-center my-1">
+                        <div class="w-full border-t border-surface-container-high"></div>
+                        <span class="bg-surface-container-lowest px-3 text-secondary text-xs uppercase font-semibold tracking-wider">hoặc đăng nhập bằng số điện thoại / email</span>
+                    </div>
+
+                    <!-- Login Form Switcher: Phone OTP or Email/Password -->
+                    <div class="flex items-center justify-center gap-4 text-xs font-bold">
+                        <button class="text-primary border-b-2 border-primary pb-1 transition-colors cursor-pointer" id="btn-method-phone" onclick="setLoginMethod('phone')" type="button">
+                            Đăng nhập Số Điện Thoại &amp; OTP
+                        </button>
+                        <span class="text-outline-variant">|</span>
+                        <button class="text-secondary hover:text-on-surface pb-1 transition-colors cursor-pointer" id="btn-method-email" onclick="setLoginMethod('email')" type="button">
+                            Tài khoản Email &amp; Mật khẩu
+                        </button>
+                    </div>
+
+                    <!-- Phone + OTP Mode -->
+                    <form class="space-y-4" id="form-login-phone" onsubmit="event.preventDefault(); handleLoginSubmit();">
+                        <div>
+                            <label class="block font-label-md text-on-surface mb-1.5 font-semibold" for="login-phone-number">
+                                Số Điện Thoại Đã Đăng Ký
+                            </label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-secondary">
+                                    <span class="material-symbols-outlined text-[20px]">phone_iphone</span>
+                                </div>
+                                <input class="w-full h-11 pl-11 pr-28 rounded-xl border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20 font-body-md text-on-surface transition-all bg-surface-container-lowest" id="login-phone-number" placeholder="Ví dụ: 0912 345 678" type="tel" />
+                                <button class="absolute right-1.5 top-1.5 bottom-1.5 px-3 rounded-lg bg-surface-container text-primary hover:bg-primary-fixed font-label-sm text-xs font-bold transition-colors cursor-pointer" onclick="requestOtp(this)" type="button">
+                                    Gửi mã OTP
+                                </button>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="flex items-center justify-between mb-1.5">
+                                <label class="font-label-md text-on-surface font-semibold" for="login-otp">
+                                    Mã Xác Thực OTP (SMS)
+                                </label>
+                                <span class="text-xs text-secondary font-medium">Thời hạn: 60s</span>
+                            </div>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-secondary">
+                                    <span class="material-symbols-outlined text-[20px]">sms</span>
+                                </div>
+                                <input class="w-full h-11 pl-11 pr-4 rounded-xl border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20 font-mono tracking-widest text-on-surface text-center font-bold text-base transition-all bg-surface-container-lowest" id="login-otp" maxlength="6" placeholder="Nhập 6 số gửi về điện thoại" type="text" />
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between pt-1">
+                            <label class="flex items-center gap-2 cursor-pointer select-none">
+                                <input checked class="w-4 h-4 rounded text-primary focus:ring-primary/20 border-outline-variant accent-primary" type="checkbox" />
+                                <span class="font-body-sm text-xs text-on-surface">Ghi nhớ đăng nhập trên thiết bị này</span>
+                            </label>
+                            <a class="text-xs font-bold text-primary hover:underline" href="javascript:void(0)" onclick="alert('Vui lòng liên hệ tổng đài 1900 6868 để nhận hỗ trợ mở khóa mã OTP.')">Cần hỗ trợ OTP?</a>
+                        </div>
+
+                        <button class="w-full py-3.5 px-6 rounded-xl bg-primary-container hover:bg-primary text-on-primary font-label-lg font-bold flex items-center justify-center gap-2 shadow-md shadow-primary/25 transition-all active:scale-[0.99] mt-2 cursor-pointer" id="btn-submit-login" type="submit">
+                            <span>Đăng Nhập Vào Hệ Thống</span>
+                            <span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+                        </button>
+                    </form>
+
+                    <!-- Email + Password Mode (Hidden by default) -->
+                    <form class="hidden space-y-4" id="form-login-email" onsubmit="event.preventDefault(); handleLoginSubmit();">
+                        <div>
+                            <label class="block font-label-md text-on-surface mb-1.5 font-semibold" for="login-email-addr">
+                                Địa Chỉ Email
+                            </label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-secondary">
+                                    <span class="material-symbols-outlined text-[20px]">mail</span>
+                                </div>
+                                <input class="w-full h-11 pl-11 pr-4 rounded-xl border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20 font-body-md text-on-surface transition-all bg-surface-container-lowest" id="login-email-addr" placeholder="tenbancua@gmail.com" type="email" />
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="flex items-center justify-between mb-1.5">
+                                <label class="font-label-md text-on-surface font-semibold" for="login-password">
+                                    Mật Khẩu
+                                </label>
+                                <a class="text-xs font-bold text-primary hover:underline" href="javascript:void(0)" onclick="alert('Đã gửi liên kết khôi phục mật khẩu về email đăng ký của bạn.')">Quên mật khẩu?</a>
+                            </div>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-secondary">
+                                    <span class="material-symbols-outlined text-[20px]">lock</span>
+                                </div>
+                                <input class="w-full h-11 pl-11 pr-11 rounded-xl border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20 font-body-md text-on-surface transition-all bg-surface-container-lowest" id="login-password" placeholder="Nhập mật khẩu của bạn" type="password" />
+                                <button class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-secondary hover:text-on-surface cursor-pointer" onclick="togglePasswordVisibility('login-password', 'eye-login-pwd')" type="button">
+                                    <span class="material-symbols-outlined text-[18px]" id="eye-login-pwd">visibility</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between pt-1">
+                            <label class="flex items-center gap-2 cursor-pointer select-none">
+                                <input checked class="w-4 h-4 rounded text-primary focus:ring-primary/20 border-outline-variant accent-primary" type="checkbox" />
+                                <span class="font-body-sm text-xs text-on-surface">Ghi nhớ đăng nhập</span>
+                            </label>
+                        </div>
+
+                        <button class="w-full py-3.5 px-6 rounded-xl bg-primary-container hover:bg-primary text-on-primary font-label-lg font-bold flex items-center justify-center gap-2 shadow-md shadow-primary/25 transition-all active:scale-[0.99] mt-2 cursor-pointer" type="submit">
+                            <span>Đăng Nhập Tài Khoản</span>
+                            <span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+                        </button>
+                    </form>
+
+                    <div class="text-center pt-2">
+                        <p class="font-body-sm text-xs text-secondary">
+                            Chưa có tài khoản tham gia hiến máu?
+                            <button class="font-bold text-primary hover:underline ml-1 cursor-pointer" onclick="switchAuthTab('register')" type="button">Đăng ký ngay miễn phí</button>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- ============================================== -->
+                <!-- TAB CONTENT 2: REGISTER (ĐĂNG KÝ MỚI) -->
+                <!-- ============================================== -->
+                <div class="hidden space-y-4" id="content-register">
+                    <!-- Quick One-click Registration via Google or VNeID -->
+                    <div class="grid grid-cols-2 gap-3">
+                        <button onclick="alert('Đăng ký bằng Google OAuth')" class="flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border border-outline-variant/80 hover:border-outline bg-surface-container-lowest hover:bg-surface-container-low transition-all font-label-sm text-on-surface shadow-sm cursor-pointer" type="button">
+                            <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24">
+                                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"></path>
+                                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"></path>
+                                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"></path>
+                                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335"></path>
+                            </svg>
+                            <span class="font-bold text-xs">Đăng ký Google</span>
+                        </button>
+                        <a asp-controller="Account" asp-action="VNeIDAuth" class="flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl border border-red-200 bg-red-50/50 hover:bg-red-50 text-primary transition-all font-label-sm shadow-sm cursor-pointer">
+                            <div class="w-4 h-4 rounded-full bg-primary flex items-center justify-center text-yellow-300 font-extrabold text-[8px]">
+                                <span class="material-symbols-outlined text-[10px]">shield</span>
+                            </div>
+                            <span class="font-bold text-xs">Đăng ký VNeID</span>
+                        </a>
+                    </div>
+
+                    <div class="relative flex items-center justify-center my-0.5">
+                        <div class="w-full border-t border-surface-container-high"></div>
+                        <span class="bg-surface-container-lowest px-3 text-secondary text-[11px] uppercase font-semibold">hoặc điền thông tin bên dưới</span>
+                    </div>
+
+                    <form class="space-y-3.5" onsubmit="event.preventDefault(); handleRegisterSubmit();">
+                        <!-- Full Name -->
+                        <div>
+                            <label class="block font-label-md text-on-surface mb-1 text-xs font-semibold" for="reg-fullname">
+                                Họ và Tên Đầy Đủ <span class="text-primary">*</span>
+                            </label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-secondary">
+                                    <span class="material-symbols-outlined text-[18px]">badge</span>
+                                </div>
+                                <input class="w-full h-10 pl-10 pr-3 rounded-xl border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20 font-body-md text-on-surface text-sm transition-all bg-surface-container-lowest" id="reg-fullname" placeholder="Ví dụ: Nguyễn Văn An" required type="text" />
+                            </div>
+                        </div>
+
+                        <!-- Phone & Blood Group in 2 cols -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                                <label class="block font-label-md text-on-surface mb-1 text-xs font-semibold" for="reg-phone">
+                                    Số Điện Thoại / Email <span class="text-primary">*</span>
+                                </label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-secondary">
+                                        <span class="material-symbols-outlined text-[18px]">phone</span>
+                                    </div>
+                                    <input class="w-full h-10 pl-10 pr-3 rounded-xl border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20 font-body-md text-on-surface text-sm transition-all bg-surface-container-lowest" id="reg-phone" placeholder="09xx xxx xxx hoặc email" required type="text" />
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block font-label-md text-on-surface mb-1 text-xs font-semibold" for="reg-blood-type">
+                                    Nhóm Máu (Nếu Biết)
+                                </label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-primary">
+                                        <span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">bloodtype</span>
+                                    </div>
+                                    <select class="w-full h-10 pl-10 pr-8 rounded-xl border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20 font-body-md text-on-surface text-sm transition-all bg-surface-container-lowest appearance-none cursor-pointer" id="reg-blood-type">
+                                        <option value="unknown">Chưa rõ (Sẽ được xét nghiệm)</option>
+                                        <option value="O+">Nhóm O Rh(+)</option>
+                                        <option value="A+">Nhóm A Rh(+)</option>
+                                        <option value="B+">Nhóm B Rh(+)</option>
+                                        <option value="AB+">Nhóm AB Rh(+)</option>
+                                        <option value="O-">Nhóm O Rh(-) [Hiếm]</option>
+                                        <option value="A-">Nhóm A Rh(-) [Hiếm]</option>
+                                        <option value="B-">Nhóm B Rh(-) [Hiếm]</option>
+                                        <option value="AB-">Nhóm AB Rh(-) [Hiếm]</option>
+                                    </select>
+                                    <div class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none text-secondary">
+                                        <span class="material-symbols-outlined text-[18px]">arrow_drop_down</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Password & Confirm Password in 2 cols -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div>
+                                <label class="block font-label-md text-on-surface mb-1 text-xs font-semibold" for="reg-password">
+                                    Mật Khẩu Mới <span class="text-primary">*</span>
+                                </label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-secondary">
+                                        <span class="material-symbols-outlined text-[18px]">lock</span>
+                                    </div>
+                                    <input class="w-full h-10 pl-10 pr-9 rounded-xl border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20 font-body-md text-on-surface text-sm transition-all bg-surface-container-lowest" id="reg-password" minlength="6" placeholder="Tối thiểu 6 ký tự" required type="password" />
+                                    <button class="absolute inset-y-0 right-0 pr-2.5 flex items-center text-secondary hover:text-on-surface cursor-pointer" onclick="togglePasswordVisibility('reg-password', 'eye-reg-pwd')" type="button">
+                                        <span class="material-symbols-outlined text-[16px]" id="eye-reg-pwd">visibility</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block font-label-md text-on-surface mb-1 text-xs font-semibold" for="reg-confirm-password">
+                                    Xác Nhận Mật Khẩu <span class="text-primary">*</span>
+                                </label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-secondary">
+                                        <span class="material-symbols-outlined text-[18px]">lock_reset</span>
+                                    </div>
+                                    <input class="w-full h-10 pl-10 pr-9 rounded-xl border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20 font-body-md text-on-surface text-sm transition-all bg-surface-container-lowest" id="reg-confirm-password" minlength="6" placeholder="Nhập lại mật khẩu" required type="password" />
+                                    <button class="absolute inset-y-0 right-0 pr-2.5 flex items-center text-secondary hover:text-on-surface cursor-pointer" onclick="togglePasswordVisibility('reg-confirm-password', 'eye-reg-cpwd')" type="button">
+                                        <span class="material-symbols-outlined text-[16px]" id="eye-reg-cpwd">visibility</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Terms Agreement Checkbox -->
+                        <label class="flex items-start gap-2.5 cursor-pointer select-none pt-1">
+                            <input class="w-4 h-4 rounded mt-0.5 text-primary focus:ring-primary/20 border-outline-variant accent-primary" required type="checkbox" />
+                            <span class="font-body-sm text-[12px] text-on-surface-variant leading-tight">
+                                Tôi đồng ý với <a class="text-primary font-bold hover:underline" href="javascript:void(0)">Điều khoản phục vụ</a> &amp; <a class="text-primary font-bold hover:underline" href="javascript:void(0)">Chính sách quyền riêng tư y tế</a> của Vitalis Blood Community.
+                            </span>
+                        </label>
+
+                        <!-- Action Submit Button -->
+                        <button class="w-full py-3.5 px-6 rounded-xl bg-primary-container hover:bg-primary text-on-primary font-label-lg font-bold flex items-center justify-center gap-2 shadow-md shadow-primary/25 transition-all active:scale-[0.99] mt-2 cursor-pointer" id="btn-submit-register" type="submit">
+                            <span>Đăng Ký Tài Khoản Tình Nguyện Viên</span>
+                            <span class="material-symbols-outlined text-[20px]">how_to_reg</span>
+                        </button>
+                    </form>
+
+                    <div class="text-center pt-2">
+                        <p class="font-body-sm text-xs text-secondary">
+                            Đã có tài khoản trên hệ thống?
+                            <button class="font-bold text-primary hover:underline ml-1 cursor-pointer" onclick="switchAuthTab('login')" type="button">Đăng nhập tại đây</button>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    function switchAuthTab(tab) {
+        const btnLogin = document.getElementById('btn-tab-login');
+        const btnRegister = document.getElementById('btn-tab-register');
+        const contentLogin = document.getElementById('content-login');
+        const contentRegister = document.getElementById('content-register');
+
+        if (tab === 'login') {
+            btnLogin.className = 'flex-1 py-2.5 rounded-xl font-label-md text-label-md transition-all font-bold flex items-center justify-center gap-2 bg-surface-container-lowest text-primary shadow-sm';
+            btnRegister.className = 'flex-1 py-2.5 rounded-xl font-label-md text-label-md transition-all font-semibold flex items-center justify-center gap-2 text-secondary hover:text-on-surface';
+            contentLogin.classList.remove('hidden');
+            contentRegister.classList.add('hidden');
+        } else {
+            btnRegister.className = 'flex-1 py-2.5 rounded-xl font-label-md text-label-md transition-all font-bold flex items-center justify-center gap-2 bg-surface-container-lowest text-primary shadow-sm';
+            btnLogin.className = 'flex-1 py-2.5 rounded-xl font-label-md text-label-md transition-all font-semibold flex items-center justify-center gap-2 text-secondary hover:text-on-surface';
+            contentRegister.classList.remove('hidden');
+            contentLogin.classList.add('hidden');
+        }
+    }
+
+    function setLoginMethod(method) {
+        const btnPhone = document.getElementById('btn-method-phone');
+        const btnEmail = document.getElementById('btn-method-email');
+        const formPhone = document.getElementById('form-login-phone');
+        const formEmail = document.getElementById('form-login-email');
+
+        if (method === 'phone') {
+            btnPhone.className = 'text-primary border-b-2 border-primary pb-1 transition-colors cursor-pointer';
+            btnEmail.className = 'text-secondary hover:text-on-surface pb-1 transition-colors cursor-pointer';
+            formPhone.classList.remove('hidden');
+            formEmail.classList.add('hidden');
+        } else {
+            btnEmail.className = 'text-primary border-b-2 border-primary pb-1 transition-colors cursor-pointer';
+            btnPhone.className = 'text-secondary hover:text-on-surface pb-1 transition-colors cursor-pointer';
+            formEmail.classList.remove('hidden');
+            formPhone.classList.add('hidden');
+        }
+    }
+
+    function togglePasswordVisibility(inputId, eyeIconId) {
+        const input = document.getElementById(inputId);
+        const icon = document.getElementById(eyeIconId);
+        if (input && icon) {
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.textContent = 'visibility_off';
+            } else {
+                input.type = 'password';
+                icon.textContent = 'visibility';
+            }
+        }
+    }
+
+    function requestOtp(btn) {
+        const phone = document.getElementById('login-phone-number').value.trim();
+        if (!phone) {
+            alert('Vui lòng nhập số điện thoại trước khi gửi mã OTP.');
+            document.getElementById('login-phone-number').focus();
+            return;
+        }
+        btn.disabled = true;
+        let countdown = 60;
+        btn.textContent = `Gửi lại (${countdown}s)`;
+        const timer = setInterval(() => {
+            countdown--;
+            if (countdown <= 0) {
+                clearInterval(timer);
+                btn.disabled = false;
+                btn.textContent = 'Gửi mã OTP';
+            } else {
+                btn.textContent = `Gửi lại (${countdown}s)`;
+            }
+        }, 1000);
+        alert(`Mã OTP mẫu 6 số [868999] đã gửi thành công tới số: ${phone}`);
+        document.getElementById('login-otp').value = '868999';
+    }
+
+    function handleLoginSubmit() {
+        const submitBtn = document.getElementById('btn-submit-login');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = `
+            <span class="w-5 h-5 border-2 border-on-primary border-t-transparent rounded-full animate-spin"></span>
+            <span>Đang xác thực thông tin...</span>
+        `;
+        setTimeout(() => {
+            submitBtn.innerHTML = `
+                <span class="material-symbols-outlined text-[20px]">check_circle</span>
+                <span>Đăng Nhập Thành Công! Chuyển tiếp tới Cổng cá nhân...</span>
+            `;
+            submitBtn.classList.remove('bg-primary-container');
+            submitBtn.classList.add('bg-emerald-600');
+            setTimeout(() => {
+                window.location.href = '/NguoiHienMau/HoSoCaNhan';
+            }, 800);
+        }, 800);
+    }
+
+    function handleRegisterSubmit() {
+        const pwd = document.getElementById('reg-password').value;
+        const cpwd = document.getElementById('reg-confirm-password').value;
+        if (pwd !== cpwd) {
+            alert('Mật khẩu xác nhận không khớp! Vui lòng kiểm tra lại.');
+            return;
+        }
+
+        const submitBtn = document.getElementById('btn-submit-register');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = `
+            <span class="w-5 h-5 border-2 border-on-primary border-t-transparent rounded-full animate-spin"></span>
+            <span>Đang tạo tài khoản tình nguyện viên...</span>
+        `;
+        setTimeout(() => {
+            submitBtn.innerHTML = `
+                <span class="material-symbols-outlined text-[20px]">how_to_reg</span>
+                <span>Đăng Ký Thành Công! Chào mừng bạn!</span>
+            `;
+            submitBtn.classList.remove('bg-primary-container');
+            submitBtn.classList.add('bg-emerald-600');
+            setTimeout(() => {
+                window.location.href = '/NguoiHienMau/HoSoCaNhan';
+            }, 800);
+        }, 800);
+    }
+</script>
+}

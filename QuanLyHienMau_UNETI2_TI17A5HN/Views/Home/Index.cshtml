@@ -1,0 +1,680 @@
+@{
+    ViewData["Title"] = "Cổng Thông Tin Hiến Máu Vì Cộng Đồng";
+}
+
+<div class="flex flex-col w-full">
+    <!-- SECTION 1: HERO -->
+    <section class="relative w-full overflow-hidden bg-gradient-to-b from-surface via-surface-container-lowest to-surface pt-8 pb-16 lg:pb-24">
+        <div class="absolute -top-32 -left-20 w-96 h-96 rounded-full bg-primary-fixed/30 blur-3xl pointer-events-none"></div>
+        <div class="absolute top-1/2 -right-32 w-[32rem] h-[32rem] rounded-full bg-secondary-fixed/40 blur-3xl pointer-events-none"></div>
+        <div class="max-w-[1240px] mx-auto px-6 relative z-10">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-8 items-center">
+                <!-- Hero Left Column -->
+                <div class="lg:col-span-6 flex flex-col items-start space-y-6">
+                    <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-secondary-container/70 border-0">
+                        <span class="material-symbols-outlined text-primary text-[18px]" style="font-variation-settings: 'FILL' 1;">favorite</span>
+                        <span class="font-label-md text-label-md text-primary font-bold">Lan tỏa sự sống – Kết nối yêu thương</span>
+                    </div>
+                    <h1 class="font-display-hero text-display-hero text-inverse-surface tracking-tight leading-tight">
+                        Một giọt máu – <br class="hidden sm:inline">
+                        <span class="text-primary-container relative">
+                            Một hy vọng sống
+                            <svg class="absolute -bottom-2 left-0 w-full h-3 text-primary-fixed-dim" fill="none" preserveAspectRatio="none" viewBox="0 0 200 8">
+                                <path d="M0 7C50 1 150 1 200 7" stroke="currentColor" stroke-linecap="round" stroke-width="3"></path>
+                            </svg>
+                        </span>
+                    </h1>
+                    <p class="font-body-lg text-body-lg text-secondary max-w-xl">
+                        Đăng ký hiến máu nhanh chóng, theo dõi lịch hẹn thuận tiện và cùng Vitalis Blood Community kịp thời thắp lên nguồn sống cho hàng ngàn người bệnh.
+                    </p>
+                    <div class="flex flex-wrap items-center gap-4 pt-2 w-full sm:w-auto">
+                        <a asp-controller="DangKy" asp-action="Create" class="inline-flex items-center justify-center gap-2 bg-primary-container hover:bg-primary text-on-primary font-label-lg text-label-lg px-8 py-3.5 rounded-xl shadow-md hover:shadow-lg transition-all duration-200">
+                            <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">water_drop</span>
+                            <span>ĐĂNG KÝ HIẾN MÁU</span>
+                        </a>
+                        <a asp-controller="DotHienMau" asp-action="Index" class="inline-flex items-center justify-center gap-2 bg-surface-container-lowest hover:bg-surface-container text-inverse-surface font-label-lg text-label-lg px-7 py-3.5 rounded-xl shadow-sm transition-all duration-200">
+                            <span class="material-symbols-outlined text-[20px] text-secondary">explore</span>
+                            <span>XEM CÁC ĐỢT HIẾN MÁU</span>
+                        </a>
+                    </div>
+                    <!-- Trust & Social Proof -->
+                    <div class="pt-6 flex flex-col sm:flex-row sm:items-center gap-4">
+                        <div class="flex items-center -space-x-3">
+                            <div class="w-11 h-11 rounded-full bg-primary-fixed flex items-center justify-center text-primary font-bold shadow-sm">NA</div>
+                            <div class="w-11 h-11 rounded-full bg-secondary-fixed flex items-center justify-center text-secondary font-bold shadow-sm">TM</div>
+                            <div class="w-11 h-11 rounded-full bg-primary-container flex items-center justify-center text-on-primary font-bold shadow-sm">HL</div>
+                            <div class="w-11 h-11 rounded-full bg-surface-container-highest flex items-center justify-center text-primary font-bold shadow-sm text-xs">+12k</div>
+                        </div>
+                        <div class="flex items-center gap-1 text-amber-500">
+                            <span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">star</span>
+                            <span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">star</span>
+                            <span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">star</span>
+                            <span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">star</span>
+                            <span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">star</span>
+                            <span class="font-label-sm text-label-sm text-secondary font-bold ml-1">4.9/5</span>
+                        </div>
+                        <p class="font-body-sm text-body-sm text-secondary">
+                            Hơn <strong class="text-inverse-surface font-semibold">12,000+</strong> lượt hiến máu an toàn đã được kết nối thành công.
+                        </p>
+                    </div>
+                </div>
+                <!-- Hero Right Column with Image and Badges -->
+                <div class="lg:col-span-6 relative">
+                    <div class="relative mx-auto max-w-lg lg:max-w-none">
+                        <!-- Glow background -->
+                        <div class="absolute -inset-2 bg-gradient-to-r from-primary-fixed to-secondary-container rounded-3xl blur-xl opacity-70"></div>
+                        <!-- Main Hero Image Frame -->
+                        <div class="relative overflow-hidden rounded-3xl shadow-xl aspect-[4/3] bg-surface-container">
+                            <img alt="Tình nguyện viên và người hiến máu mỉm cười thân thiện tại điểm hiến máu cộng đồng" class="w-full h-full object-cover object-center transform hover:scale-105 transition-transform duration-700" src="~/images/hero_donor.png" onerror="this.src='https://images.unsplash.com/photo-1615461066841-6116e61058f4?auto=format&fit=crop&w=800&q=80'">
+                        </div>
+                        <!-- Floating Badge Top Right: Urgent Blood Need -->
+                        <div class="absolute -top-4 -right-2 sm:-top-5 sm:right-4 bg-surface-container-lowest/95 backdrop-blur-md rounded-2xl p-4 shadow-lg flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-error-container flex items-center justify-center text-primary-container shrink-0">
+                                <span class="material-symbols-outlined text-[22px]" style="font-variation-settings: 'FILL' 1;">emergency_home</span>
+                            </div>
+                            <div class="flex flex-col">
+                                <span class="font-label-sm text-label-sm uppercase tracking-wider text-error font-bold flex items-center gap-1">
+                                    <span class="w-2 h-2 rounded-full bg-error animate-ping inline-block"></span>
+                                    Cần khẩn cấp
+                                </span>
+                                <span class="font-title-md text-title-md text-inverse-surface font-bold">Nhóm máu O+ &amp; B+</span>
+                            </div>
+                        </div>
+                        <!-- Floating Badge Bottom Left: Metric Sparkline -->
+                        <div class="absolute -bottom-6 left-2 sm:-bottom-8 sm:left-4 bg-surface-container-lowest/95 backdrop-blur-md rounded-2xl p-4 sm:p-5 shadow-lg flex items-center gap-4 max-w-xs">
+                            <div class="w-12 h-12 rounded-xl bg-primary-fixed flex items-center justify-center text-primary shrink-0">
+                                <span class="material-symbols-outlined text-[26px]">volunteer_activism</span>
+                            </div>
+                            <div class="flex flex-col flex-grow">
+                                <span class="font-body-sm text-body-sm text-secondary">Đã tiếp nhận</span>
+                                <div class="flex items-baseline gap-2">
+                                    <span class="font-headline-sm text-headline-sm text-primary font-bold">2,840</span>
+                                    <span class="font-label-sm text-label-sm text-secondary">đơn vị máu</span>
+                                </div>
+                                <!-- Inline mini sparkline -->
+                                <svg class="w-full h-5 text-primary-container mt-1" fill="none" viewBox="0 0 100 20">
+                                    <path d="M0 16L18 12L36 15L54 9L72 13L90 4L100 6" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 2: QUICK ACTION SHORTCUTS -->
+    <section class="w-full py-10 bg-surface-container-lowest relative z-20">
+        <div class="max-w-[1240px] mx-auto px-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Action 1 -->
+                <a asp-controller="DotHienMau" asp-action="Index" class="group p-6 rounded-2xl bg-surface hover:bg-surface-container transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-13 h-13 p-3 rounded-xl bg-primary-fixed text-primary group-hover:scale-110 transition-transform">
+                            <span class="material-symbols-outlined text-[28px]">location_on</span>
+                        </div>
+                        <span class="material-symbols-outlined text-secondary group-hover:text-primary group-hover:translate-x-1 transition-all">arrow_forward</span>
+                    </div>
+                    <div>
+                        <h2 class="font-headline-sm text-headline-sm text-inverse-surface group-hover:text-primary transition-colors">Tìm đợt hiến máu</h2>
+                        <p class="font-body-sm text-body-sm text-secondary mt-1">Tìm điểm tiếp nhận gần bạn nhất hôm nay trên bản đồ số.</p>
+                    </div>
+                </a>
+                <!-- Action 2 -->
+                <a asp-controller="DangKy" asp-action="Create" class="group p-6 rounded-2xl bg-surface hover:bg-surface-container transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-13 h-13 p-3 rounded-xl bg-secondary-fixed text-tertiary group-hover:scale-110 transition-transform">
+                            <span class="material-symbols-outlined text-[28px]">stylus_note</span>
+                        </div>
+                        <span class="material-symbols-outlined text-secondary group-hover:text-primary group-hover:translate-x-1 transition-all">arrow_forward</span>
+                    </div>
+                    <div>
+                        <h2 class="font-headline-sm text-headline-sm text-inverse-surface group-hover:text-primary transition-colors">Đăng ký hiến máu</h2>
+                        <p class="font-body-sm text-body-sm text-secondary mt-1">Điền phiếu khai báo thông tin trực tuyến chỉ trong 2 phút.</p>
+                    </div>
+                </a>
+                <!-- Action 3 -->
+                <a asp-controller="DangKy" asp-action="TheoDoi" class="group p-6 rounded-2xl bg-surface hover:bg-surface-container transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-13 h-13 p-3 rounded-xl bg-surface-container-high text-inverse-surface group-hover:scale-110 transition-transform">
+                            <span class="material-symbols-outlined text-[28px]">fact_check</span>
+                        </div>
+                        <span class="material-symbols-outlined text-secondary group-hover:text-primary group-hover:translate-x-1 transition-all">arrow_forward</span>
+                    </div>
+                    <div>
+                        <h2 class="font-headline-sm text-headline-sm text-inverse-surface group-hover:text-primary transition-colors">Theo dõi phiếu</h2>
+                        <p class="font-body-sm text-body-sm text-secondary mt-1">Tra cứu tiến độ duyệt phiếu, mã số hẹn và kết quả xét nghiệm.</p>
+                    </div>
+                </a>
+                <!-- Action 4 -->
+                <a asp-controller="NguoiHienMau" asp-action="HoSoCaNhan" class="group p-6 rounded-2xl bg-surface hover:bg-surface-container transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="w-13 h-13 p-3 rounded-xl bg-tertiary-fixed text-tertiary group-hover:scale-110 transition-transform">
+                            <span class="material-symbols-outlined text-[28px]">calendar_month</span>
+                        </div>
+                        <span class="material-symbols-outlined text-secondary group-hover:text-primary group-hover:translate-x-1 transition-all">arrow_forward</span>
+                    </div>
+                    <div>
+                        <h2 class="font-headline-sm text-headline-sm text-inverse-surface group-hover:text-primary transition-colors">Cổng cá nhân &amp; GCN</h2>
+                        <p class="font-body-sm text-body-sm text-secondary mt-1">Hồ sơ người hiến, lịch sử, hành trình túi máu và giấy chứng nhận điện tử.</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 3: THỐNG KÊ CỘNG ĐỒNG -->
+    <section class="w-full py-16 bg-surface-container-low">
+        <div class="max-w-[1240px] mx-auto px-6">
+            <div class="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
+                <div>
+                    <span class="font-label-sm text-label-sm text-primary uppercase font-bold tracking-widest">Tác động nhân văn</span>
+                    <h2 class="font-headline-lg text-headline-lg text-inverse-surface mt-1">Mỗi con số là một câu chuyện sinh mệnh</h2>
+                </div>
+                <p class="font-body-md text-body-md text-secondary max-w-md">
+                    Chỉ số thực ghi nhận theo thời gian thực từ mạng lưới 24 bệnh viện và trung tâm truyền máu đối tác.
+                </p>
+            </div>
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Stat 1 -->
+                <div class="p-6 rounded-2xl bg-surface-container-lowest shadow-sm flex flex-col">
+                    <div class="w-10 h-10 rounded-lg bg-primary-fixed/40 flex items-center justify-center text-primary mb-3">
+                        <span class="material-symbols-outlined text-[22px]">groups</span>
+                    </div>
+                    <span class="font-display-hero text-display-hero text-primary font-bold tracking-tight">1,250+</span>
+                    <span class="font-title-md text-title-md text-inverse-surface font-semibold mt-1">Người hiến máu tích cực</span>
+                    <span class="font-body-sm text-body-sm text-secondary mt-1">Tình nguyện viên đồng hành thường niên</span>
+                </div>
+                <!-- Stat 2 -->
+                <div class="p-6 rounded-2xl bg-surface-container-lowest shadow-sm flex flex-col">
+                    <div class="w-10 h-10 rounded-lg bg-surface-container flex items-center justify-center text-inverse-surface mb-3">
+                        <span class="material-symbols-outlined text-[22px]">event_available</span>
+                    </div>
+                    <span class="font-display-hero text-display-hero text-inverse-surface font-bold tracking-tight">35</span>
+                    <span class="font-title-md text-title-md text-inverse-surface font-semibold mt-1">Đợt hiến máu tổ chức</span>
+                    <span class="font-body-sm text-body-sm text-secondary mt-1">Đã và đang diễn ra trong năm nay</span>
+                </div>
+                <!-- Stat 3 -->
+                <div class="p-6 rounded-2xl bg-surface-container-lowest shadow-sm flex flex-col">
+                    <div class="w-10 h-10 rounded-lg bg-secondary-fixed flex items-center justify-center text-tertiary mb-3">
+                        <span class="material-symbols-outlined text-[22px]" style="font-variation-settings: 'FILL' 1;">water_drop</span>
+                    </div>
+                    <span class="font-display-hero text-display-hero text-primary-container font-bold tracking-tight">2,840+</span>
+                    <span class="font-title-md text-title-md text-inverse-surface font-semibold mt-1">Đơn vị máu tiếp nhận</span>
+                    <span class="font-body-sm text-body-sm text-secondary mt-1">Đã kiểm định an toàn chuyển về kho</span>
+                </div>
+                <!-- Stat 4 -->
+                <div class="p-6 rounded-2xl bg-surface-container-lowest shadow-sm flex flex-col">
+                    <div class="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center text-emerald-800 mb-3">
+                        <span class="material-symbols-outlined text-[22px]">verified</span>
+                    </div>
+                    <span class="font-display-hero text-display-hero text-emerald-800 font-bold tracking-tight">98%</span>
+                    <span class="font-title-md text-title-md text-inverse-surface font-semibold mt-1">Phiếu xử lý đúng hẹn</span>
+                    <span class="font-body-sm text-body-sm text-secondary mt-1">Không để người đăng ký phải chờ đợi</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 4: CÁC ĐỢT HIẾN MÁU ĐANG MỞ -->
+    <section class="w-full py-16 bg-surface" id="campaigns">
+        <div class="max-w-[1240px] mx-auto px-6">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-10 gap-4">
+                <div>
+                    <span class="font-label-sm text-label-sm text-primary uppercase font-bold tracking-wider">Hành trình hiến máu</span>
+                    <h2 class="font-headline-lg text-headline-lg text-inverse-surface mt-1">Các đợt hiến máu đang mở</h2>
+                </div>
+                <a asp-controller="DotHienMau" asp-action="Index" class="inline-flex items-center gap-1.5 font-label-md text-label-md text-primary font-bold hover:text-primary-container transition-colors group">
+                    <span>Xem tất cả đợt hiến máu</span>
+                    <span class="material-symbols-outlined text-[18px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                </a>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Campaign Card 1 -->
+                <div class="bg-surface-container-lowest rounded-2xl p-6 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 font-label-sm text-label-sm font-bold">
+                                <span class="w-2 h-2 rounded-full bg-emerald-600"></span>
+                                ĐANG MỞ
+                            </span>
+                            <span class="font-label-sm text-label-sm text-secondary">Hạn: 25/11/2026</span>
+                        </div>
+                        <h3 class="font-headline-sm text-headline-sm text-inverse-surface font-bold leading-snug">
+                            Giọt Hồng UNETI – Trao Đời Sự Sống
+                        </h3>
+                        <p class="font-body-sm text-body-sm text-secondary mt-1">
+                            Đoàn Thanh Niên UNETI &amp; Viện Huyết Học TW
+                        </p>
+                        <div class="mt-5 space-y-2.5">
+                            <div class="flex items-start gap-2.5 text-secondary font-body-sm text-body-sm">
+                                <span class="material-symbols-outlined text-primary text-[18px] shrink-0 mt-0.5">calendar_today</span>
+                                <span>Bắt đầu: <strong class="text-inverse-surface">15/11/2026</strong></span>
+                            </div>
+                            <div class="flex items-start gap-2.5 text-secondary font-body-sm text-body-sm">
+                                <span class="material-symbols-outlined text-primary text-[18px] shrink-0 mt-0.5">pin_drop</span>
+                                <span class="line-clamp-1">Cơ sở 218 Lĩnh Nam, Hoàng Mai, Hà Nội</span>
+                            </div>
+                            <div class="flex items-center gap-2 pt-1">
+                                <span class="font-label-sm text-label-sm text-secondary">Ưu tiên:</span>
+                                <span class="px-2 py-0.5 rounded-md bg-secondary-container text-primary font-bold text-xs">O</span>
+                                <span class="px-2 py-0.5 rounded-md bg-secondary-container text-primary font-bold text-xs">A</span>
+                                <span class="px-2 py-0.5 rounded-md bg-secondary-container text-primary font-bold text-xs">B</span>
+                                <span class="text-xs text-secondary ml-auto">Tối thiểu: 45kg</span>
+                            </div>
+                        </div>
+                        <!-- Progress Bar -->
+                        <div class="mt-6 pt-4 bg-surface-container-low p-3.5 rounded-xl">
+                            <div class="flex justify-between items-center text-xs font-label-md mb-2">
+                                <span class="text-secondary">Tiến độ tiếp nhận</span>
+                                <span class="font-bold text-primary">142 / 200 đơn vị (71%)</span>
+                            </div>
+                            <div class="w-full bg-surface-dim h-2 rounded-full overflow-hidden">
+                                <div class="bg-primary-container h-full rounded-full transition-all duration-500" style="width: 71%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3 mt-6">
+                        <a asp-controller="DotHienMau" asp-action="Details" asp-route-id="1" class="inline-flex items-center justify-center py-2.5 px-3 rounded-xl bg-surface-container hover:bg-surface-container-high text-inverse-surface font-label-md text-label-md transition-colors text-center">
+                            Xem chi tiết
+                        </a>
+                        <a asp-controller="DangKy" asp-action="Create" class="inline-flex items-center justify-center py-2.5 px-3 rounded-xl bg-primary-container hover:bg-primary text-on-primary font-label-md text-label-md shadow-sm transition-colors text-center">
+                            Đăng ký ngay
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Campaign Card 2 -->
+                <div class="bg-surface-container-lowest rounded-2xl p-6 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 font-label-sm text-label-sm font-bold">
+                                <span class="w-2 h-2 rounded-full bg-emerald-600"></span>
+                                ĐANG MỞ
+                            </span>
+                            <span class="font-label-sm text-label-sm text-secondary">Hạn: 28/11/2026</span>
+                        </div>
+                        <h3 class="font-headline-sm text-headline-sm text-inverse-surface font-bold leading-snug">
+                            Trái Tim Đỏ – Chung Tay Vì Người Bệnh
+                        </h3>
+                        <p class="font-body-sm text-body-sm text-secondary mt-1">
+                            Cơ sở Minh Khai - UNETI Hà Nội
+                        </p>
+                        <div class="mt-5 space-y-2.5">
+                            <div class="flex items-start gap-2.5 text-secondary font-body-sm text-body-sm">
+                                <span class="material-symbols-outlined text-primary text-[18px] shrink-0 mt-0.5">calendar_today</span>
+                                <span>Bắt đầu: <strong class="text-inverse-surface">18/11/2026</strong></span>
+                            </div>
+                            <div class="flex items-start gap-2.5 text-secondary font-body-sm text-body-sm">
+                                <span class="material-symbols-outlined text-primary text-[18px] shrink-0 mt-0.5">pin_drop</span>
+                                <span class="line-clamp-1">456 Minh Khai, Hai Bà Trưng, Hà Nội</span>
+                            </div>
+                            <div class="flex items-center gap-2 pt-1">
+                                <span class="font-label-sm text-label-sm text-secondary">Ưu tiên:</span>
+                                <span class="px-2 py-0.5 rounded-md bg-secondary-container text-primary font-bold text-xs">O</span>
+                                <span class="px-2 py-0.5 rounded-md bg-secondary-container text-primary font-bold text-xs">AB</span>
+                                <span class="text-xs text-secondary ml-auto">Tối thiểu: 45kg</span>
+                            </div>
+                        </div>
+                        <!-- Progress Bar -->
+                        <div class="mt-6 pt-4 bg-surface-container-low p-3.5 rounded-xl">
+                            <div class="flex justify-between items-center text-xs font-label-md mb-2">
+                                <span class="text-secondary">Tiến độ tiếp nhận</span>
+                                <span class="font-bold text-primary">88 / 150 đơn vị (58%)</span>
+                            </div>
+                            <div class="w-full bg-surface-dim h-2 rounded-full overflow-hidden">
+                                <div class="bg-primary-container h-full rounded-full transition-all duration-500" style="width: 58%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3 mt-6">
+                        <a asp-controller="DotHienMau" asp-action="Details" asp-route-id="2" class="inline-flex items-center justify-center py-2.5 px-3 rounded-xl bg-surface-container hover:bg-surface-container-high text-inverse-surface font-label-md text-label-md transition-colors text-center">
+                            Xem chi tiết
+                        </a>
+                        <a asp-controller="DangKy" asp-action="Create" class="inline-flex items-center justify-center py-2.5 px-3 rounded-xl bg-primary-container hover:bg-primary text-on-primary font-label-md text-label-md shadow-sm transition-colors text-center">
+                            Đăng ký ngay
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Campaign Card 3 -->
+                <div class="bg-surface-container-lowest rounded-2xl p-6 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 font-label-sm text-label-sm font-bold">
+                                <span class="w-2 h-2 rounded-full bg-emerald-600"></span>
+                                ĐANG MỞ
+                            </span>
+                            <span class="font-label-sm text-label-sm text-secondary">Hạn: 30/11/2026</span>
+                        </div>
+                        <h3 class="font-headline-sm text-headline-sm text-inverse-surface font-bold leading-snug">
+                            Nắng Hồng Yêu Thương – Cơ sở Nam Định
+                        </h3>
+                        <p class="font-body-sm text-body-sm text-secondary mt-1">
+                            Hội Chữ Thập Đỏ &amp; UNETI Nam Định
+                        </p>
+                        <div class="mt-5 space-y-2.5">
+                            <div class="flex items-start gap-2.5 text-secondary font-body-sm text-body-sm">
+                                <span class="material-symbols-outlined text-primary text-[18px] shrink-0 mt-0.5">calendar_today</span>
+                                <span>Bắt đầu: <strong class="text-inverse-surface">22/11/2026</strong></span>
+                            </div>
+                            <div class="flex items-start gap-2.5 text-secondary font-body-sm text-body-sm">
+                                <span class="material-symbols-outlined text-primary text-[18px] shrink-0 mt-0.5">pin_drop</span>
+                                <span class="line-clamp-1">353 Trần Hưng Đạo, TP. Nam Định</span>
+                            </div>
+                            <div class="flex items-center gap-2 pt-1">
+                                <span class="font-label-sm text-label-sm text-secondary">Ưu tiên:</span>
+                                <span class="px-2 py-0.5 rounded-md bg-secondary-container text-primary font-bold text-xs">Tất cả nhóm máu</span>
+                                <span class="text-xs text-secondary ml-auto">Tối thiểu: 45kg</span>
+                            </div>
+                        </div>
+                        <!-- Progress Bar -->
+                        <div class="mt-6 pt-4 bg-surface-container-low p-3.5 rounded-xl">
+                            <div class="flex justify-between items-center text-xs font-label-md mb-2">
+                                <span class="text-secondary">Tiến độ tiếp nhận</span>
+                                <span class="font-bold text-primary">195 / 250 đơn vị (78%)</span>
+                            </div>
+                            <div class="w-full bg-surface-dim h-2 rounded-full overflow-hidden">
+                                <div class="bg-primary-container h-full rounded-full transition-all duration-500" style="width: 78%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3 mt-6">
+                        <a asp-controller="DotHienMau" asp-action="Details" asp-route-id="3" class="inline-flex items-center justify-center py-2.5 px-3 rounded-xl bg-surface-container hover:bg-surface-container-high text-inverse-surface font-label-md text-label-md transition-colors text-center">
+                            Xem chi tiết
+                        </a>
+                        <a asp-controller="DangKy" asp-action="Create" class="inline-flex items-center justify-center py-2.5 px-3 rounded-xl bg-primary-container hover:bg-primary text-on-primary font-label-md text-label-md shadow-sm transition-colors text-center">
+                            Đăng ký ngay
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 5: QUY TRÌNH HIẾN MÁU (BLOOD DROP CONNECTION TIMELINE) -->
+    <section class="w-full py-20 bg-surface-container-low relative overflow-hidden" id="process">
+        <div class="max-w-[1240px] mx-auto px-6 relative z-10">
+            <div class="text-center max-w-2xl mx-auto mb-16">
+                <span class="font-label-sm text-label-sm text-primary uppercase font-bold tracking-widest">Tiêu chuẩn y khoa an toàn</span>
+                <h2 class="font-headline-lg text-headline-lg text-inverse-surface mt-1">Quy trình 5 bước hiến máu thuận tiện</h2>
+                <p class="font-body-md text-body-md text-secondary mt-2">
+                    Hệ thống hóa toàn bộ chu trình nhằm tiết kiệm thời gian của người hiến máu và đảm bảo chuẩn an toàn sinh học.
+                </p>
+            </div>
+            <!-- 5-Step Connected Flow -->
+            <div class="relative">
+                <!-- Blood Drop Connection Line for desktop -->
+                <div class="hidden lg:block absolute top-12 left-[8%] right-[8%] h-1 bg-gradient-to-r from-primary-fixed via-primary-container to-emerald-500 -z-0 rounded-full opacity-60"></div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8 relative z-10">
+                    <!-- Step 1 -->
+                    <div class="flex flex-col items-center text-center group">
+                        <div class="w-20 h-20 rounded-2xl bg-surface-container-lowest text-primary shadow-md flex items-center justify-center relative mb-5 group-hover:scale-110 transition-transform">
+                            <span class="material-symbols-outlined text-[32px]">app_registration</span>
+                            <span class="absolute -top-2 -right-2 w-7 h-7 rounded-full bg-primary-container text-on-primary font-label-sm text-label-sm flex items-center justify-center font-bold">01</span>
+                        </div>
+                        <h4 class="font-title-md text-title-md text-inverse-surface font-bold">Đăng ký online</h4>
+                        <p class="font-body-sm text-body-sm text-secondary mt-1.5">
+                            Điền phiếu khai báo tiền sử sức khỏe trực tuyến nhanh gọn trong 2 phút.
+                        </p>
+                    </div>
+                    <!-- Step 2 -->
+                    <div class="flex flex-col items-center text-center group">
+                        <div class="w-20 h-20 rounded-2xl bg-surface-container-lowest text-primary shadow-md flex items-center justify-center relative mb-5 group-hover:scale-110 transition-transform">
+                            <span class="material-symbols-outlined text-[32px]">mark_email_read</span>
+                            <span class="absolute -top-2 -right-2 w-7 h-7 rounded-full bg-primary-container text-on-primary font-label-sm text-label-sm flex items-center justify-center font-bold">02</span>
+                        </div>
+                        <h4 class="font-title-md text-title-md text-inverse-surface font-bold">Xác nhận hồ sơ</h4>
+                        <p class="font-body-sm text-body-sm text-secondary mt-1.5">
+                            Hệ thống tự động duyệt tiêu chí và gửi tin nhắn xác nhận lịch hẹn.
+                        </p>
+                    </div>
+                    <!-- Step 3 -->
+                    <div class="flex flex-col items-center text-center group">
+                        <div class="w-20 h-20 rounded-2xl bg-surface-container-lowest text-primary shadow-md flex items-center justify-center relative mb-5 group-hover:scale-110 transition-transform">
+                            <span class="material-symbols-outlined text-[32px]">browse_gallery</span>
+                            <span class="absolute -top-2 -right-2 w-7 h-7 rounded-full bg-primary-container text-on-primary font-label-sm text-label-sm flex items-center justify-center font-bold">03</span>
+                        </div>
+                        <h4 class="font-title-md text-title-md text-inverse-surface font-bold">Đặt lịch khám</h4>
+                        <p class="font-body-sm text-body-sm text-secondary mt-1.5">
+                            Lựa chọn khung giờ thích hợp tại địa điểm tiếp nhận gần bạn nhất.
+                        </p>
+                    </div>
+                    <!-- Step 4 -->
+                    <div class="flex flex-col items-center text-center group">
+                        <div class="w-20 h-20 rounded-2xl bg-surface-container-lowest text-primary shadow-md flex items-center justify-center relative mb-5 group-hover:scale-110 transition-transform">
+                            <span class="material-symbols-outlined text-[32px]">stethoscope</span>
+                            <span class="absolute -top-2 -right-2 w-7 h-7 rounded-full bg-primary-container text-on-primary font-label-sm text-label-sm flex items-center justify-center font-bold">04</span>
+                        </div>
+                        <h4 class="font-title-md text-title-md text-inverse-surface font-bold">Khám sàng lọc</h4>
+                        <p class="font-body-sm text-body-sm text-secondary mt-1.5">
+                            Bác sĩ đo huyết áp, định lượng huyết sắc tố và kiểm tra điều kiện y khoa.
+                        </p>
+                    </div>
+                    <!-- Step 5 -->
+                    <div class="flex flex-col items-center text-center group">
+                        <div class="w-20 h-20 rounded-2xl bg-surface-container-lowest text-emerald-700 shadow-md flex items-center justify-center relative mb-5 group-hover:scale-110 transition-transform">
+                            <span class="material-symbols-outlined text-[32px]">workspace_premium</span>
+                            <span class="absolute -top-2 -right-2 w-7 h-7 rounded-full bg-emerald-600 text-white font-label-sm text-label-sm flex items-center justify-center font-bold">05</span>
+                        </div>
+                        <h4 class="font-title-md text-title-md text-inverse-surface font-bold">Hiến máu &amp; Nhận thẻ</h4>
+                        <p class="font-body-sm text-body-sm text-secondary mt-1.5">
+                            Nghỉ ngơi, nhận suất bồi hoàn và nhận Thẻ hiến máu điện tử lưu lại thông tin.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 6: ĐIỀU KIỆN HIẾN MÁU -->
+    <section class="w-full py-16 bg-surface" id="eligibility">
+        <div class="max-w-[1240px] mx-auto px-6">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+                <!-- Left: Doctor Testimonial Card with Image -->
+                <div class="lg:col-span-5">
+                    <div class="bg-gradient-to-br from-secondary-container/40 to-surface-container rounded-3xl p-8 shadow-sm relative overflow-hidden">
+                        <div class="flex items-center gap-5 mb-6">
+                            <div class="w-20 h-20 rounded-2xl overflow-hidden shrink-0 shadow-md">
+                                <img alt="Bác sĩ chuyên khoa tư vấn hiến máu tình nguyện" class="w-full h-full object-cover" src="~/images/doctor_nurse.png" onerror="this.src='https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&w=400&q=80'">
+                            </div>
+                            <div>
+                                <h3 class="font-headline-sm text-headline-sm text-inverse-surface font-bold">BS. Nguyễn Lan Anh</h3>
+                                <span class="font-body-sm text-body-sm text-primary font-semibold">Chuyên gia Huyết học lâm sàng</span>
+                                <span class="block font-label-sm text-label-sm text-secondary">Viện Truyền Máu Trung Ương</span>
+                            </div>
+                        </div>
+                        <blockquote class="font-body-md text-body-md text-inverse-surface italic leading-relaxed relative pl-4 border-l-2 border-primary-container">
+                            “Mỗi người khỏe mạnh đều có thể trở thành người hùng thầm lặng. Hiến máu đúng quy cách không chỉ cứu giúp bệnh nhân mà còn kích thích tủy xương tạo hồng cầu mới khỏe mạnh hơn.”
+                        </blockquote>
+                        <div class="mt-6 pt-5 border-t border-secondary-fixed/50 flex items-center justify-between text-secondary">
+                            <div class="flex items-center gap-2">
+                                <span class="material-symbols-outlined text-primary text-[20px]">medical_services</span>
+                                <span class="font-label-sm text-label-sm">Đạt chuẩn Bộ Y Tế</span>
+                            </div>
+                            <span class="font-label-sm text-label-sm font-semibold text-inverse-surface">An toàn 100%</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Right: Checklist of Eligibility -->
+                <div class="lg:col-span-7 flex flex-col space-y-6">
+                    <div>
+                        <span class="font-label-sm text-label-sm text-primary uppercase font-bold tracking-wider">Tiêu chí sức khỏe</span>
+                        <h2 class="font-headline-lg text-headline-lg text-inverse-surface mt-1">Bạn có đủ điều kiện hiến máu?</h2>
+                        <p class="font-body-md text-body-md text-secondary mt-1">
+                            Vui lòng kiểm tra nhanh 5 điều kiện cơ bản dưới đây trước khi hoàn thiện phiếu đăng ký hiến máu nhân đạo:
+                        </p>
+                    </div>
+                    <div class="space-y-3.5">
+                        <div class="flex items-start gap-3.5 p-4 rounded-xl bg-surface-container-lowest shadow-sm">
+                            <span class="material-symbols-outlined text-emerald-800 text-[22px] shrink-0 mt-0.5" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                            <span class="font-body-md text-body-md text-inverse-surface">
+                                Độ tuổi từ <strong class="font-semibold">18 – 60 tuổi</strong>; Cân nặng tối thiểu <strong class="font-semibold">45kg</strong> (đối với nam) và <strong class="font-semibold">42kg</strong> (đối với nữ).
+                            </span>
+                        </div>
+                        <div class="flex items-start gap-3.5 p-4 rounded-xl bg-surface-container-lowest shadow-sm">
+                            <span class="material-symbols-outlined text-emerald-800 text-[22px] shrink-0 mt-0.5" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                            <span class="font-body-md text-body-md text-inverse-surface">
+                                Không mắc các bệnh lý lây truyền qua đường máu (HIV, Viêm gan B/C, Giang mai) hoặc các bệnh mạn tính nặng.
+                            </span>
+                        </div>
+                        <div class="flex items-start gap-3.5 p-4 rounded-xl bg-surface-container-lowest shadow-sm">
+                            <span class="material-symbols-outlined text-emerald-800 text-[22px] shrink-0 mt-0.5" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                            <span class="font-body-md text-body-md text-inverse-surface">
+                                Mang theo giấy tờ tùy thân hợp lệ: <strong class="font-semibold">CCCD gắn chip</strong> hoặc xuất trình tài khoản định danh <strong class="font-semibold">VNeID mức 2</strong>.
+                            </span>
+                        </div>
+                        <div class="flex items-start gap-3.5 p-4 rounded-xl bg-surface-container-lowest shadow-sm">
+                            <span class="material-symbols-outlined text-emerald-800 text-[22px] shrink-0 mt-0.5" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                            <span class="font-body-md text-body-md text-inverse-surface">
+                                Đêm trước hiến máu ngủ đủ giấc (≥ 6 tiếng), ăn nhẹ trước khi hiến máu, tuyệt đối không dùng rượu bia hoặc chất kích thích.
+                            </span>
+                        </div>
+                        <div class="flex items-start gap-3.5 p-4 rounded-xl bg-surface-container-lowest shadow-sm">
+                            <span class="material-symbols-outlined text-emerald-800 text-[22px] shrink-0 mt-0.5" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+                            <span class="font-body-md text-body-md text-inverse-surface">
+                                Khoảng cách giữa hai lần hiến máu toàn phần tối thiểu là <strong class="font-semibold">84 ngày (12 tuần)</strong>.
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 7: LAN TỎA NHỮNG ĐIỀU TỐT ĐẸP (NEWS & COMMUNITY STORIES) -->
+    <section class="w-full py-16 bg-surface-container-low" id="news">
+        <div class="max-w-[1240px] mx-auto px-6">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between mb-10 gap-4">
+                <div>
+                    <span class="font-label-sm text-label-sm text-primary uppercase font-bold tracking-wider">Tin tức &amp; Chia sẻ</span>
+                    <h2 class="font-headline-lg text-headline-lg text-inverse-surface mt-1">Lan tỏa những điều tốt đẹp</h2>
+                </div>
+                <a class="inline-flex items-center gap-1.5 font-label-md text-label-md text-primary font-bold hover:text-primary-container transition-colors group" href="#news">
+                    <span>Xem bản tin cộng đồng</span>
+                    <span class="material-symbols-outlined text-[18px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
+                </a>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Article 1 -->
+                <article class="bg-surface-container-lowest rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col group">
+                    <div class="h-48 overflow-hidden bg-surface-container relative">
+                        <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://images.unsplash.com/photo-1579154204601-01588f351e67?auto=format&fit=crop&w=600&q=80" alt="Ngày hội hiến máu">
+                        <span class="absolute top-3 left-3 px-3 py-1 rounded-lg bg-surface-container-lowest/90 backdrop-blur-sm text-primary font-label-sm text-label-sm font-bold">
+                            Hoạt động
+                        </span>
+                    </div>
+                    <div class="p-6 flex flex-col flex-grow justify-between">
+                        <div>
+                            <span class="font-label-sm text-label-sm text-secondary">2 ngày trước</span>
+                            <h3 class="font-headline-sm text-title-md text-inverse-surface font-bold mt-2 group-hover:text-primary transition-colors leading-snug">
+                                Hành trình “Giọt Máu Vàng” tiếp nhận hơn 500 đơn vị máu tại UNETI
+                            </h3>
+                            <p class="font-body-sm text-body-sm text-secondary mt-2 line-clamp-3">
+                                Ngày hội hiến máu đã thu hút hàng trăm sinh viên và giảng viên tham gia, góp phần bổ sung khẩn cấp kho máu dự trữ dịp cuối năm.
+                            </p>
+                        </div>
+                        <div class="pt-4 mt-4 flex items-center gap-1 text-primary font-label-md text-label-md font-bold">
+                            <span>Đọc tiếp</span>
+                            <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+                        </div>
+                    </div>
+                </article>
+                <!-- Article 2 -->
+                <article class="bg-surface-container-lowest rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col group">
+                    <div class="h-48 overflow-hidden bg-surface-container relative">
+                        <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://images.unsplash.com/photo-1498837167922-ddd27525d352?auto=format&fit=crop&w=600&q=80" alt="Dinh dưỡng trước hiến máu">
+                        <span class="absolute top-3 left-3 px-3 py-1 rounded-lg bg-surface-container-lowest/90 backdrop-blur-sm text-tertiary font-label-sm text-label-sm font-bold">
+                            Cẩm nang sức khỏe
+                        </span>
+                    </div>
+                    <div class="p-6 flex flex-col flex-grow justify-between">
+                        <div>
+                            <span class="font-label-sm text-label-sm text-secondary">5 ngày trước</span>
+                            <h3 class="font-headline-sm text-title-md text-inverse-surface font-bold mt-2 group-hover:text-primary transition-colors leading-snug">
+                                Chế độ dinh dưỡng và nghỉ ngơi khoa học trước &amp; sau khi hiến máu
+                            </h3>
+                            <p class="font-body-sm text-body-sm text-secondary mt-2 line-clamp-3">
+                                Bác sĩ khuyến nghị người hiến máu nên bổ sung nước đầy đủ, tránh vận động gắng sức trong 24 giờ đầu để cơ thể tái tạo hồng cầu tối ưu.
+                            </p>
+                        </div>
+                        <div class="pt-4 mt-4 flex items-center gap-1 text-primary font-label-md text-label-md font-bold">
+                            <span>Đọc tiếp</span>
+                            <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+                        </div>
+                    </div>
+                </article>
+                <!-- Article 3 -->
+                <article class="bg-surface-container-lowest rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all flex flex-col group">
+                    <div class="h-48 overflow-hidden bg-surface-container relative">
+                        <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=600&q=80" alt="Gương mặt tình nguyện">
+                        <span class="absolute top-3 left-3 px-3 py-1 rounded-lg bg-surface-container-lowest/90 backdrop-blur-sm text-emerald-800 font-label-sm text-label-sm font-bold">
+                            Tấm gương
+                        </span>
+                    </div>
+                    <div class="p-6 flex flex-col flex-grow justify-between">
+                        <div>
+                            <span class="font-label-sm text-label-sm text-secondary">1 tuần trước</span>
+                            <h3 class="font-headline-sm text-title-md text-inverse-surface font-bold mt-2 group-hover:text-primary transition-colors leading-snug">
+                                Câu chuyện xúc động của người hiến máu tình nguyện 45 lần liên tiếp
+                            </h3>
+                            <p class="font-body-sm text-body-sm text-secondary mt-2 line-clamp-3">
+                                Hơn 15 năm qua, tình nguyện viên đều đặn tham gia hiến máu mỗi quý: “Còn sức khỏe là tôi còn trao gửi sự sống cho người cần.”
+                            </p>
+                        </div>
+                        <div class="pt-4 mt-4 flex items-center gap-1 text-primary font-label-md text-label-md font-bold">
+                            <span>Đọc tiếp</span>
+                            <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECTION 8: INSPIRATIONAL BOTTOM CTA -->
+    <section class="w-full py-16 lg:py-24 bg-surface relative overflow-hidden" id="tracking">
+        <div class="max-w-[1240px] mx-auto px-6">
+            <div class="rounded-3xl bg-gradient-to-r from-primary-fixed/60 via-secondary-container/50 to-primary-fixed/40 p-8 sm:p-12 lg:p-16 relative overflow-hidden shadow-sm text-center">
+                <div class="absolute -top-12 -left-12 w-48 h-48 rounded-full bg-primary-container/10 blur-2xl pointer-events-none"></div>
+                <div class="absolute -bottom-12 -right-12 w-64 h-64 rounded-full bg-primary/10 blur-3xl pointer-events-none"></div>
+                <div class="relative z-10 max-w-3xl mx-auto flex flex-col items-center">
+                    <div class="w-14 h-14 rounded-2xl bg-primary-container text-on-primary flex items-center justify-center mb-6 shadow-md">
+                        <span class="material-symbols-outlined text-[30px]" style="font-variation-settings: 'FILL' 1;">volunteer_activism</span>
+                    </div>
+                    <h2 class="font-display-hero text-headline-lg sm:text-display-hero text-inverse-surface font-bold tracking-tight">
+                        Bạn có thể trao đi nhiều hơn bạn nghĩ.
+                    </h2>
+                    <p class="font-body-lg text-body-lg text-secondary mt-4 max-w-2xl">
+                        Một lần đăng ký hôm nay có thể trở thành một cơ hội tái sinh kỳ diệu cho người bệnh. Hãy gia nhập đại gia đình Vitalis Blood Community ngay hôm nay.
+                    </p>
+                    <div class="flex flex-wrap items-center justify-center gap-4 mt-8 w-full sm:w-auto">
+                        <a asp-controller="DangKy" asp-action="Create" class="inline-flex items-center justify-center gap-2.5 bg-primary-container hover:bg-primary text-on-primary font-label-lg text-label-lg px-8 py-4 rounded-xl shadow-md hover:shadow-lg transition-all duration-200">
+                            <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">favorite</span>
+                            <span>ĐĂNG KÝ HIẾN MÁU NGAY</span>
+                        </a>
+                        <a class="inline-flex items-center justify-center gap-2 bg-surface-container-lowest hover:bg-surface text-inverse-surface font-label-lg text-label-lg px-7 py-4 rounded-xl shadow-sm transition-all duration-200" href="tel:19006868">
+                            <span class="material-symbols-outlined text-primary text-[20px]">phone_in_talk</span>
+                            <span>Tư vấn qua Hotline: <strong class="text-primary font-bold ml-1">1900 6868</strong></span>
+                        </a>
+                    </div>
+                    <!-- Quick notes -->
+                    <div class="flex flex-wrap items-center justify-center gap-6 mt-8 text-xs font-label-md text-secondary">
+                        <span class="flex items-center gap-1.5">
+                            <span class="material-symbols-outlined text-emerald-700 text-[16px]">lock</span>
+                            Bảo mật hồ sơ y tế theo tiêu chuẩn
+                        </span>
+                        <span class="flex items-center gap-1.5">
+                            <span class="material-symbols-outlined text-emerald-700 text-[16px]">schedule</span>
+                            Chủ động hẹn giờ - Không phải xếp hàng
+                        </span>
+                        <span class="flex items-center gap-1.5">
+                            <span class="material-symbols-outlined text-emerald-700 text-[16px]">workspace_premium</span>
+                            Nhận Giấy chứng nhận hiến máu tức thì
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>

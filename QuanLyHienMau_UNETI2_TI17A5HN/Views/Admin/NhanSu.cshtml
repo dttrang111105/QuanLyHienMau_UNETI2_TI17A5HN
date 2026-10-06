@@ -1,0 +1,1048 @@
+@{
+    ViewData["Title"] = "Phân quyền nhân sự & Quản trị tài khoản y tế";
+    Layout = "_AdminLayout";
+}
+
+<!-- Subtle Ambient Glow -->
+<div class="relative w-full overflow-hidden px-space-lg py-space-lg flex flex-col gap-space-lg">
+    <div class="absolute -top-40 right-1/4 w-96 h-96 bg-primary/5 rounded-full blur-3xl pointer-events-none"></div>
+    <div class="absolute top-1/2 -left-20 w-80 h-80 bg-primary-container/5 rounded-full blur-3xl pointer-events-none"></div>
+
+    <!-- 1. Header Section -->
+    <header class="flex flex-col gap-space-sm relative z-10">
+        <!-- Breadcrumb -->
+        <nav class="flex items-center gap-2 font-label-sm text-label-sm text-on-surface-variant">
+            <a asp-controller="Admin" asp-action="Dashboard" class="hover:text-primary transition-colors">Hệ thống Quản trị Y tế</a>
+            <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+            <span class="text-on-surface-variant">Hệ thống</span>
+            <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+            <span class="text-primary font-semibold">Phân quyền nhân sự</span>
+        </nav>
+
+        <!-- Main Title & Actions Bar -->
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md mt-1">
+            <div class="flex flex-col gap-1 max-w-4xl">
+                <div class="flex flex-wrap items-center gap-3">
+                    <h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">
+                        Phân Quyền Nhân Sự &amp; Quản Trị Tài Khoản Y Tế
+                    </h1>
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm">
+                        <span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+                        RBAC Matrix • SmartCA PKI • Bộ Y Tế &amp; C06
+                    </span>
+                </div>
+                <p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+                    Quản lý <span class="font-semibold text-on-surface">342 tài khoản y tế</span> thuộc 5 nhóm vai trò lâm sàng, phân cấp quyền hạn theo ma trận bảo mật bệnh viện, kiểm soát chứng thư số ký duyệt kết quả xét nghiệm và nhật ký truy cập audit log.
+                </p>
+            </div>
+            <!-- Action Buttons -->
+            <div class="flex items-center gap-space-sm shrink-0">
+                <button class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-surface-container-lowest shadow-sm hover:shadow-md hover:bg-surface-container-low text-on-surface transition-all duration-180 font-label-md text-label-md" type="button" onclick="document.getElementById('auditTrailSection').scrollIntoView({behavior: 'smooth'})">
+                    <span class="material-symbols-outlined text-[18px] text-on-surface-variant">shield_with_heart</span>
+                    <span>Nhật Ký Audit Trail</span>
+                </button>
+                <a asp-controller="Admin" asp-action="RBAC" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-surface-container-lowest shadow-sm hover:shadow-md hover:bg-surface-container-low text-on-surface transition-all duration-180 font-label-md text-label-md">
+                    <span class="material-symbols-outlined text-[18px] text-on-surface-variant">tune</span>
+                    <span>Cấu Hình Ma Trận (RBAC)</span>
+                </a>
+                <button class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-on-primary shadow-md hover:bg-primary-container active:scale-[0.98] transition-all duration-180 font-label-md text-label-md" type="button" onclick="alert('Mở biểu mẫu tạo tài khoản cán bộ y tế mới.')">
+                    <span class="material-symbols-outlined text-[20px]">person_add</span>
+                    <span>+ Thêm Cán Bộ Y Tế Mới</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- 2. KPI Summary Cards (4 Cards) -->
+    <section class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-space-md">
+        <!-- KPI 1 -->
+        <div class="relative overflow-hidden rounded-xl bg-surface-container-lowest p-space-lg shadow-sm hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between mb-3">
+                <span class="font-label-md text-label-md text-on-surface-variant">Tổng Cán Bộ Y Tế</span>
+                <div class="w-10 h-10 rounded-xl bg-secondary-container flex items-center justify-center text-primary">
+                    <span class="material-symbols-outlined text-[22px]">badge</span>
+                </div>
+            </div>
+            <div class="flex items-baseline gap-2 mb-2">
+                <span class="font-display-hero text-display-hero text-on-surface leading-none">342</span>
+                <span class="font-label-sm text-label-sm font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">+18 Quý này</span>
+            </div>
+            <div class="flex items-center justify-between text-body-sm text-on-surface-variant pt-2 border-t border-surface-container-low">
+                <span>Tỷ lệ kích hoạt</span>
+                <span class="font-label-sm text-label-sm font-bold text-on-surface">98.2% Active</span>
+            </div>
+            <div class="w-full bg-surface-container-low h-1.5 rounded-full mt-2 overflow-hidden">
+                <div class="bg-primary h-full rounded-full" style="width: 98.2%"></div>
+            </div>
+        </div>
+
+        <!-- KPI 2 -->
+        <div class="relative overflow-hidden rounded-xl bg-surface-container-lowest p-space-lg shadow-sm hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between mb-3">
+                <span class="font-label-md text-label-md text-on-surface-variant">Bác Sĩ Khám &amp; Trưởng Kíp</span>
+                <div class="w-10 h-10 rounded-xl bg-primary-fixed flex items-center justify-center text-primary">
+                    <span class="material-symbols-outlined text-[22px]">stethoscope</span>
+                </div>
+            </div>
+            <div class="flex items-baseline gap-2 mb-2">
+                <span class="font-display-hero text-display-hero text-on-surface leading-none">64</span>
+                <span class="font-label-sm text-label-sm text-on-surface-variant">Bác sĩ lâm sàng</span>
+            </div>
+            <div class="flex items-center justify-between text-body-sm text-on-surface-variant pt-2 border-t border-surface-container-low">
+                <span>Ký số SmartCA</span>
+                <span class="font-label-sm text-label-sm font-bold text-emerald-700">62 / 64 Hoạt động</span>
+            </div>
+            <div class="w-full bg-surface-container-low h-1.5 rounded-full mt-2 overflow-hidden">
+                <div class="bg-emerald-600 h-full rounded-full" style="width: 96.8%"></div>
+            </div>
+        </div>
+
+        <!-- KPI 3 -->
+        <div class="relative overflow-hidden rounded-xl bg-surface-container-lowest p-space-lg shadow-sm hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between mb-3">
+                <span class="font-label-md text-label-md text-on-surface-variant">KTV Xét Nghiệm &amp; Kho Máu</span>
+                <div class="w-10 h-10 rounded-xl bg-surface-container-high flex items-center justify-center text-on-surface">
+                    <span class="material-symbols-outlined text-[22px]">science</span>
+                </div>
+            </div>
+            <div class="flex items-baseline gap-2 mb-2">
+                <span class="font-display-hero text-display-hero text-on-surface leading-none">118</span>
+                <span class="font-label-sm text-label-sm text-on-surface-variant">Kỹ thuật viên</span>
+            </div>
+            <div class="flex items-center justify-between text-body-sm text-on-surface-variant pt-2 border-t border-surface-container-low">
+                <span>Chuẩn mã hóa ISBT</span>
+                <span class="font-label-sm text-label-sm font-bold text-on-surface">100% Khớp LIMS</span>
+            </div>
+            <div class="w-full bg-surface-container-low h-1.5 rounded-full mt-2 overflow-hidden">
+                <div class="bg-primary-container h-full rounded-full" style="width: 100%"></div>
+            </div>
+        </div>
+
+        <!-- KPI 4 (Alert Highlighted) -->
+        <div class="relative overflow-hidden rounded-xl bg-gradient-to-br from-surface-container-lowest to-error-container/20 p-space-lg shadow-sm hover:shadow-md transition-shadow">
+            <div class="flex items-center justify-between mb-3">
+                <span class="font-label-md text-label-md text-error font-semibold">Cảnh Báo An Toàn &amp; Ký Số</span>
+                <div class="w-10 h-10 rounded-xl bg-error/10 flex items-center justify-center text-error animate-bounce">
+                    <span class="material-symbols-outlined text-[22px]">warning</span>
+                </div>
+            </div>
+            <div class="flex items-baseline gap-2 mb-2">
+                <span class="font-display-hero text-display-hero text-error leading-none">04</span>
+                <span class="font-label-sm text-label-sm font-bold text-error bg-error-container px-2 py-0.5 rounded-full">Cần xử lý</span>
+            </div>
+            <div class="flex items-center justify-between text-body-sm text-on-surface-variant pt-2 border-t border-error-container/40">
+                <span>Hết hạn SmartCA</span>
+                <span class="font-label-sm text-label-sm font-semibold text-error">03 Token &lt; 15 ngày</span>
+            </div>
+            <div class="flex items-center justify-between text-body-sm text-on-surface-variant mt-1">
+                <span>Zero-Trust Lock</span>
+                <span class="font-label-sm text-label-sm font-semibold text-on-surface">01 Tài khoản</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- 3. Block 1: Role Permission Matrix (5 Cards Grid) -->
+    <section class="flex flex-col gap-space-sm">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <span class="w-2.5 h-6 bg-primary rounded-full inline-block"></span>
+                <h2 class="font-headline-sm text-headline-sm text-on-surface">
+                    Ma Trận Phân Quyền Vai Trò Y Tế (Role Permission Matrix)
+                </h2>
+                <span class="font-label-sm text-label-sm px-2.5 py-0.5 rounded-full bg-surface-container-high text-on-surface-variant">5 Nhóm Vai Trò Cấp Lâm Sàng</span>
+            </div>
+            <a asp-controller="Admin" asp-action="RBAC" class="font-label-md text-label-md text-primary hover:text-primary-container font-semibold inline-flex items-center gap-1 transition-colors">
+                <span>Xem cấu hình chi tiết RBAC &amp; ABAC Policy</span>
+                <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+            </a>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-space-md">
+            <!-- Role 1: Trưởng Kíp -->
+            <div class="flex flex-col justify-between rounded-xl bg-surface-container-lowest p-space-md shadow-sm hover:shadow-md transition-all duration-200">
+                <div>
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="px-2.5 py-1 rounded-lg bg-primary-fixed text-primary font-label-sm text-label-sm font-bold uppercase tracking-wider">
+                            Super Admin / Lead
+                        </span>
+                        <span class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                            <span class="material-symbols-outlined text-[18px]">verified_user</span>
+                        </span>
+                    </div>
+                    <h3 class="font-title-md text-title-md text-on-surface font-bold leading-snug">
+                        Trưởng Kíp / Trưởng Khoa
+                    </h3>
+                    <p class="font-label-sm text-label-sm text-on-surface-variant mt-1 mb-3">
+                        12 Cán bộ phụ trách kíp tiếp nhận
+                    </p>
+                    <div class="space-y-1.5 pt-2 border-t border-surface-container-low font-body-sm text-body-sm text-on-surface-variant">
+                        <div class="flex items-start gap-1.5">
+                            <span class="material-symbols-outlined text-primary text-[16px] shrink-0 mt-0.5">check_circle</span>
+                            <span>Phê duyệt túi máu khẩn cấp</span>
+                        </div>
+                        <div class="flex items-start gap-1.5">
+                            <span class="material-symbols-outlined text-primary text-[16px] shrink-0 mt-0.5">check_circle</span>
+                            <span>Ký số GCN Hiến máu điện tử</span>
+                        </div>
+                        <div class="flex items-start gap-1.5">
+                            <span class="material-symbols-outlined text-primary text-[16px] shrink-0 mt-0.5">check_circle</span>
+                            <span>Ghi đè lệnh xuất kho chuỗi lạnh</span>
+                        </div>
+                        <div class="flex items-start gap-1.5">
+                            <span class="material-symbols-outlined text-primary text-[16px] shrink-0 mt-0.5">check_circle</span>
+                            <span>Cấu hình ủy quyền nhân sự</span>
+                        </div>
+                    </div>
+                </div>
+                <a asp-controller="Admin" asp-action="RBAC" class="mt-4 w-full py-2 px-3 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-sm text-label-sm font-semibold transition-colors flex items-center justify-center gap-1">
+                    <span class="material-symbols-outlined text-[16px]">edit</span>
+                    <span>Chỉnh sửa quyền vai trò</span>
+                </a>
+            </div>
+
+            <!-- Role 2: Bác Sĩ Sàng Lọc -->
+            <div class="flex flex-col justify-between rounded-xl bg-surface-container-lowest p-space-md shadow-sm hover:shadow-md transition-all duration-200">
+                <div>
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="px-2.5 py-1 rounded-lg bg-surface-container-high text-on-surface font-label-sm text-label-sm font-bold uppercase tracking-wider">
+                            Clinical Screening
+                        </span>
+                        <span class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-on-surface">
+                            <span class="material-symbols-outlined text-[18px]">clinical_notes</span>
+                        </span>
+                    </div>
+                    <h3 class="font-title-md text-title-md text-on-surface font-bold leading-snug">
+                        Bác Sĩ Sàng Lọc Lâm Sàng
+                    </h3>
+                    <p class="font-label-sm text-label-sm text-on-surface-variant mt-1 mb-3">
+                        52 Bác sĩ khám lâm sàng
+                    </p>
+                    <div class="space-y-1.5 pt-2 border-t border-surface-container-low font-body-sm text-body-sm text-on-surface-variant">
+                        <div class="flex items-start gap-1.5">
+                            <span class="material-symbols-outlined text-primary text-[16px] shrink-0 mt-0.5">check_circle</span>
+                            <span>Khám thể lực &amp; tiền sử y khoa</span>
+                        </div>
+                        <div class="flex items-start gap-1.5">
+                            <span class="material-symbols-outlined text-primary text-[16px] shrink-0 mt-0.5">check_circle</span>
+                            <span>Chỉ định hoãn hiến máu tạm thời</span>
+                        </div>
+                        <div class="flex items-start gap-1.5">
+                            <span class="material-symbols-outlined text-primary text-[16px] shrink-0 mt-0.5">check_circle</span>
+                            <span>Duyệt thể tích: 250 / 350 / 450mL</span>
+                        </div>
+                        <div class="flex items-start gap-1.5 text-on-surface-variant/50">
+                            <span class="material-symbols-outlined text-[16px] shrink-0 mt-0.5">block</span>
+                            <span>Không quyền xuất kho máu</span>
+                        </div>
+                    </div>
+                </div>
+                <a asp-controller="Admin" asp-action="RBAC" class="mt-4 w-full py-2 px-3 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-sm text-label-sm font-semibold transition-colors flex items-center justify-center gap-1">
+                    <span class="material-symbols-outlined text-[16px]">edit</span>
+                    <span>Chỉnh sửa quyền vai trò</span>
+                </a>
+            </div>
+
+            <!-- Role 3: KTV Xét Nghiệm -->
+            <div class="flex flex-col justify-between rounded-xl bg-surface-container-lowest p-space-md shadow-sm hover:shadow-md transition-all duration-200">
+                <div>
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-800 font-label-sm text-label-sm font-bold uppercase tracking-wider">
+                            Lab Immuno / NAT
+                        </span>
+                        <span class="w-8 h-8 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-700">
+                            <span class="material-symbols-outlined text-[18px]">biotech</span>
+                        </span>
+                    </div>
+                    <h3 class="font-title-md text-title-md text-on-surface font-bold leading-snug">
+                        Kỹ Thuật Viên Xét Nghiệm
+                    </h3>
+                    <p class="font-label-sm text-label-sm text-on-surface-variant mt-1 mb-3">
+                        76 Kỹ thuật viên LIMS
+                    </p>
+                    <div class="space-y-1.5 pt-2 border-t border-surface-container-low font-body-sm text-body-sm text-on-surface-variant">
+                        <div class="flex items-start gap-1.5">
+                            <span class="material-symbols-outlined text-emerald-700 text-[16px] shrink-0 mt-0.5">check_circle</span>
+                            <span>Nhập chỉ số HIV, HBV, HCV, NAT</span>
+                        </div>
+                        <div class="flex items-start gap-1.5">
+                            <span class="material-symbols-outlined text-emerald-700 text-[16px] shrink-0 mt-0.5">check_circle</span>
+                            <span>Khẳng định nhóm máu ABO / Rh</span>
+                        </div>
+                        <div class="flex items-start gap-1.5">
+                            <span class="material-symbols-outlined text-emerald-700 text-[16px] shrink-0 mt-0.5">check_circle</span>
+                            <span>Ký số chứng nhận kết quả lab</span>
+                        </div>
+                        <div class="flex items-start gap-1.5 text-on-surface-variant/50">
+                            <span class="material-symbols-outlined text-[16px] shrink-0 mt-0.5">block</span>
+                            <span>Không đổi thông tin người hiến</span>
+                        </div>
+                    </div>
+                </div>
+                <a asp-controller="Admin" asp-action="RBAC" class="mt-4 w-full py-2 px-3 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-sm text-label-sm font-semibold transition-colors flex items-center justify-center gap-1">
+                    <span class="material-symbols-outlined text-[16px]">edit</span>
+                    <span>Chỉnh sửa quyền vai trò</span>
+                </a>
+            </div>
+
+            <!-- Role 4: Thủ Kho Lưu Trữ -->
+            <div class="flex flex-col justify-between rounded-xl bg-surface-container-lowest p-space-md shadow-sm hover:shadow-md transition-all duration-200">
+                <div>
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="px-2.5 py-1 rounded-lg bg-sky-100 text-sky-800 font-label-sm text-label-sm font-bold uppercase tracking-wider">
+                            Cold Chain / ISBT
+                        </span>
+                        <span class="w-8 h-8 rounded-full bg-sky-50 flex items-center justify-center text-sky-700">
+                            <span class="material-symbols-outlined text-[18px]">ac_unit</span>
+                        </span>
+                    </div>
+                    <h3 class="font-title-md text-title-md text-on-surface font-bold leading-snug">
+                        Thủ Kho Lưu Trữ &amp; Chuỗi Lạnh
+                    </h3>
+                    <p class="font-label-sm text-label-sm text-on-surface-variant mt-1 mb-3">
+                        42 Cán bộ bảo quản
+                    </p>
+                    <div class="space-y-1.5 pt-2 border-t border-surface-container-low font-body-sm text-body-sm text-on-surface-variant">
+                        <div class="flex items-start gap-1.5">
+                            <span class="material-symbols-outlined text-sky-700 text-[16px] shrink-0 mt-0.5">check_circle</span>
+                            <span>Nhập kho mã hóa ISBT 128</span>
+                        </div>
+                        <div class="flex items-start gap-1.5">
+                            <span class="material-symbols-outlined text-sky-700 text-[16px] shrink-0 mt-0.5">check_circle</span>
+                            <span>Giám sát cảm biến IoT nhiệt độ</span>
+                        </div>
+                        <div class="flex items-start gap-1.5">
+                            <span class="material-symbols-outlined text-sky-700 text-[16px] shrink-0 mt-0.5">check_circle</span>
+                            <span>Quét Barcode xuất xe cấp cứu</span>
+                        </div>
+                        <div class="flex items-start gap-1.5 text-on-surface-variant/50">
+                            <span class="material-symbols-outlined text-[16px] shrink-0 mt-0.5">block</span>
+                            <span>Không sửa kết quả xét nghiệm</span>
+                        </div>
+                    </div>
+                </div>
+                <a asp-controller="Admin" asp-action="RBAC" class="mt-4 w-full py-2 px-3 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-sm text-label-sm font-semibold transition-colors flex items-center justify-center gap-1">
+                    <span class="material-symbols-outlined text-[16px]">edit</span>
+                    <span>Chỉnh sửa quyền vai trò</span>
+                </a>
+            </div>
+
+            <!-- Role 5: Điều Phối Viên -->
+            <div class="flex flex-col justify-between rounded-xl bg-surface-container-lowest p-space-md shadow-sm hover:shadow-md transition-all duration-200">
+                <div>
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="px-2.5 py-1 rounded-lg bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-bold uppercase tracking-wider">
+                            Field Coordinator
+                        </span>
+                        <span class="w-8 h-8 rounded-full bg-secondary-container/60 flex items-center justify-center text-on-secondary-container">
+                            <span class="material-symbols-outlined text-[18px]">groups</span>
+                        </span>
+                    </div>
+                    <h3 class="font-title-md text-title-md text-on-surface font-bold leading-snug">
+                        Điều Phối Viên &amp; Ngoại Viện
+                    </h3>
+                    <p class="font-label-sm text-label-sm text-on-surface-variant mt-1 mb-3">
+                        160 Tình nguyện viên &amp; cán bộ
+                    </p>
+                    <div class="space-y-1.5 pt-2 border-t border-surface-container-low font-body-sm text-body-sm text-on-surface-variant">
+                        <div class="flex items-start gap-1.5">
+                            <span class="material-symbols-outlined text-primary text-[16px] shrink-0 mt-0.5">check_circle</span>
+                            <span>Check-in VNeID tại xe lưu động</span>
+                        </div>
+                        <div class="flex items-start gap-1.5">
+                            <span class="material-symbols-outlined text-primary text-[16px] shrink-0 mt-0.5">check_circle</span>
+                            <span>Hỗ trợ suất ăn &amp; quà tặng hiện vật</span>
+                        </div>
+                        <div class="flex items-start gap-1.5">
+                            <span class="material-symbols-outlined text-primary text-[16px] shrink-0 mt-0.5">check_circle</span>
+                            <span>Theo dõi phản ứng sau hiến máu</span>
+                        </div>
+                        <div class="flex items-start gap-1.5 text-on-surface-variant/50">
+                            <span class="material-symbols-outlined text-[16px] shrink-0 mt-0.5">block</span>
+                            <span>Không can thiệp hồ sơ bệnh án</span>
+                        </div>
+                    </div>
+                </div>
+                <a asp-controller="Admin" asp-action="RBAC" class="mt-4 w-full py-2 px-3 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-sm text-label-sm font-semibold transition-colors flex items-center justify-center gap-1">
+                    <span class="material-symbols-outlined text-[16px]">edit</span>
+                    <span>Chỉnh sửa quyền vai trò</span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- 4. Block 2: Medical Staff Account Directory & Security Status Table -->
+    <section class="flex flex-col gap-space-sm">
+        <!-- Filter Bar -->
+        <div class="p-space-md bg-surface-container-lowest rounded-xl shadow-sm flex flex-col lg:flex-row gap-3 items-stretch lg:items-center justify-between">
+            <div class="flex flex-1 flex-col sm:flex-row gap-3">
+                <!-- Search input -->
+                <div class="relative flex-1">
+                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">search</span>
+                    <input id="staffSearchInput" class="w-full h-11 pl-10 pr-4 bg-surface-container-low rounded-xl font-body-sm text-body-sm text-on-surface placeholder:text-on-surface-variant/60 focus:outline-none focus:bg-surface-container-lowest transition-all" placeholder="Tìm họ tên, Mã định danh CBYT, CCHN, Email y tế..." type="search">
+                </div>
+                <!-- Role Filter -->
+                <div class="relative min-w-[200px]">
+                    <select id="staffRoleSelect" class="w-full h-11 px-3 bg-surface-container-low rounded-xl font-body-sm text-body-sm text-on-surface focus:outline-none cursor-pointer appearance-none">
+                        <option value="">Tất cả Vai trò (5 nhóm)</option>
+                        <option value="Trưởng kíp">Trưởng Kíp / Trưởng Khoa</option>
+                        <option value="Khám Sàng Lọc">Bác Sĩ Sàng Lọc Lâm Sàng</option>
+                        <option value="Xét Nghiệm">Kỹ Thuật Viên Xét Nghiệm</option>
+                        <option value="Thủ Kho">Thủ Kho Lưu Trữ &amp; Chuỗi Lạnh</option>
+                        <option value="Điều Phối">Điều Phối Viên Ngoại Viện</option>
+                    </select>
+                    <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none text-[18px]">expand_more</span>
+                </div>
+                <!-- Hospital Unit Filter -->
+                <div class="relative min-w-[210px]">
+                    <select id="staffUnitSelect" class="w-full h-11 px-3 bg-surface-container-low rounded-xl font-body-sm text-body-sm text-on-surface focus:outline-none cursor-pointer appearance-none">
+                        <option value="">Tất cả Khoa / Viện Tiếp Nhận</option>
+                        <option value="Viện Huyết học TW">Viện Huyết học TW</option>
+                        <option value="Việt Đức">BV Hữu nghị Việt Đức</option>
+                        <option value="Bạch Mai">Bệnh viện Bạch Mai</option>
+                        <option value="Lưu Động">Đội Xe Hiến Máu Lưu Động</option>
+                    </select>
+                    <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none text-[18px]">expand_more</span>
+                </div>
+                <!-- PKI Token Filter -->
+                <div class="relative min-w-[190px]">
+                    <select id="staffTokenSelect" class="w-full h-11 px-3 bg-surface-container-low rounded-xl font-body-sm text-body-sm text-on-surface focus:outline-none cursor-pointer appearance-none">
+                        <option value="">Trạng thái Ký số PKI</option>
+                        <option value="SmartCA">Đã xác thực SmartCA (Valid)</option>
+                        <option value="Hết hạn">Sắp hết hạn (&lt; 15 ngày)</option>
+                        <option value="Khóa">Tạm khóa bảo mật</option>
+                    </select>
+                    <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none text-[18px]">expand_more</span>
+                </div>
+            </div>
+            <!-- Reload / Quick actions -->
+            <div class="flex items-center gap-2 self-end lg:self-center shrink-0">
+                <button id="btnResetFilter" class="p-2.5 rounded-xl bg-surface-container-low hover:bg-surface-container text-on-surface transition-colors" title="Làm mới bộ lọc" type="button">
+                    <span class="material-symbols-outlined text-[20px]">refresh</span>
+                </button>
+                <button class="p-2.5 rounded-xl bg-surface-container-low hover:bg-surface-container text-on-surface transition-colors" title="Xuất dữ liệu Excel CBYT" type="button" onclick="alert('Đang trích xuất danh sách cán bộ y tế (Excel)...')">
+                    <span class="material-symbols-outlined text-[20px]">download</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Table Wrapper -->
+        <div class="overflow-x-auto rounded-xl bg-surface-container-lowest shadow-sm">
+            <table class="w-full text-left border-collapse min-w-[1100px]">
+                <thead>
+                    <tr class="bg-surface-container-low font-label-md text-label-md text-on-surface-variant">
+                        <th class="py-3.5 px-space-md">Cán Bộ Y Tế &amp; Chức Danh</th>
+                        <th class="py-3.5 px-space-md">Đơn Vị / Khoa Lâm Sàng</th>
+                        <th class="py-3.5 px-space-md">Nhóm Vai Trò (RBAC)</th>
+                        <th class="py-3.5 px-space-md">Chứng Thư Số (PKI Token)</th>
+                        <th class="py-3.5 px-space-md">Phiên &amp; IP Cuối</th>
+                        <th class="py-3.5 px-space-md">Trạng Thái</th>
+                        <th class="py-3.5 px-space-md text-right">Thao Tác</th>
+                    </tr>
+                </thead>
+                <tbody id="staffTableBody" class="font-body-sm text-body-sm text-on-surface divide-y divide-surface-container-low">
+                    <!-- Row 1: Trần Mai Linh -->
+                    <tr class="hover:bg-surface-container-low/50 transition-colors">
+                        <td class="py-3.5 px-space-md">
+                            <div class="flex items-center gap-3">
+                                <div class="relative w-10 h-10 rounded-full bg-primary-container text-on-primary flex items-center justify-center font-bold text-label-md shrink-0">
+                                    ML
+                                    <span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 ring-2 ring-white"></span>
+                                </div>
+                                <div class="flex flex-col">
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="font-title-md text-title-md font-bold text-on-surface">BS. CKI Trần Mai Linh</span>
+                                        <span class="material-symbols-outlined text-primary text-[16px]" title="Xác thực VNeID Y Tế C06">verified</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 font-label-sm text-label-sm text-on-surface-variant">
+                                        <span class="text-primary font-semibold">CCHN: 004128/BYT-CCHN</span>
+                                        <span>•</span>
+                                        <span>linh.tm@nihbt.org.vn</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="py-3.5 px-space-md">
+                            <div class="flex flex-col">
+                                <span class="font-semibold text-on-surface">Viện Huyết học TW</span>
+                                <span class="text-on-surface-variant font-label-sm text-label-sm">Khoa Tiếp nhận &amp; Cấp phát Máu</span>
+                            </div>
+                        </td>
+                        <td class="py-3.5 px-space-md">
+                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary-fixed text-primary font-label-sm text-label-sm font-bold">
+                                <span class="material-symbols-outlined text-[14px]">shield_person</span>
+                                Trưởng kíp (Medical Lead)
+                            </span>
+                        </td>
+                        <td class="py-3.5 px-space-md">
+                            <div class="flex flex-col gap-0.5">
+                                <div class="flex items-center gap-1.5">
+                                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                                    <span class="font-semibold text-emerald-800 font-label-sm text-label-sm">SmartCA Bộ Y Tế</span>
+                                </div>
+                                <span class="font-label-sm text-label-sm text-on-surface-variant">HSD: 24/12/2026 (SN: 77F2-990A)</span>
+                            </div>
+                        </td>
+                        <td class="py-3.5 px-space-md">
+                            <div class="flex flex-col">
+                                <span class="text-emerald-700 font-semibold font-label-sm text-label-sm flex items-center gap-1">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse"></span>
+                                    Đang trực tuyến
+                                </span>
+                                <span class="font-label-sm text-label-sm text-on-surface-variant">10.120.4.15 • Trạm Ký số Trung tâm</span>
+                            </div>
+                        </td>
+                        <td class="py-3.5 px-space-md">
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-label-sm text-label-sm font-semibold">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                                Đang hoạt động
+                            </span>
+                        </td>
+                        <td class="py-3.5 px-space-md text-right">
+                            <div class="inline-flex items-center gap-1">
+                                <a asp-controller="Admin" asp-action="RBAC" class="p-1.5 rounded-lg hover:bg-surface-container text-on-surface-variant hover:text-primary transition-colors" title="Xem phân quyền">
+                                    <span class="material-symbols-outlined text-[18px]">visibility</span>
+                                </a>
+                                <a asp-controller="Admin" asp-action="RBAC" class="p-1.5 rounded-lg hover:bg-surface-container text-on-surface-variant hover:text-primary transition-colors" title="Đổi vai trò">
+                                    <span class="material-symbols-outlined text-[18px]">manage_accounts</span>
+                                </a>
+                                <button class="p-1.5 rounded-lg hover:bg-error/10 text-on-surface-variant hover:text-error transition-colors" title="Khóa tài khoản" type="button" onclick="alert('Khóa tạm thời tài khoản BS. CKI Trần Mai Linh.')">
+                                    <span class="material-symbols-outlined text-[18px]">lock</span>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- Row 2: Vũ Quang Huy -->
+                    <tr class="hover:bg-surface-container-low/50 transition-colors">
+                        <td class="py-3.5 px-space-md">
+                            <div class="flex items-center gap-3">
+                                <div class="relative w-10 h-10 rounded-full bg-surface-container-high text-on-surface flex items-center justify-center font-bold text-label-md shrink-0">
+                                    QH
+                                    <span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 ring-2 ring-white"></span>
+                                </div>
+                                <div class="flex flex-col">
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="font-title-md text-title-md font-bold text-on-surface">TS. BS Vũ Quang Huy</span>
+                                        <span class="material-symbols-outlined text-primary text-[16px]" title="Xác thực VNeID Y Tế">verified</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 font-label-sm text-label-sm text-on-surface-variant">
+                                        <span class="font-semibold">CCHN: 012890/HNO-CCHN</span>
+                                        <span>•</span>
+                                        <span>huy.vq@vietduchospital.edu.vn</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="py-3.5 px-space-md">
+                            <div class="flex flex-col">
+                                <span class="font-semibold text-on-surface">BV Hữu nghị Việt Đức</span>
+                                <span class="text-on-surface-variant font-label-sm text-label-sm">Trung tâm Truyền máu Ngoại khoa</span>
+                            </div>
+                        </td>
+                        <td class="py-3.5 px-space-md">
+                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-container-high text-on-surface font-label-sm text-label-sm font-semibold">
+                                <span class="material-symbols-outlined text-[14px]">stethoscope</span>
+                                BS. Khám Sàng Lọc
+                            </span>
+                        </td>
+                        <td class="py-3.5 px-space-md">
+                            <div class="flex flex-col gap-0.5">
+                                <div class="flex items-center gap-1.5">
+                                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                                    <span class="font-semibold text-on-surface font-label-sm text-label-sm">VNPT-CA USB Token</span>
+                                </div>
+                                <span class="font-label-sm text-label-sm text-on-surface-variant">HSD: 18/09/2026 (SN: VN-4412B)</span>
+                            </div>
+                        </td>
+                        <td class="py-3.5 px-space-md">
+                            <div class="flex flex-col">
+                                <span class="font-semibold text-on-surface font-label-sm text-label-sm">12 phút trước</span>
+                                <span class="font-label-sm text-label-sm text-on-surface-variant">192.168.10.88 • Phòng Khám số 3</span>
+                            </div>
+                        </td>
+                        <td class="py-3.5 px-space-md">
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-label-sm text-label-sm font-semibold">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                                Đang hoạt động
+                            </span>
+                        </td>
+                        <td class="py-3.5 px-space-md text-right">
+                            <div class="inline-flex items-center gap-1">
+                                <a asp-controller="Admin" asp-action="RBAC" class="p-1.5 rounded-lg hover:bg-surface-container text-on-surface-variant hover:text-primary transition-colors">
+                                    <span class="material-symbols-outlined text-[18px]">visibility</span>
+                                </a>
+                                <a asp-controller="Admin" asp-action="RBAC" class="p-1.5 rounded-lg hover:bg-surface-container text-on-surface-variant hover:text-primary transition-colors">
+                                    <span class="material-symbols-outlined text-[18px]">manage_accounts</span>
+                                </a>
+                                <button class="p-1.5 rounded-lg hover:bg-error/10 text-on-surface-variant hover:text-error transition-colors" type="button" onclick="alert('Khóa tạm thời tài khoản TS. BS Vũ Quang Huy.')">
+                                    <span class="material-symbols-outlined text-[18px]">lock</span>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- Row 3: Lê Thảo Trang (Warning Certificate Expiring) -->
+                    <tr class="bg-error-container/10 hover:bg-error-container/20 transition-colors">
+                        <td class="py-3.5 px-space-md">
+                            <div class="flex items-center gap-3">
+                                <div class="relative w-10 h-10 rounded-full bg-emerald-100 text-emerald-900 flex items-center justify-center font-bold text-label-md shrink-0">
+                                    TT
+                                    <span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 ring-2 ring-white"></span>
+                                </div>
+                                <div class="flex flex-col">
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="font-title-md text-title-md font-bold text-on-surface">KTV. Lê Thảo Trang</span>
+                                        <span class="material-symbols-outlined text-primary text-[16px]">verified</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 font-label-sm text-label-sm text-on-surface-variant">
+                                        <span class="font-semibold">CCHN: 009812/BYT-KTV</span>
+                                        <span>•</span>
+                                        <span>trang.lt@huyethoc.vn</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="py-3.5 px-space-md">
+                            <div class="flex flex-col">
+                                <span class="font-semibold text-on-surface">Trung Tâm Máu Quốc Gia</span>
+                                <span class="text-on-surface-variant font-label-sm text-label-sm">Phòng Xét Nghiệm NAT &amp; Miễn Dịch</span>
+                            </div>
+                        </td>
+                        <td class="py-3.5 px-space-md">
+                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 font-label-sm text-label-sm font-semibold">
+                                <span class="material-symbols-outlined text-[14px]">biotech</span>
+                                KTV Xét Nghiệm Lab
+                            </span>
+                        </td>
+                        <td class="py-3.5 px-space-md">
+                            <div class="flex flex-col gap-0.5">
+                                <div class="flex items-center gap-1.5">
+                                    <span class="w-2 h-2 rounded-full bg-error animate-ping"></span>
+                                    <span class="font-bold text-error font-label-sm text-label-sm">Viettel-CA (Hết hạn trong 12 ngày)</span>
+                                </div>
+                                <span class="font-label-sm text-label-sm text-error/80">HSD: 02/04/2025 (Cần gia hạn ngay)</span>
+                            </div>
+                        </td>
+                        <td class="py-3.5 px-space-md">
+                            <div class="flex flex-col">
+                                <span class="font-semibold text-on-surface font-label-sm text-label-sm">35 phút trước</span>
+                                <span class="font-label-sm text-label-sm text-on-surface-variant">10.120.8.44 • Máy phân tích Cobas 6800</span>
+                            </div>
+                        </td>
+                        <td class="py-3.5 px-space-md">
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-800 font-label-sm text-label-sm font-semibold">
+                                <span class="w-1.5 h-1.5 rounded-full bg-amber-600"></span>
+                                Cảnh báo Ký số
+                            </span>
+                        </td>
+                        <td class="py-3.5 px-space-md text-right">
+                            <div class="inline-flex items-center gap-1">
+                                <button class="px-2.5 py-1 rounded-lg bg-primary text-on-primary font-label-sm text-label-sm font-semibold hover:bg-primary-container transition-colors" type="button" onclick="alert('Gửi thông báo yêu cầu gia hạn SmartCA tới KTV. Lê Thảo Trang.')">
+                                    Gia hạn CA
+                                </button>
+                                <a asp-controller="Admin" asp-action="RBAC" class="p-1.5 rounded-lg hover:bg-surface-container text-on-surface-variant">
+                                    <span class="material-symbols-outlined text-[18px]">more_vert</span>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- Row 4: Nguyễn Văn Toàn -->
+                    <tr class="hover:bg-surface-container-low/50 transition-colors">
+                        <td class="py-3.5 px-space-md">
+                            <div class="flex items-center gap-3">
+                                <div class="relative w-10 h-10 rounded-full bg-sky-100 text-sky-900 flex items-center justify-center font-bold text-label-md shrink-0">
+                                    VT
+                                    <span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 ring-2 ring-white"></span>
+                                </div>
+                                <div class="flex flex-col">
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="font-title-md text-title-md font-bold text-on-surface">KTV. Nguyễn Văn Toàn</span>
+                                        <span class="material-symbols-outlined text-primary text-[16px]">verified</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 font-label-sm text-label-sm text-on-surface-variant">
+                                        <span class="font-semibold">CCHN: 008122/BYT-KTV</span>
+                                        <span>•</span>
+                                        <span>toan.nv@nihbt.org.vn</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="py-3.5 px-space-md">
+                            <div class="flex flex-col">
+                                <span class="font-semibold text-on-surface">Viện Huyết học TW</span>
+                                <span class="text-on-surface-variant font-label-sm text-label-sm">Kho Lưu Trữ Chuỗi Lạnh &amp; Phân Phối</span>
+                            </div>
+                        </td>
+                        <td class="py-3.5 px-space-md">
+                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-sky-100 text-sky-800 font-label-sm text-label-sm font-semibold">
+                                <span class="material-symbols-outlined text-[14px]">ac_unit</span>
+                                Thủ Kho Chuỗi Lạnh
+                            </span>
+                        </td>
+                        <td class="py-3.5 px-space-md">
+                            <div class="flex flex-col gap-0.5">
+                                <div class="flex items-center gap-1.5">
+                                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                                    <span class="font-semibold text-on-surface font-label-sm text-label-sm">SmartCA Y Tế Mobile</span>
+                                </div>
+                                <span class="font-label-sm text-label-sm text-on-surface-variant">HSD: 15/11/2026 (SN: CA-8891)</span>
+                            </div>
+                        </td>
+                        <td class="py-3.5 px-space-md">
+                            <div class="flex flex-col">
+                                <span class="font-semibold text-on-surface font-label-sm text-label-sm">Hôm nay 08:15</span>
+                                <span class="font-label-sm text-label-sm text-on-surface-variant">10.120.6.12 • Máy quét Barcode Zebra</span>
+                            </div>
+                        </td>
+                        <td class="py-3.5 px-space-md">
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-label-sm text-label-sm font-semibold">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                                Đang hoạt động
+                            </span>
+                        </td>
+                        <td class="py-3.5 px-space-md text-right">
+                            <div class="inline-flex items-center gap-1">
+                                <a asp-controller="Admin" asp-action="RBAC" class="p-1.5 rounded-lg hover:bg-surface-container text-on-surface-variant hover:text-primary transition-colors">
+                                    <span class="material-symbols-outlined text-[18px]">visibility</span>
+                                </a>
+                                <a asp-controller="Admin" asp-action="RBAC" class="p-1.5 rounded-lg hover:bg-surface-container text-on-surface-variant hover:text-primary transition-colors">
+                                    <span class="material-symbols-outlined text-[18px]">manage_accounts</span>
+                                </a>
+                                <button class="p-1.5 rounded-lg hover:bg-error/10 text-on-surface-variant hover:text-error transition-colors" type="button" onclick="alert('Khóa tạm thời tài khoản KTV. Nguyễn Văn Toàn.')">
+                                    <span class="material-symbols-outlined text-[18px]">lock</span>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- Row 5: Phạm Hoàng Long -->
+                    <tr class="hover:bg-surface-container-low/50 transition-colors">
+                        <td class="py-3.5 px-space-md">
+                            <div class="flex items-center gap-3">
+                                <div class="relative w-10 h-10 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-bold text-label-md shrink-0">
+                                    HL
+                                    <span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 ring-2 ring-white"></span>
+                                </div>
+                                <div class="flex flex-col">
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="font-title-md text-title-md font-bold text-on-surface">ThS. Phạm Hoàng Long</span>
+                                        <span class="material-symbols-outlined text-primary text-[16px]">verified</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 font-label-sm text-label-sm text-on-surface-variant">
+                                        <span class="font-semibold">VNeID Mức 2 (C06)</span>
+                                        <span>•</span>
+                                        <span>longph@redcross.org.vn</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="py-3.5 px-space-md">
+                            <div class="flex flex-col">
+                                <span class="font-semibold text-on-surface">Hội Chữ Thập Đỏ TP Hà Nội</span>
+                                <span class="text-on-surface-variant font-label-sm text-label-sm">Đội Điều Phối Hiến Máu Lưu Động</span>
+                            </div>
+                        </td>
+                        <td class="py-3.5 px-space-md">
+                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-semibold">
+                                <span class="material-symbols-outlined text-[14px]">groups</span>
+                                Điều Phối Ngoại Viện
+                            </span>
+                        </td>
+                        <td class="py-3.5 px-space-md">
+                            <div class="flex flex-col gap-0.5">
+                                <span class="font-semibold text-on-surface font-label-sm text-label-sm">Xác thực eKYC VNeID</span>
+                                <span class="font-label-sm text-label-sm text-on-surface-variant">Không yêu cầu chữ ký số kết quả</span>
+                            </div>
+                        </td>
+                        <td class="py-3.5 px-space-md">
+                            <div class="flex flex-col">
+                                <span class="font-semibold text-on-surface font-label-sm text-label-sm">Hôm qua 17:40</span>
+                                <span class="font-label-sm text-label-sm text-on-surface-variant">4G Viettel • iPad Check-in Xe 02</span>
+                            </div>
+                        </td>
+                        <td class="py-3.5 px-space-md">
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-label-sm text-label-sm font-semibold">
+                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                                Đang hoạt động
+                            </span>
+                        </td>
+                        <td class="py-3.5 px-space-md text-right">
+                            <div class="inline-flex items-center gap-1">
+                                <a asp-controller="Admin" asp-action="RBAC" class="p-1.5 rounded-lg hover:bg-surface-container text-on-surface-variant hover:text-primary transition-colors">
+                                    <span class="material-symbols-outlined text-[18px]">visibility</span>
+                                </a>
+                                <a asp-controller="Admin" asp-action="RBAC" class="p-1.5 rounded-lg hover:bg-surface-container text-on-surface-variant hover:text-primary transition-colors">
+                                    <span class="material-symbols-outlined text-[18px]">manage_accounts</span>
+                                </a>
+                                <button class="p-1.5 rounded-lg hover:bg-error/10 text-on-surface-variant hover:text-error transition-colors" type="button" onclick="alert('Khóa tạm thời tài khoản ThS. Phạm Hoàng Long.')">
+                                    <span class="material-symbols-outlined text-[18px]">lock</span>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- Row 6: Đỗ Minh Triết (Locked Account - Security Alert) -->
+                    <tr class="bg-error-container/15 hover:bg-error-container/25 transition-colors">
+                        <td class="py-3.5 px-space-md">
+                            <div class="flex items-center gap-3">
+                                <div class="relative w-10 h-10 rounded-full bg-error text-on-error flex items-center justify-center font-bold text-label-md shrink-0">
+                                    MT
+                                    <span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-error ring-2 ring-white"></span>
+                                </div>
+                                <div class="flex flex-col">
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="font-title-md text-title-md font-bold text-on-surface line-through decoration-error">BS. Đỗ Minh Triết</span>
+                                        <span class="material-symbols-outlined text-error text-[16px]">lock</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 font-label-sm text-label-sm text-error">
+                                        <span class="font-semibold">Tạm khóa bảo mật Zero-Trust</span>
+                                        <span>•</span>
+                                        <span>triet.dm@huyethoc.vn</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="py-3.5 px-space-md">
+                            <div class="flex flex-col">
+                                <span class="font-semibold text-on-surface">Đội Xe Hiến Máu Chuyên Dụng 02</span>
+                                <span class="text-on-surface-variant font-label-sm text-label-sm">Tuyến Ngoại viện Điểm lưu động</span>
+                            </div>
+                        </td>
+                        <td class="py-3.5 px-space-md">
+                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm font-semibold line-through">
+                                BS. Khám Sàng Lọc
+                            </span>
+                        </td>
+                        <td class="py-3.5 px-space-md">
+                            <div class="flex flex-col gap-0.5">
+                                <span class="font-semibold text-error font-label-sm text-label-sm">Đình chỉ ký số tự động</span>
+                                <span class="font-label-sm text-label-sm text-on-surface-variant">Lý do: Sai OTP Token 5 lần liên tiếp</span>
+                            </div>
+                        </td>
+                        <td class="py-3.5 px-space-md">
+                            <div class="flex flex-col">
+                                <span class="font-bold text-error font-label-sm text-label-sm">07:55:22 Sáng nay</span>
+                                <span class="font-label-sm text-label-sm text-error">IP Ngoại mạng: 14.232.89.102</span>
+                            </div>
+                        </td>
+                        <td class="py-3.5 px-space-md">
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-error text-on-error font-label-sm text-label-sm font-bold">
+                                <span class="material-symbols-outlined text-[13px]">gpp_bad</span>
+                                Tạm Khóa An Toàn
+                            </span>
+                        </td>
+                        <td class="py-3.5 px-space-md text-right">
+                            <div class="inline-flex items-center gap-1">
+                                <button class="px-3 py-1 rounded-lg bg-surface-container hover:bg-surface-container-highest text-primary font-label-sm text-label-sm font-bold transition-colors" type="button" onclick="alert('Đã gửi mã mở khóa an toàn tới số điện thoại định danh của BS. Đỗ Minh Triết.')">
+                                    Mở Khóa / Reset
+                                </button>
+                                <a asp-controller="Admin" asp-action="RBAC" class="p-1.5 rounded-lg hover:bg-surface-container text-on-surface-variant">
+                                    <span class="material-symbols-outlined text-[18px]">more_vert</span>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Pagination Bar -->
+            <div class="px-space-md py-3 bg-surface-container-low flex flex-col sm:flex-row items-center justify-between gap-3 text-body-sm text-on-surface-variant">
+                <div class="flex items-center gap-2">
+                    <span>Hiển thị</span>
+                    <span class="font-semibold text-on-surface">1 - 6</span>
+                    <span>trong tổng số</span>
+                    <span class="font-semibold text-on-surface">342 Cán bộ y tế</span>
+                </div>
+                <div class="flex items-center gap-1">
+                    <button class="w-8 h-8 rounded-lg bg-surface-container-lowest text-on-surface hover:bg-surface-container disabled:opacity-40 flex items-center justify-center transition-colors" disabled type="button">
+                        <span class="material-symbols-outlined text-[18px]">chevron_left</span>
+                    </button>
+                    <button class="w-8 h-8 rounded-lg bg-primary text-on-primary font-bold flex items-center justify-center shadow-sm" type="button">1</button>
+                    <button class="w-8 h-8 rounded-lg bg-surface-container-lowest text-on-surface hover:bg-surface-container flex items-center justify-center transition-colors" type="button">2</button>
+                    <button class="w-8 h-8 rounded-lg bg-surface-container-lowest text-on-surface hover:bg-surface-container flex items-center justify-center transition-colors" type="button">3</button>
+                    <span class="px-1 text-on-surface-variant">...</span>
+                    <button class="w-8 h-8 rounded-lg bg-surface-container-lowest text-on-surface hover:bg-surface-container flex items-center justify-center transition-colors" type="button">57</button>
+                    <button class="w-8 h-8 rounded-lg bg-surface-container-lowest text-on-surface hover:bg-surface-container flex items-center justify-center transition-colors" type="button">
+                        <span class="material-symbols-outlined text-[18px]">chevron_right</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 5. Block 3: Security & Compliance Audit Trail Log (Realtime) -->
+    <section id="auditTrailSection" class="rounded-xl bg-surface-container-lowest p-space-lg shadow-sm flex flex-col gap-space-md">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-surface-container-low pb-space-sm">
+            <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-inverse-surface text-inverse-on-surface flex items-center justify-center">
+                    <span class="material-symbols-outlined text-[18px]">terminal</span>
+                </div>
+                <div>
+                    <h3 class="font-headline-sm text-headline-sm text-on-surface leading-snug">
+                        Nhật Ký Giám Sát Truy Cập &amp; Ký Số Realtime (Security Audit Trail)
+                    </h3>
+                    <p class="font-label-sm text-label-sm text-on-surface-variant">
+                        Theo dõi toàn vẹn hàm băm SHA-256, chuẩn HL7/FHIR &amp; Thông tư Bộ Y Tế
+                    </p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 font-label-sm text-label-sm font-semibold">
+                    <span class="w-2 h-2 rounded-full bg-emerald-600 animate-ping"></span>
+                    EF Core 10 Interceptor: Active
+                </span>
+                <button class="p-2 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface transition-colors" title="Bộ lọc sự kiện bảo mật" type="button" onclick="alert('Lọc sự kiện theo cấp độ bảo mật y tế...')">
+                    <span class="material-symbols-outlined text-[18px]">filter_list</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Realtime Log Items -->
+        <div class="space-y-3 font-body-sm text-body-sm">
+            <!-- Log Item 1: Phê duyệt túi máu khẩn -->
+            <div class="flex items-start gap-3 p-3 rounded-xl bg-surface-container-low/70 hover:bg-surface-container-low transition-colors">
+                <span class="px-2 py-0.5 rounded font-mono text-label-sm font-bold bg-primary text-on-primary shrink-0 mt-0.5">
+                    08:42:15
+                </span>
+                <div class="flex-1 min-w-0">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <span class="font-bold text-on-surface">BS. CKI Trần Mai Linh</span>
+                        <span class="text-on-surface-variant">vừa ký số phê duyệt</span>
+                        <span class="px-2 py-0.5 rounded bg-surface-container-highest text-on-surface font-semibold text-label-sm">Lệnh Điều Phối Khẩn Cấp #EMG-2025-04</span>
+                        <span class="text-on-surface-variant">cho</span>
+                        <strong class="text-primary font-semibold">04 túi máu nhóm O Rh(-)</strong>
+                        <span class="text-on-surface-variant">chuyển cấp cứu BV Việt Đức.</span>
+                    </div>
+                    <div class="mt-1 flex items-center gap-2 font-mono text-[11px] text-on-surface-variant truncate">
+                        <span>SmartCA Hash: 9f8a32b0...e4c19</span>
+                        <span>•</span>
+                        <span>Valid Timestamp Authority (TSA)</span>
+                        <span>•</span>
+                        <span class="text-emerald-700 font-semibold">Toàn vẹn dữ liệu: Hợp lệ 100%</span>
+                    </div>
+                </div>
+                <span class="material-symbols-outlined text-emerald-600 text-[20px] shrink-0">verified</span>
+            </div>
+
+            <!-- Log Item 2: Cập nhật kết quả xét nghiệm NAT -->
+            <div class="flex items-start gap-3 p-3 rounded-xl bg-surface-container-low/70 hover:bg-surface-container-low transition-colors">
+                <span class="px-2 py-0.5 rounded font-mono text-label-sm font-bold bg-surface-container-highest text-on-surface shrink-0 mt-0.5">
+                    08:30:10
+                </span>
+                <div class="flex-1 min-w-0">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <span class="font-bold text-on-surface">KTV. Lê Thảo Trang</span>
+                        <span class="text-on-surface-variant">hoàn thành cập nhật chỉ số xét nghiệm NAT sàng lọc đợt cho túi máu DIN</span>
+                        <span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-mono font-semibold text-label-sm">#BAG-2025-08991</span>
+                        <span class="text-emerald-700 font-bold">(Âm tính an toàn - Đạt chuẩn truyền máu)</span>.
+                    </div>
+                    <div class="mt-1 flex items-center gap-2 font-mono text-[11px] text-on-surface-variant">
+                        <span>Đồng bộ tự động qua LIMS Rest-API</span>
+                        <span>•</span>
+                        <span>Cobas 6800 Analyzer Port 443</span>
+                    </div>
+                </div>
+                <span class="material-symbols-outlined text-emerald-600 text-[20px] shrink-0">check_circle</span>
+            </div>
+
+            <!-- Log Item 3: Cảnh báo Lockout IP Bất thường -->
+            <div class="flex items-start gap-3 p-3 rounded-xl bg-error-container/30 hover:bg-error-container/40 transition-colors">
+                <span class="px-2 py-0.5 rounded font-mono text-label-sm font-bold bg-error text-on-error shrink-0 mt-0.5">
+                    07:55:22
+                </span>
+                <div class="flex-1 min-w-0">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <span class="inline-flex items-center gap-1 font-bold text-error">
+                            <span class="material-symbols-outlined text-[16px]">warning</span>
+                            Cảnh Báo Xâm Nhập:
+                        </span>
+                        <span class="text-on-surface">Phát hiện 05 lần nhập sai mã PIN/OTP SmartCA từ địa chỉ IP ngoại mạng</span>
+                        <span class="px-2 py-0.5 rounded bg-error/15 text-error font-mono font-bold text-label-sm">14.232.89.102 (Unknown ISP)</span>
+                        <span class="text-on-surface">vào tài khoản</span>
+                        <strong class="text-on-surface font-bold">BS. Đỗ Minh Triết</strong>.
+                    </div>
+                    <div class="mt-1 flex items-center gap-2 font-mono text-[11px] text-error font-semibold">
+                        <span>Kích hoạt ABAC Policy #SEC-LOCK-09</span>
+                        <span>•</span>
+                        <span>Zero-Trust Auto Lockout đã áp dụng</span>
+                        <span>•</span>
+                        <span>SMS &amp; Email đã gửi tới Trưởng kíp trực</span>
+                    </div>
+                </div>
+                <span class="material-symbols-outlined text-error text-[20px] shrink-0 animate-pulse">lock</span>
+            </div>
+
+            <!-- Log Item 4: Phê duyệt phân quyền mới -->
+            <div class="flex items-start gap-3 p-3 rounded-xl bg-surface-container-low/70 hover:bg-surface-container-low transition-colors">
+                <span class="px-2 py-0.5 rounded font-mono text-label-sm font-bold bg-surface-container-highest text-on-surface shrink-0 mt-0.5">
+                    07:15:00
+                </span>
+                <div class="flex-1 min-w-0">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <span class="font-bold text-on-surface">Quản Trị Viên Hệ Thống (SysAdmin)</span>
+                        <span class="text-on-surface-variant">phê duyệt cấp quyền</span>
+                        <span class="px-2 py-0.5 rounded bg-secondary-container text-on-secondary-container font-semibold text-label-sm">Field Coordinator</span>
+                        <span class="text-on-surface-variant">cho 02 Điều phối viên mới phục vụ đợt tiếp nhận hiến máu tại</span>
+                        <span class="font-semibold text-on-surface">Đại học Bách Khoa Hà Nội</span>.
+                    </div>
+                    <div class="mt-1 flex items-center gap-2 font-mono text-[11px] text-on-surface-variant">
+                        <span>Phân quyền tạm thời 48h</span>
+                        <span>•</span>
+                        <span>Xác thực VNeID mức 2 tự động hoàn tất</span>
+                    </div>
+                </div>
+                <span class="material-symbols-outlined text-on-surface-variant text-[20px] shrink-0">badge</span>
+            </div>
+        </div>
+    </section>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const searchInput = document.getElementById('staffSearchInput');
+        const roleSelect = document.getElementById('staffRoleSelect');
+        const unitSelect = document.getElementById('staffUnitSelect');
+        const tokenSelect = document.getElementById('staffTokenSelect');
+        const btnReset = document.getElementById('btnResetFilter');
+        const tableBody = document.getElementById('staffTableBody');
+
+        function filterTable() {
+            if (!tableBody) return;
+            const searchVal = searchInput ? searchInput.value.toLowerCase().trim() : '';
+            const roleVal = roleSelect ? roleSelect.value.toLowerCase().trim() : '';
+            const unitVal = unitSelect ? unitSelect.value.toLowerCase().trim() : '';
+            const tokenVal = tokenSelect ? tokenSelect.value.toLowerCase().trim() : '';
+
+            const rows = tableBody.querySelectorAll('tr');
+            rows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                const matchSearch = !searchVal || text.includes(searchVal);
+                const matchRole = !roleVal || text.includes(roleVal);
+                const matchUnit = !unitVal || text.includes(unitVal);
+                const matchToken = !tokenVal || text.includes(tokenVal);
+
+                if (matchSearch && matchRole && matchUnit && matchToken) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        }
+
+        if (searchInput) searchInput.addEventListener('input', filterTable);
+        if (roleSelect) roleSelect.addEventListener('change', filterTable);
+        if (unitSelect) unitSelect.addEventListener('change', filterTable);
+        if (tokenSelect) tokenSelect.addEventListener('change', filterTable);
+
+        if (btnReset) {
+            btnReset.addEventListener('click', function () {
+                if (searchInput) searchInput.value = '';
+                if (roleSelect) roleSelect.value = '';
+                if (unitSelect) unitSelect.value = '';
+                if (tokenSelect) tokenSelect.value = '';
+                filterTable();
+            });
+        }
+    });
+</script>

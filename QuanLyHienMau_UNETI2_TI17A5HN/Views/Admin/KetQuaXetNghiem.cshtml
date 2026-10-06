@@ -1,0 +1,836 @@
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Thẩm Định & Quản Lý Kết Quả Xét Nghiệm Máu";
+}
+
+<div class="flex flex-col w-full">
+    <!-- Top Ambient Glow Line -->
+    <div class="h-1.5 w-full bg-gradient-to-r from-primary via-primary-container to-surface-tint shrink-0"></div>
+
+    <!-- Main Container -->
+    <div class="p-space-lg lg:p-margin flex flex-col gap-space-lg max-w-[1720px] mx-auto w-full">
+        <!-- Header & Action Ribbon -->
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md">
+            <div class="flex flex-col gap-1">
+                <nav class="flex items-center gap-2 font-label-sm text-label-sm text-on-surface-variant">
+                    <a asp-controller="Admin" asp-action="Dashboard" class="hover:text-primary cursor-pointer transition-colors">Hệ thống Y tế Vitalis</a>
+                    <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+                    <span class="hover:text-primary cursor-pointer transition-colors">Quản lý Y tế</span>
+                    <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+                    <span class="text-primary font-bold">Thẩm định &amp; Kết quả xét nghiệm</span>
+                </nav>
+                <div class="flex items-center gap-3 mt-1">
+                    <h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">Thẩm Định &amp; Nhập Kết Quả Xét Nghiệm Máu</h1>
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container font-label-sm text-label-sm text-secondary font-bold">
+                        <span class="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        Phòng LAB 04 • Chuẩn ISO 15189
+                    </span>
+                </div>
+                <p class="font-body-sm text-body-sm text-on-surface-variant max-w-3xl">
+                    Quy trình kiểm soát an toàn truyền máu 2 lớp: Sàng lọc 5 tác nhân lây nhiễm (NAT/ELISA), định nhóm ABO/RhD, đánh giá thể tích cơ học và phê duyệt cấp mã ISBT 128 nhập kho bảo quản 2–6°C.
+                </p>
+            </div>
+            <!-- Action Buttons -->
+            <div class="flex items-center flex-wrap gap-space-sm shrink-0">
+                <button class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-surface-container-low hover:bg-surface-container text-on-surface font-label-md text-label-md transition-all duration-150 shadow-sm" type="button" onclick="alert('Đã kích hoạt đồng bộ tự động 2 chiều HL7 / LIS với Roche Cobas 6800.')">
+                    <span class="material-symbols-outlined text-[18px] text-primary">sync_saved_locally</span>
+                    <span>HL7 / LIS Auto-Sync</span>
+                    <span class="px-1.5 py-0.5 rounded-md bg-emerald-100 text-emerald-800 text-[10px] font-bold">Live</span>
+                </button>
+                <button class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-surface-container-low hover:bg-surface-container text-on-surface font-label-md text-label-md transition-all duration-150 shadow-sm" type="button" onclick="alert('Đang trích xuất biên bản kiểm định xét nghiệm (PDF)...')">
+                    <span class="material-symbols-outlined text-[18px]">print</span>
+                    <span>Xuất biên bản (PDF)</span>
+                </button>
+                <button class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md shadow-md hover:shadow-lg transition-all duration-150" type="button" onclick="openManualEntryModal()">
+                    <span class="material-symbols-outlined text-[20px]">barcode_scanner</span>
+                    <span>+ Nhập thủ công / Quét Barcode</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- KPI Metric Cards Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-space-md">
+            <!-- Card 1: Tổng tiếp nhận -->
+            <div class="p-space-lg rounded-2xl bg-surface-container-lowest shadow-sm flex flex-col justify-between relative overflow-hidden">
+                <div class="absolute -right-6 -bottom-6 w-28 h-28 bg-surface-container-low rounded-full opacity-60 pointer-events-none"></div>
+                <div class="flex items-start justify-between">
+                    <div class="flex flex-col">
+                        <span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant font-bold">Mẫu tiếp nhận ca hôm nay</span>
+                        <div class="flex items-baseline gap-2 mt-2">
+                            <span class="font-headline-lg text-headline-lg font-bold text-on-surface">86</span>
+                            <span class="font-body-sm text-body-sm text-on-surface-variant font-medium">túi máu</span>
+                        </div>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-surface-container-high flex items-center justify-center text-primary shrink-0">
+                        <span class="material-symbols-outlined text-[26px]">water_drop</span>
+                    </div>
+                </div>
+                <div class="mt-4 pt-3 flex items-center justify-between text-on-surface-variant">
+                    <span class="inline-flex items-center gap-1 font-label-sm text-label-sm text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md font-bold">
+                        <span class="material-symbols-outlined text-[14px]">add_circle</span> +14 túi vừa nhận
+                    </span>
+                    <span class="font-body-sm text-body-sm">Từ 3 bàn chọc ven</span>
+                </div>
+            </div>
+            <!-- Card 2: Đạt chuẩn an toàn -->
+            <div class="p-space-lg rounded-2xl bg-surface-container-lowest shadow-sm flex flex-col justify-between relative overflow-hidden">
+                <div class="absolute -right-6 -bottom-6 w-28 h-28 bg-emerald-50 rounded-full opacity-70 pointer-events-none"></div>
+                <div class="flex items-start justify-between">
+                    <div class="flex flex-col">
+                        <span class="font-label-sm text-label-sm uppercase tracking-wider text-emerald-800 font-bold">Đạt chuẩn an toàn sinh học</span>
+                        <div class="flex items-baseline gap-2 mt-2">
+                            <span class="font-headline-lg text-headline-lg font-bold text-emerald-700">78</span>
+                            <span class="font-body-sm text-body-sm text-emerald-800 font-semibold">(90.7%)</span>
+                        </div>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-700 shrink-0">
+                        <span class="material-symbols-outlined text-[26px]">verified_user</span>
+                    </div>
+                </div>
+                <div class="mt-4 pt-3 flex items-center justify-between text-on-surface-variant">
+                    <span class="inline-flex items-center gap-1 font-label-sm text-label-sm text-on-surface">
+                        <span class="material-symbols-outlined text-[16px] text-emerald-600">ac_unit</span> Kho lạnh 2°C – 6°C
+                    </span>
+                    <span class="font-label-sm text-label-sm font-semibold text-emerald-800">Đã dán ISBT 128</span>
+                </div>
+            </div>
+            <!-- Card 3: Cảnh báo / Nghi ngờ -->
+            <div class="p-space-lg rounded-2xl bg-surface-container-lowest shadow-sm flex flex-col justify-between relative overflow-hidden">
+                <div class="absolute -right-6 -bottom-6 w-28 h-28 bg-amber-50 rounded-full opacity-70 pointer-events-none"></div>
+                <div class="flex items-start justify-between">
+                    <div class="flex flex-col">
+                        <span class="font-label-sm text-label-sm uppercase tracking-wider text-amber-800 font-bold">Cảnh báo / Nghi ngờ ELISA</span>
+                        <div class="flex items-baseline gap-2 mt-2">
+                            <span class="font-headline-lg text-headline-lg font-bold text-amber-600">03</span>
+                            <span class="font-body-sm text-body-sm text-amber-800 font-medium">mẫu chờ NAT</span>
+                        </div>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-amber-50 flex items-center justify-center text-amber-600 shrink-0">
+                        <span class="material-symbols-outlined text-[26px]">biotech</span>
+                    </div>
+                </div>
+                <div class="mt-4 pt-3 flex items-center justify-between text-on-surface-variant">
+                    <span class="inline-flex items-center gap-1 font-label-sm text-label-sm text-amber-700 bg-amber-50 px-2 py-0.5 rounded-md font-bold">
+                        <span class="material-symbols-outlined text-[14px]">hourglass_top</span> Chờ khẳng định lần 2
+                    </span>
+                    <span class="font-body-sm text-body-sm">Cô lập tại tủ kiểm định</span>
+                </div>
+            </div>
+            <!-- Card 4: Không đạt chuẩn / Huỷ -->
+            <div class="p-space-lg rounded-2xl bg-surface-container-lowest shadow-sm flex flex-col justify-between relative overflow-hidden">
+                <div class="absolute -right-6 -bottom-6 w-28 h-28 bg-rose-50 rounded-full opacity-70 pointer-events-none"></div>
+                <div class="flex items-start justify-between">
+                    <div class="flex flex-col">
+                        <span class="font-label-sm text-label-sm uppercase tracking-wider text-error font-bold">Không đạt chuẩn / Chờ hủy</span>
+                        <div class="flex items-baseline gap-2 mt-2">
+                            <span class="font-headline-lg text-headline-lg font-bold text-error">05</span>
+                            <span class="font-body-sm text-body-sm text-error/80 font-medium">túi máu</span>
+                        </div>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-error-container/40 flex items-center justify-center text-error shrink-0">
+                        <span class="material-symbols-outlined text-[26px]">dangerous</span>
+                    </div>
+                </div>
+                <div class="mt-4 pt-3 flex items-center justify-between text-on-surface-variant">
+                    <span class="inline-flex items-center gap-1 font-label-sm text-label-sm text-error font-bold">
+                        2 vỡ hồng cầu • 3 nhiễm khuẩn
+                    </span>
+                    <span class="font-body-sm text-body-sm">Quy chuẩn BYT 26</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search, Barcode Scanner & Filters Bar -->
+        <div class="p-space-md lg:p-space-lg rounded-2xl bg-surface-container-lowest shadow-sm flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-space-md">
+            <!-- Search & Barcode Input -->
+            <div class="relative flex-1 min-w-[280px]">
+                <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-primary text-[22px]">barcode_scanner</span>
+                <input class="w-full h-12 pl-12 pr-10 rounded-xl bg-surface-container-low font-body-md text-body-md text-on-surface focus:outline-none focus:bg-surface-container-lowest transition-all" placeholder="Quét Barcode túi máu (ISBT 128) hoặc tìm CCCD, Họ tên người hiến..." type="text" value="#BAG-2025-08991" id="barcodeSearchInput">
+                <button aria-label="Xóa tìm kiếm" class="absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-on-surface" type="button" onclick="document.getElementById('barcodeSearchInput').value=''">
+                    <span class="material-symbols-outlined text-[18px]">close</span>
+                </button>
+            </div>
+            <!-- Quick Campaign Selector -->
+            <div class="flex items-center gap-2 min-w-[260px]">
+                <div class="flex items-center gap-2 h-12 px-4 rounded-xl bg-surface-container-low w-full text-on-surface">
+                    <span class="material-symbols-outlined text-on-surface-variant text-[20px]">calendar_month</span>
+                    <div class="flex flex-col flex-1 leading-tight">
+                        <span class="font-label-sm text-[10px] text-on-surface-variant uppercase font-bold">Chiến dịch hiến máu</span>
+                        <span class="font-label-md text-label-md font-semibold truncate">Giọt Hồng Thanh Niên - 15/11</span>
+                    </div>
+                    <span class="material-symbols-outlined text-on-surface-variant text-[18px]">arrow_drop_down</span>
+                </div>
+            </div>
+            <!-- Blood Group Chips Filter -->
+            <div class="flex items-center gap-1.5 overflow-x-auto py-1">
+                <button class="px-3 py-2 rounded-xl bg-primary text-on-primary font-label-sm text-label-sm font-bold shadow-sm whitespace-nowrap" type="button">Tất cả</button>
+                <button class="px-3 py-2 rounded-xl bg-surface-container-low hover:bg-surface-container text-on-surface font-label-sm text-label-sm font-semibold whitespace-nowrap" type="button">O+</button>
+                <button class="px-3 py-2 rounded-xl bg-surface-container-low hover:bg-surface-container text-on-surface font-label-sm text-label-sm font-semibold whitespace-nowrap" type="button">A+</button>
+                <button class="px-3 py-2 rounded-xl bg-surface-container-low hover:bg-surface-container text-on-surface font-label-sm text-label-sm font-semibold whitespace-nowrap" type="button">B+</button>
+                <button class="px-3 py-2 rounded-xl bg-surface-container-low hover:bg-surface-container text-on-surface font-label-sm text-label-sm font-semibold whitespace-nowrap" type="button">AB+</button>
+                <button class="px-3 py-2 rounded-xl bg-rose-100 text-rose-800 font-label-sm text-label-sm font-bold whitespace-nowrap flex items-center gap-1" type="button">
+                    <span class="material-symbols-outlined text-[14px]">warning</span> Rh(-) Hiếm
+                </button>
+            </div>
+            <!-- Status Filter Tabs -->
+            <div class="flex items-center gap-1 bg-surface-container-low p-1 rounded-xl shrink-0">
+                <button class="px-3 py-1.5 rounded-lg bg-surface-container-lowest text-on-surface font-label-sm text-label-sm font-bold shadow-sm" type="button">
+                    Đạt chuẩn (78)
+                </button>
+                <button class="px-3 py-1.5 rounded-lg text-on-surface-variant hover:text-on-surface font-label-sm text-label-sm font-semibold" type="button">
+                    Chờ duyệt (5)
+                </button>
+                <button class="px-3 py-1.5 rounded-lg text-error hover:bg-error-container/20 font-label-sm text-label-sm font-semibold" type="button">
+                    Hủy / Lỗi (5)
+                </button>
+            </div>
+        </div>
+
+        <!-- Main Workspace Split: Left (7 cols / 58%) & Right (5 cols / 42%) -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start">
+            <!-- LEFT COLUMN: Specimen Audit Table (7 Cols) -->
+            <div class="lg:col-span-7 flex flex-col gap-space-md">
+                <!-- Table Card Container -->
+                <div class="bg-surface-container-lowest rounded-2xl shadow-sm overflow-hidden flex flex-col">
+                    <!-- Table Sub-Header -->
+                    <div class="p-space-md lg:p-space-lg flex items-center justify-between bg-surface-container-lowest">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center text-primary font-bold">
+                                <span class="material-symbols-outlined text-[20px]">assignment</span>
+                            </div>
+                            <div class="flex flex-col">
+                                <h2 class="font-headline-sm text-headline-sm font-bold text-on-surface">Danh Sách Mẫu Máu Ca Trực</h2>
+                                <span class="font-body-sm text-body-sm text-on-surface-variant">Hiển thị 5 / 86 túi máu cần đối soát an toàn</span>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button class="p-2 rounded-xl text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors" title="Làm mới" type="button" onclick="alert('Đã cập nhật danh sách mẫu máu mới nhất!')">
+                                <span class="material-symbols-outlined text-[20px]">refresh</span>
+                            </button>
+                            <button class="p-2 rounded-xl text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors" title="Cấu hình cột" type="button">
+                                <span class="material-symbols-outlined text-[20px]">view_column</span>
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Responsive Table Body -->
+                    <div class="overflow-x-auto w-full">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-surface-container-low text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider">
+                                    <th class="py-3.5 px-4 font-bold">Mã Túi Máu / Barcode</th>
+                                    <th class="py-3.5 px-4 font-bold">Người Hiến (CCCD)</th>
+                                    <th class="py-3.5 px-3 font-bold text-center">Nhóm Máu</th>
+                                    <th class="py-3.5 px-3 font-bold text-center">Thể Tích &amp; Hb</th>
+                                    <th class="py-3.5 px-4 font-bold">Sàng Lọc 5 Bệnh</th>
+                                    <th class="py-3.5 px-4 font-bold">Trạng Thái</th>
+                                    <th class="py-3.5 px-4 font-bold text-right">Thao Tác</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y-0 font-body-sm text-body-sm">
+                                <!-- Row 1: Selected Row (#BAG-2025-08991) -->
+                                <tr class="bg-primary/5 hover:bg-primary/10 transition-colors cursor-pointer relative" onclick="selectBag('BAG-2025-08991', 'Nguyễn Hoàng Nam', '001099028891', 'Nhóm O', 'Rh (D) (+)', '350 mL', '13.8 g/dL')">
+                                    <td class="py-3.5 px-4">
+                                        <div class="flex items-center gap-2.5">
+                                            <span class="w-2 h-8 rounded-full bg-primary shrink-0"></span>
+                                            <div class="flex flex-col">
+                                                <span class="font-label-md text-label-md font-bold text-primary">#BAG-2025-08991</span>
+                                                <div class="flex items-center gap-1 text-[11px] font-mono text-on-surface-variant">
+                                                    <span class="material-symbols-outlined text-[13px]">schedule</span> 09:20 • ISBT-128
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="py-3.5 px-4">
+                                        <div class="flex flex-col">
+                                            <span class="font-label-md text-label-md font-bold text-on-surface">Nguyễn Hoàng Nam</span>
+                                            <span class="text-on-surface-variant text-[12px] font-mono">001099••••891</span>
+                                        </div>
+                                    </td>
+                                    <td class="py-3.5 px-3 text-center">
+                                        <span class="inline-flex items-center justify-center px-2.5 py-1 rounded-lg bg-rose-100 text-primary font-label-md text-label-md font-bold">
+                                            O Rh(+)
+                                        </span>
+                                    </td>
+                                    <td class="py-3.5 px-3 text-center">
+                                        <div class="flex flex-col items-center">
+                                            <span class="font-bold text-on-surface">350 mL</span>
+                                            <span class="text-[11px] text-emerald-700 font-medium">Hb: 13.8 g/dL</span>
+                                        </div>
+                                    </td>
+                                    <td class="py-3.5 px-4">
+                                        <div class="flex items-center gap-1.5">
+                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 font-label-sm text-label-sm font-bold">
+                                                <span class="material-symbols-outlined text-[14px] text-emerald-600">check_circle</span> 5/5 Âm tính
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td class="py-3.5 px-4">
+                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 font-label-sm text-label-sm font-bold">
+                                            <span class="h-1.5 w-1.5 rounded-full bg-emerald-600"></span> Đạt chuẩn
+                                        </span>
+                                    </td>
+                                    <td class="py-3.5 px-4 text-right">
+                                        <div class="flex items-center justify-end gap-1">
+                                            <button class="p-1.5 rounded-lg text-primary hover:bg-primary/10 transition-colors" title="Đang mở thẩm định" type="button">
+                                                <span class="material-symbols-outlined text-[18px]">visibility</span>
+                                            </button>
+                                            <button class="p-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors" title="In nhãn" type="button" onclick="alert('Đang in tem ISBT 128 cho túi máu #BAG-2025-08991...')">
+                                                <span class="material-symbols-outlined text-[18px]">print</span>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <!-- Row 2: Lê Thị Hương (A+) -->
+                                <tr class="hover:bg-surface-container-low/60 transition-colors cursor-pointer bg-surface-container-lowest" onclick="selectBag('BAG-2025-08992', 'Lê Thị Mai Hương', '038198001442', 'Nhóm A', 'Rh (D) (+)', '250 mL', '12.6 g/dL')">
+                                    <td class="py-3.5 px-4">
+                                        <div class="flex items-center gap-2.5">
+                                            <span class="w-2 h-8 rounded-full bg-surface-container-highest shrink-0"></span>
+                                            <div class="flex flex-col">
+                                                <span class="font-label-md text-label-md font-bold text-on-surface">#BAG-2025-08992</span>
+                                                <div class="flex items-center gap-1 text-[11px] font-mono text-on-surface-variant">
+                                                    <span class="material-symbols-outlined text-[13px]">schedule</span> 09:28 • ISBT-128
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="py-3.5 px-4">
+                                        <div class="flex flex-col">
+                                            <span class="font-label-md text-label-md font-bold text-on-surface">Lê Thị Mai Hương</span>
+                                            <span class="text-on-surface-variant text-[12px] font-mono">038198••••442</span>
+                                        </div>
+                                    </td>
+                                    <td class="py-3.5 px-3 text-center">
+                                        <span class="inline-flex items-center justify-center px-2.5 py-1 rounded-lg bg-surface-container-high text-on-surface font-label-md text-label-md font-bold">
+                                            A Rh(+)
+                                        </span>
+                                    </td>
+                                    <td class="py-3.5 px-3 text-center">
+                                        <div class="flex flex-col items-center">
+                                            <span class="font-bold text-on-surface">250 mL</span>
+                                            <span class="text-[11px] text-emerald-700 font-medium">Hb: 12.6 g/dL</span>
+                                        </div>
+                                    </td>
+                                    <td class="py-3.5 px-4">
+                                        <div class="flex items-center gap-1.5">
+                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 font-label-sm text-label-sm font-bold">
+                                                <span class="material-symbols-outlined text-[14px] text-emerald-600">check_circle</span> 5/5 Âm tính
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td class="py-3.5 px-4">
+                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 font-label-sm text-label-sm font-bold">
+                                            <span class="h-1.5 w-1.5 rounded-full bg-emerald-600"></span> Đạt chuẩn
+                                        </span>
+                                    </td>
+                                    <td class="py-3.5 px-4 text-right">
+                                        <div class="flex items-center justify-end gap-1">
+                                            <button class="p-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors" title="Xem" type="button">
+                                                <span class="material-symbols-outlined text-[18px]">edit_note</span>
+                                            </button>
+                                            <button class="p-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors" title="In nhãn" type="button">
+                                                <span class="material-symbols-outlined text-[18px]">print</span>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <!-- Row 3: Phạm Văn Tuấn (B Rh- Hiếm!) -->
+                                <tr class="hover:bg-surface-container-low/60 transition-colors cursor-pointer bg-surface-container-lowest" onclick="selectBag('BAG-2025-08993', 'Phạm Văn Tuấn', '024095001110', 'Nhóm B', 'Rh (D) (-)', '450 mL', '15.2 g/dL')">
+                                    <td class="py-3.5 px-4">
+                                        <div class="flex items-center gap-2.5">
+                                            <span class="w-2 h-8 rounded-full bg-rose-500 shrink-0"></span>
+                                            <div class="flex flex-col">
+                                                <span class="font-label-md text-label-md font-bold text-on-surface">#BAG-2025-08993</span>
+                                                <div class="flex items-center gap-1 text-[11px] font-mono text-on-surface-variant">
+                                                    <span class="material-symbols-outlined text-[13px]">schedule</span> 09:35 • ISBT-128
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="py-3.5 px-4">
+                                        <div class="flex flex-col">
+                                            <div class="flex items-center gap-1.5">
+                                                <span class="font-label-md text-label-md font-bold text-on-surface">Phạm Văn Tuấn</span>
+                                                <span class="px-1.5 py-0.2 rounded bg-rose-100 text-rose-800 text-[10px] font-bold">Máu hiếm</span>
+                                            </div>
+                                            <span class="text-on-surface-variant text-[12px] font-mono">024095••••110</span>
+                                        </div>
+                                    </td>
+                                    <td class="py-3.5 px-3 text-center">
+                                        <span class="inline-flex items-center justify-center px-2 py-1 rounded-lg bg-rose-600 text-white font-label-md text-label-md font-bold shadow-sm">
+                                            B Rh(-)
+                                        </span>
+                                    </td>
+                                    <td class="py-3.5 px-3 text-center">
+                                        <div class="flex flex-col items-center">
+                                            <span class="font-bold text-on-surface">450 mL</span>
+                                            <span class="text-[11px] text-emerald-700 font-medium">Hb: 15.2 g/dL</span>
+                                        </div>
+                                    </td>
+                                    <td class="py-3.5 px-4">
+                                        <div class="flex items-center gap-1.5">
+                                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 font-label-sm text-label-sm font-bold">
+                                                <span class="material-symbols-outlined text-[14px] text-emerald-600">check_circle</span> 5/5 Âm tính
+                                            </span>
+                                        </div>
+                                    </td>
+                                    <td class="py-3.5 px-4">
+                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 font-label-sm text-label-sm font-bold">
+                                            <span class="h-1.5 w-1.5 rounded-full bg-amber-600"></span> Chờ ký duyệt
+                                        </span>
+                                    </td>
+                                    <td class="py-3.5 px-4 text-right">
+                                        <div class="flex items-center justify-end gap-1">
+                                            <button class="p-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors" title="Xem" type="button">
+                                                <span class="material-symbols-outlined text-[18px]">edit_note</span>
+                                            </button>
+                                            <button class="p-1.5 rounded-lg text-on-surface-variant hover:bg-surface-container-low transition-colors" title="In nhãn" type="button">
+                                                <span class="material-symbols-outlined text-[18px]">print</span>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <!-- Row 4: Trần Quỳnh Anh (Nghi ngờ HBsAg) -->
+                                <tr class="hover:bg-surface-container-low/60 transition-colors cursor-pointer bg-rose-50/40">
+                                    <td class="py-3.5 px-4">
+                                        <div class="flex items-center gap-2.5">
+                                            <span class="w-2 h-8 rounded-full bg-error shrink-0"></span>
+                                            <div class="flex flex-col">
+                                                <span class="font-label-md text-label-md font-bold text-error">#BAG-2025-08994</span>
+                                                <div class="flex items-center gap-1 text-[11px] font-mono text-on-surface-variant">
+                                                    <span class="material-symbols-outlined text-[13px]">schedule</span> 09:42 • ISBT-128
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="py-3.5 px-4">
+                                        <div class="flex flex-col">
+                                            <span class="font-label-md text-label-md font-bold text-on-surface">Trần Quỳnh Anh</span>
+                                            <span class="text-on-surface-variant text-[12px] font-mono">001192••••774</span>
+                                        </div>
+                                    </td>
+                                    <td class="py-3.5 px-3 text-center">
+                                        <span class="inline-flex items-center justify-center px-2.5 py-1 rounded-lg bg-surface-container-high text-on-surface font-label-md text-label-md font-bold">
+                                            AB Rh(+)
+                                        </span>
+                                    </td>
+                                    <td class="py-3.5 px-3 text-center">
+                                        <div class="flex flex-col items-center">
+                                            <span class="font-bold text-on-surface">350 mL</span>
+                                            <span class="text-[11px] text-on-surface-variant font-medium">Hb: 13.0 g/dL</span>
+                                        </div>
+                                    </td>
+                                    <td class="py-3.5 px-4">
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-100 text-error font-label-sm text-label-sm font-bold">
+                                            <span class="material-symbols-outlined text-[14px]">warning</span> HBsAg (+?) NAT
+                                        </span>
+                                    </td>
+                                    <td class="py-3.5 px-4">
+                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-error-container/60 text-error font-label-sm text-label-sm font-bold">
+                                            <span class="h-1.5 w-1.5 rounded-full bg-error"></span> Nghi ngờ nhiễm
+                                        </span>
+                                    </td>
+                                    <td class="py-3.5 px-4 text-right">
+                                        <div class="flex items-center justify-end gap-1">
+                                            <button class="p-1.5 rounded-lg text-error hover:bg-error-container/30 transition-colors" title="Chi tiết nghi ngờ" type="button" onclick="alert('Đã cô lập mẫu #BAG-2025-08994 và chuyển sang tủ kiểm định NAT lần 2.')">
+                                                <span class="material-symbols-outlined text-[18px]">crisis_alert</span>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <!-- Row 5: Vũ Đình Quân (Vỡ hồng cầu cơ học) -->
+                                <tr class="hover:bg-surface-container-low/60 transition-colors cursor-pointer bg-surface-container-lowest">
+                                    <td class="py-3.5 px-4">
+                                        <div class="flex items-center gap-2.5">
+                                            <span class="w-2 h-8 rounded-full bg-secondary shrink-0"></span>
+                                            <div class="flex flex-col">
+                                                <span class="font-label-md text-label-md font-bold text-on-surface">#BAG-2025-08995</span>
+                                                <div class="flex items-center gap-1 text-[11px] font-mono text-on-surface-variant">
+                                                    <span class="material-symbols-outlined text-[13px]">schedule</span> 09:51 • ISBT-128
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="py-3.5 px-4">
+                                        <div class="flex flex-col">
+                                            <span class="font-label-md text-label-md font-bold text-on-surface">Vũ Đình Quân</span>
+                                            <span class="text-on-surface-variant text-[12px] font-mono">031088••••903</span>
+                                        </div>
+                                    </td>
+                                    <td class="py-3.5 px-3 text-center">
+                                        <span class="inline-flex items-center justify-center px-2.5 py-1 rounded-lg bg-surface-container-high text-on-surface font-label-md text-label-md font-bold">
+                                            O Rh(+)
+                                        </span>
+                                    </td>
+                                    <td class="py-3.5 px-3 text-center">
+                                        <div class="flex flex-col items-center">
+                                            <span class="font-bold text-error">180 mL (Thiếu)</span>
+                                            <span class="text-[11px] text-error font-medium">Vỡ hồng cầu</span>
+                                        </div>
+                                    </td>
+                                    <td class="py-3.5 px-4">
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant font-label-sm text-label-sm font-semibold">
+                                            Chưa chạy ELISA
+                                        </span>
+                                    </td>
+                                    <td class="py-3.5 px-4">
+                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-container-high text-secondary font-label-sm text-label-sm font-bold">
+                                            <span class="h-1.5 w-1.5 rounded-full bg-secondary"></span> Chờ lập biên bản hủy
+                                        </span>
+                                    </td>
+                                    <td class="py-3.5 px-4 text-right">
+                                        <div class="flex items-center justify-end gap-1">
+                                            <button class="p-1.5 rounded-lg text-secondary hover:bg-surface-container-low transition-colors" title="Hồ sơ hủy" type="button" onclick="alert('Đã tạo phiếu lập biên bản hủy mẫu do lỗi kỹ thuật vỡ hồng cầu.')">
+                                                <span class="material-symbols-outlined text-[18px]">delete_sweep</span>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- Table Pagination Ribbon -->
+                    <div class="p-space-md bg-surface-container-low/40 flex items-center justify-between text-on-surface-variant font-label-sm text-label-sm">
+                        <span class="font-medium">Trang 1 / 18 • Tổng 86 hồ sơ túi máu</span>
+                        <div class="flex items-center gap-1">
+                            <button class="h-8 w-8 rounded-lg flex items-center justify-center bg-surface-container-lowest text-on-surface font-bold shadow-sm" type="button">1</button>
+                            <button class="h-8 w-8 rounded-lg flex items-center justify-center hover:bg-surface-container-lowest transition-colors" type="button">2</button>
+                            <button class="h-8 w-8 rounded-lg flex items-center justify-center hover:bg-surface-container-lowest transition-colors" type="button">3</button>
+                            <span>...</span>
+                            <button class="h-8 w-8 rounded-lg flex items-center justify-center hover:bg-surface-container-lowest transition-colors" type="button">18</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Secondary Lab Diagnostics Monitor Card -->
+                <div class="p-space-lg rounded-2xl bg-surface-container-lowest shadow-sm flex flex-col gap-space-md">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2.5">
+                            <span class="material-symbols-outlined text-[22px] text-primary">precision_manufacturing</span>
+                            <h3 class="font-label-lg text-label-lg font-bold text-on-surface">Kết Nối Máy Phân Tích Abbott Alinity s &amp; Roche Cobas 6800</h3>
+                        </div>
+                        <span class="font-label-sm text-label-sm text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full font-bold flex items-center gap-1">
+                            <span class="h-2 w-2 rounded-full bg-emerald-500 animate-ping"></span> Online 99.8%
+                        </span>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                        <div class="p-3 rounded-xl bg-surface-container-low flex flex-col gap-1">
+                            <span class="font-label-sm text-[11px] text-on-surface-variant uppercase font-semibold">Tốc độ phân tích LIS</span>
+                            <span class="font-headline-sm text-headline-sm font-bold text-on-surface">120 mẫu/giờ</span>
+                            <div class="w-full bg-surface-container-highest rounded-full h-1.5 mt-1 overflow-hidden">
+                                <div class="bg-primary h-full w-[78%] rounded-full"></div>
+                            </div>
+                        </div>
+                        <div class="p-3 rounded-xl bg-surface-container-low flex flex-col gap-1">
+                            <span class="font-label-sm text-[11px] text-on-surface-variant uppercase font-semibold">Độ nhạy NAT Nucleic Acid</span>
+                            <span class="font-headline-sm text-headline-sm font-bold text-emerald-700">99.998%</span>
+                            <span class="text-[11px] text-on-surface-variant">Rút ngắn cửa sổ sinh học</span>
+                        </div>
+                        <div class="p-3 rounded-xl bg-surface-container-low flex flex-col gap-1">
+                            <span class="font-label-sm text-[11px] text-on-surface-variant uppercase font-semibold">Ký số phê duyệt BS</span>
+                            <span class="font-headline-sm text-headline-sm font-bold text-on-surface">BS. Trần Mai Linh</span>
+                            <span class="text-[11px] text-emerald-800 font-semibold flex items-center gap-1">
+                                <span class="material-symbols-outlined text-[13px]">key</span> Token VNPT-CA Valid
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT COLUMN: Detailed Screening Verification & Entry Card (5 Cols) -->
+            <div class="lg:col-span-5 flex flex-col gap-space-md">
+                <!-- Active Specimen Inspection Panel -->
+                <div class="bg-surface-container-lowest rounded-2xl shadow-md overflow-hidden flex flex-col">
+                    <!-- Inspector Header with Visual Specimen Identification -->
+                    <div class="p-space-lg bg-surface-container-low flex flex-col gap-space-sm relative overflow-hidden">
+                        <div class="flex items-start justify-between">
+                            <div class="flex flex-col">
+                                <span class="font-label-sm text-label-sm text-primary uppercase font-bold tracking-wider">Hồ Sơ Giám Định Lâm Sàng Chi Tiết</span>
+                                <h2 class="font-headline-md text-headline-md font-bold text-on-surface mt-1" id="activeBagCode">#BAG-2025-08991</h2>
+                                <span class="font-body-sm text-body-sm text-on-surface-variant">ISBT 128: =W0123 25 08991 00 00</span>
+                            </div>
+                            <!-- Barcode SVG Mockup -->
+                            <div class="bg-white p-2 rounded-xl shadow-xs flex flex-col items-center">
+                                <svg class="w-32 h-10" viewBox="0 0 160 40">
+                                    <rect fill="#111d23" height="35" width="4" x="0" y="0"></rect>
+                                    <rect fill="#111d23" height="35" width="2" x="6" y="0"></rect>
+                                    <rect fill="#111d23" height="35" width="6" x="10" y="0"></rect>
+                                    <rect fill="#111d23" height="35" width="2" x="18" y="0"></rect>
+                                    <rect fill="#111d23" height="35" width="4" x="22" y="0"></rect>
+                                    <rect fill="#111d23" height="35" width="8" x="28" y="0"></rect>
+                                    <rect fill="#111d23" height="35" width="2" x="38" y="0"></rect>
+                                    <rect fill="#111d23" height="35" width="4" x="42" y="0"></rect>
+                                    <rect fill="#111d23" height="35" width="6" x="48" y="0"></rect>
+                                    <rect fill="#111d23" height="35" width="2" x="56" y="0"></rect>
+                                    <rect fill="#111d23" height="35" width="4" x="60" y="0"></rect>
+                                    <rect fill="#111d23" height="35" width="8" x="66" y="0"></rect>
+                                    <rect fill="#111d23" height="35" width="2" x="76" y="0"></rect>
+                                    <rect fill="#111d23" height="35" width="6" x="80" y="0"></rect>
+                                    <rect fill="#111d23" height="35" width="4" x="88" y="0"></rect>
+                                    <rect fill="#111d23" height="35" width="2" x="94" y="0"></rect>
+                                    <rect fill="#111d23" height="35" width="8" x="98" y="0"></rect>
+                                    <rect fill="#111d23" height="35" width="4" x="108" y="0"></rect>
+                                    <rect fill="#111d23" height="35" width="2" x="114" y="0"></rect>
+                                    <rect fill="#111d23" height="35" width="6" x="118" y="0"></rect>
+                                    <rect fill="#111d23" height="35" width="4" x="126" y="0"></rect>
+                                    <rect fill="#111d23" height="35" width="2" x="132" y="0"></rect>
+                                    <rect fill="#111d23" height="35" width="8" x="136" y="0"></rect>
+                                    <rect fill="#111d23" height="35" width="4" x="146" y="0"></rect>
+                                    <rect fill="#111d23" height="35" width="2" x="152" y="0"></rect>
+                                    <rect fill="#111d23" height="35" width="4" x="156" y="0"></rect>
+                                </svg>
+                                <span class="text-[9px] font-mono tracking-widest text-on-surface-variant font-bold mt-0.5">VTL-2025-08991</span>
+                            </div>
+                        </div>
+                        <!-- Donor Identity Mini Card -->
+                        <div class="p-3 rounded-xl bg-surface-container-lowest flex items-center justify-between mt-1">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm" id="activeDonorInitials">
+                                    NN
+                                </div>
+                                <div class="flex flex-col">
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-label-md text-label-md font-bold text-on-surface" id="activeDonorName">Nguyễn Hoàng Nam</span>
+                                        <span class="px-2 py-0.2 rounded bg-emerald-100 text-emerald-800 text-[10px] font-bold">Hiến máu lần 4</span>
+                                    </div>
+                                    <span class="font-body-sm text-[12px] text-on-surface-variant" id="activeDonorCccd">Nam • Sinh năm 1996 • CCCD: 001099028891 (VNeID Đã định danh Mức 2)</span>
+                                </div>
+                            </div>
+                            <span class="material-symbols-outlined text-emerald-600 text-[20px]" title="VNeID Validated">verified</span>
+                        </div>
+                    </div>
+                    <!-- Inspection Sections -->
+                    <div class="p-space-lg flex flex-col gap-space-lg">
+                        <!-- Section 1: ABO & Rh Blood Typing -->
+                        <div class="flex flex-col gap-space-sm">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-[20px] text-primary">bloodtype</span>
+                                    <span class="font-label-md text-label-md font-bold text-on-surface uppercase tracking-wide">1. Định Nhóm Máu &amp; Kháng Thể Bất Thường</span>
+                                </div>
+                                <span class="text-emerald-700 font-label-sm text-label-sm font-bold">Đã kiểm tra chéo (Gel-Card)</span>
+                            </div>
+                            <div class="grid grid-cols-3 gap-space-sm">
+                                <!-- ABO Result -->
+                                <div class="p-3 rounded-xl bg-surface-container-low flex flex-col items-center justify-center text-center">
+                                    <span class="font-label-sm text-[11px] text-on-surface-variant uppercase font-semibold">Hệ ABO</span>
+                                    <span class="font-headline-md text-headline-md font-bold text-primary mt-0.5" id="activeAbo">Nhóm O</span>
+                                    <span class="text-[11px] text-on-surface-variant">Hồng cầu mẫu &amp; Huyết thanh</span>
+                                </div>
+                                <!-- Rh(D) Result -->
+                                <div class="p-3 rounded-xl bg-surface-container-low flex flex-col items-center justify-center text-center">
+                                    <span class="font-label-sm text-[11px] text-on-surface-variant uppercase font-semibold">Hệ Rhesus</span>
+                                    <span class="font-headline-md text-headline-md font-bold text-emerald-700 mt-0.5" id="activeRh">Rh (D) (+)</span>
+                                    <span class="text-[11px] text-on-surface-variant">Dương tính (Phổ biến)</span>
+                                </div>
+                                <!-- Atypical Antibodies -->
+                                <div class="p-3 rounded-xl bg-surface-container-low flex flex-col items-center justify-center text-center">
+                                    <span class="font-label-sm text-[11px] text-on-surface-variant uppercase font-semibold">Kháng thể bất thường</span>
+                                    <span class="font-headline-sm text-headline-sm font-bold text-on-surface mt-1">Âm Tính</span>
+                                    <span class="text-[11px] text-emerald-700 font-semibold">Không phản ứng Coombs</span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Section 2: 5 Transfusion-Transmissible Infections (ELISA & NAT) -->
+                        <div class="flex flex-col gap-space-sm">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-[20px] text-primary">microbiology</span>
+                                    <span class="font-label-md text-label-md font-bold text-on-surface uppercase tracking-wide">2. Sàng Lọc 5 Tác Nhân Lây Nhiễm (Kỹ Thuật Kép ELISA/NAT)</span>
+                                </div>
+                                <span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[10px] font-bold">100% Âm Tính</span>
+                            </div>
+                            <!-- Lab Test Items Matrix -->
+                            <div class="flex flex-col gap-2">
+                                <!-- Test 1: HIV -->
+                                <div class="p-3 rounded-xl bg-surface-container-low flex items-center justify-between">
+                                    <div class="flex items-center gap-3">
+                                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                                        <div class="flex flex-col">
+                                            <span class="font-label-md text-label-md font-bold text-on-surface">HIV Ag/Ab Combo &amp; HIV-RNA NAT</span>
+                                            <span class="text-[11px] text-on-surface-variant">Chỉ số đo: 0.08 S/CO (&lt; 1.0 Non-reactive)</span>
+                                        </div>
+                                    </div>
+                                    <span class="font-label-md text-label-md font-bold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-lg">ÂM TÍNH</span>
+                                </div>
+                                <!-- Test 2: HBsAg -->
+                                <div class="p-3 rounded-xl bg-surface-container-low flex items-center justify-between">
+                                    <div class="flex items-center gap-3">
+                                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                                        <div class="flex flex-col">
+                                            <span class="font-label-md text-label-md font-bold text-on-surface">Viêm gan B (HBsAg &amp; HBV-DNA)</span>
+                                            <span class="text-[11px] text-on-surface-variant">Chỉ số đo: 0.12 S/CO (&lt; 1.0 Non-reactive)</span>
+                                        </div>
+                                    </div>
+                                    <span class="font-label-md text-label-md font-bold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-lg">ÂM TÍNH</span>
+                                </div>
+                                <!-- Test 3: Anti-HCV -->
+                                <div class="p-3 rounded-xl bg-surface-container-low flex items-center justify-between">
+                                    <div class="flex items-center gap-3">
+                                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                                        <div class="flex flex-col">
+                                            <span class="font-label-md text-label-md font-bold text-on-surface">Viêm gan C (Anti-HCV &amp; HCV-RNA)</span>
+                                            <span class="text-[11px] text-on-surface-variant">Chỉ số đo: 0.15 S/CO (&lt; 1.0 Non-reactive)</span>
+                                        </div>
+                                    </div>
+                                    <span class="font-label-md text-label-md font-bold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-lg">ÂM TÍNH</span>
+                                </div>
+                                <!-- Test 4: Giang mai -->
+                                <div class="p-3 rounded-xl bg-surface-container-low flex items-center justify-between">
+                                    <div class="flex items-center gap-3">
+                                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                                        <div class="flex flex-col">
+                                            <span class="font-label-md text-label-md font-bold text-on-surface">Giang mai (Syphilis TP / RPR)</span>
+                                            <span class="text-[11px] text-on-surface-variant">Kỹ thuật ECLIA: 0.05 S/CO</span>
+                                        </div>
+                                    </div>
+                                    <span class="font-label-md text-label-md font-bold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-lg">ÂM TÍNH</span>
+                                </div>
+                                <!-- Test 5: Sốt rét -->
+                                <div class="p-3 rounded-xl bg-surface-container-low flex items-center justify-between">
+                                    <div class="flex items-center gap-3">
+                                        <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                                        <div class="flex flex-col">
+                                            <span class="font-label-md text-label-md font-bold text-on-surface">Ký sinh trùng sốt rét (Malaria Ag / Giemsa)</span>
+                                            <span class="text-[11px] text-on-surface-variant">Soi kính hiển vi huỳnh quang &amp; Kháng nguyên</span>
+                                        </div>
+                                    </div>
+                                    <span class="font-label-md text-label-md font-bold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-lg">ÂM TÍNH</span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Section 3: Physical Bag Integrity & Clinical Indices -->
+                        <div class="flex flex-col gap-space-sm">
+                            <span class="font-label-md text-label-md font-bold text-on-surface uppercase tracking-wide">3. Đánh Giá Cảm Quan &amp; Chỉ Số Hóa Sinh Túi Máu</span>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="p-3 rounded-xl bg-surface-container-low flex flex-col gap-1">
+                                    <span class="text-[11px] text-on-surface-variant font-medium">Thể tích túi lấy thực nhận</span>
+                                    <div class="flex items-baseline gap-1">
+                                        <span class="font-headline-sm text-headline-sm font-bold text-on-surface" id="activeVolume">350</span>
+                                        <span class="font-body-sm text-body-sm font-semibold">mL (Đạt ±10%)</span>
+                                    </div>
+                                    <span class="text-[11px] text-emerald-700 font-semibold flex items-center gap-1">
+                                        <span class="material-symbols-outlined text-[13px]">check</span> Chống đông CPD-A1 chuẩn
+                                    </span>
+                                </div>
+                                <div class="p-3 rounded-xl bg-surface-container-low flex flex-col gap-1">
+                                    <span class="text-[11px] text-on-surface-variant font-medium">Huyết sắc tố (Hemoglobin Hb)</span>
+                                    <div class="flex items-baseline gap-1">
+                                        <span class="font-headline-sm text-headline-sm font-bold text-on-surface" id="activeHb">13.8</span>
+                                        <span class="font-body-sm text-body-sm font-semibold">g/dL (Chuẩn &gt;12.5)</span>
+                                    </div>
+                                    <span class="text-[11px] text-emerald-700 font-semibold flex items-center gap-1">
+                                        <span class="material-symbols-outlined text-[13px]">check</span> Hct: 41.5% • Tiểu cầu tốt
+                                    </span>
+                                </div>
+                            </div>
+                            <!-- Physical Quality Checklist -->
+                            <div class="p-3 rounded-xl bg-surface-container-low flex flex-col gap-2">
+                                <div class="flex items-center justify-between text-body-sm">
+                                    <div class="flex items-center gap-2">
+                                        <span class="material-symbols-outlined text-emerald-600 text-[18px]">verified</span>
+                                        <span class="font-medium text-on-surface">Độ trong huyết tương: Non-lipemic (Không mỡ máu)</span>
+                                    </div>
+                                    <span class="text-[11px] font-bold text-emerald-700">Đạt</span>
+                                </div>
+                                <div class="flex items-center justify-between text-body-sm">
+                                    <div class="flex items-center gap-2">
+                                        <span class="material-symbols-outlined text-emerald-600 text-[18px]">verified</span>
+                                        <span class="font-medium text-on-surface">Tình trạng hồng cầu: Non-hemolyzed (Không tan máu)</span>
+                                    </div>
+                                    <span class="text-[11px] font-bold text-emerald-700">Đạt</span>
+                                </div>
+                                <div class="flex items-center justify-between text-body-sm">
+                                    <div class="flex items-center gap-2">
+                                        <span class="material-symbols-outlined text-emerald-600 text-[18px]">verified</span>
+                                        <span class="font-medium text-on-surface">Dây dẫn, van niêm phong túi: Kín tuyệt đối 100%</span>
+                                    </div>
+                                    <span class="text-[11px] font-bold text-emerald-700">Đạt</span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Section 4: Post-Approval Automation Options -->
+                        <div class="p-3.5 rounded-xl bg-surface-container-low flex flex-col gap-2.5">
+                            <span class="font-label-sm text-[11px] uppercase tracking-wider text-on-surface-variant font-bold">Quy trình tự động hóa tích hợp</span>
+                            <label class="flex items-start gap-2.5 cursor-pointer">
+                                <input checked="" class="mt-0.5 w-4 h-4 rounded text-primary focus:ring-primary/20 accent-primary" type="checkbox">
+                                <span class="font-body-sm text-body-sm text-on-surface leading-snug">
+                                    Tự động gửi thông báo kết quả &amp; cấp <strong>Giấy chứng nhận hiến máu điện tử</strong> qua VNeID / SMS cho người hiến.
+                                </span>
+                            </label>
+                            <label class="flex items-start gap-2.5 cursor-pointer">
+                                <input checked="" class="mt-0.5 w-4 h-4 rounded text-primary focus:ring-primary/20 accent-primary" type="checkbox">
+                                <span class="font-body-sm text-body-sm text-on-surface leading-snug">
+                                    Đồng bộ tức thời thông tin túi máu vào <strong>Ngân Hàng Máu Quốc Gia (National Blood Bank)</strong>.
+                                </span>
+                            </label>
+                        </div>
+                        <!-- Section 5: Primary Action Buttons / Decision Flow -->
+                        <div class="flex flex-col gap-2.5 pt-2">
+                            <button class="w-full py-3.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-label-lg text-label-lg font-bold shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2" type="button" onclick="approveAndStore()">
+                                <span class="material-symbols-outlined text-[22px]">verified</span>
+                                <span>PHÊ DUYỆT ĐẠT CHUẨN &amp; NHẬP KHO LẠNH</span>
+                            </button>
+                            <div class="grid grid-cols-2 gap-2.5">
+                                <button class="py-2.5 px-3 rounded-xl bg-surface-container-low hover:bg-surface-container text-on-surface font-label-md text-label-md font-semibold transition-colors flex items-center justify-center gap-1.5" type="button" onclick="alert('Đã gửi lệnh yêu cầu chạy lại xét nghiệm (Re-test) cho phòng LAB.')">
+                                    <span class="material-symbols-outlined text-[18px]">replay</span>
+                                    <span>Yêu cầu chạy lại (Re-test)</span>
+                                </button>
+                                <button class="py-2.5 px-3 rounded-xl bg-error-container/40 hover:bg-error-container text-error font-label-md text-label-md font-semibold transition-colors flex items-center justify-center gap-1.5" type="button" onclick="openRejectModal()">
+                                    <span class="material-symbols-outlined text-[18px]">delete_forever</span>
+                                    <span>Từ chối &amp; Lập biên bản hủy</span>
+                                </button>
+                            </div>
+                            <!-- Physician Digital Signature Notice -->
+                            <div class="flex items-center justify-center gap-2 text-on-surface-variant font-label-sm text-label-sm text-center pt-1">
+                                <span class="material-symbols-outlined text-[15px] text-emerald-600">lock</span>
+                                <span>Ký số định danh tự động: <strong>BS. CKI Trần Mai Linh</strong> (Trưởng kíp Lab)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Quick Help & Clinical Protocol Tips -->
+                <div class="p-space-md rounded-2xl bg-surface-container-lowest shadow-sm flex items-start gap-3">
+                    <span class="material-symbols-outlined text-primary text-[24px] shrink-0 mt-0.5">info</span>
+                    <div class="flex flex-col gap-1">
+                        <span class="font-label-md text-label-md font-bold text-on-surface">Lưu ý an toàn sinh học cấp Bộ Y Tế</span>
+                        <p class="font-body-sm text-body-sm text-on-surface-variant">
+                            Tất cả mẫu có phản ứng nghi ngờ (S/CO &ge; 0.9) bắt buộc chạy lại kỹ thuật NAT trong vòng 4 giờ. Tuyệt đối không giải phóng túi máu vào kho lưu trữ khi chưa có chữ ký số xác thực của Trưởng kíp xét nghiệm.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function selectBag(code, name, cccd, abo, rh, volume, hb) {
+            document.getElementById('activeBagCode').innerText = '#' + code;
+            document.getElementById('activeDonorName').innerText = name;
+            document.getElementById('activeDonorCccd').innerText = 'CCCD: ' + cccd + ' (VNeID Đã định danh)';
+            document.getElementById('activeAbo').innerText = abo;
+            document.getElementById('activeRh').innerText = rh;
+            document.getElementById('activeVolume').innerText = volume.replace(' mL', '');
+            document.getElementById('activeHb').innerText = hb.replace(' g/dL', '');
+        }
+
+        function approveAndStore() {
+            alert('Đã phê duyệt đạt chuẩn an toàn sinh học và xuất kho lạnh lưu trữ 2-6°C cho túi máu! Giấy chứng nhận hiến máu điện tử đã được tự động cấp qua VNeID.');
+        }
+
+        function openManualEntryModal() {
+            const barcode = prompt("Nhập mã Barcode túi máu hoặc quét ISBT 128:", "=W0123 25 08996 00 00");
+            if (barcode) {
+                alert("Đã kết nối dữ liệu máy xét nghiệm cho túi máu: " + barcode);
+            }
+        }
+
+        function openRejectModal() {
+            const reason = prompt("Nhập lý do chuyên môn hủy túi máu:", "Phát hiện chỉ số men gan bất thường / Lỗi tan máu cơ học");
+            if (reason) {
+                alert("Đã lập biên bản hủy túi máu theo quy chuẩn an toàn sinh học. Lý do: " + reason);
+            }
+        }
+    </script>
+}

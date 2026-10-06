@@ -1,0 +1,664 @@
+@{
+    ViewData["Title"] = "Cấu hình kho lạnh IoT & Cảnh báo - Vitalis Blood Community";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="flex flex-col w-full px-space-lg py-space-md space-y-space-lg">
+    <!-- Breadcrumb & Header Bar -->
+    <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-space-md">
+        <div class="space-y-1">
+            <nav class="flex items-center gap-2 font-label-sm text-label-sm text-secondary">
+                <span>Hệ thống Quản trị Y tế</span>
+                <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+                <span>Cài đặt hệ thống</span>
+                <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+                <span class="text-primary font-semibold">Cấu hình cảm biến IoT &amp; Tham số lâm sàng</span>
+            </nav>
+            <div class="flex flex-wrap items-center gap-3 pt-1">
+                <h1 class="font-headline-lg text-headline-lg text-on-surface font-bold tracking-tight">
+                    Cấu Hình Ngưỡng Cảnh Báo Kho Lạnh IoT &amp; Tham Số Y Tế
+                </h1>
+            </div>
+            <div class="flex flex-wrap items-center gap-2 pt-1">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container font-label-sm text-label-sm text-on-surface-variant font-medium">
+                    <span class="material-symbols-outlined text-[16px] text-primary">verified</span>
+                    Chuẩn ISBT 128 &amp; GSP/GDP Bộ Y Tế
+                </span>
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container font-label-sm text-label-sm text-on-surface-variant font-medium">
+                    <span class="material-symbols-outlined text-[16px] text-secondary">settings_input_antenna</span>
+                    Giao thức MQTT / Modbus RTU v4.2
+                </span>
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container font-label-sm text-label-sm text-on-surface-variant font-medium">
+                    <span class="w-2 h-2 rounded-full bg-emerald-600"></span>
+                    Fail-safe Auto-dialer: Sẵn sàng
+                </span>
+            </div>
+        </div>
+        <!-- Top Action Buttons -->
+        <div class="flex items-center gap-space-sm shrink-0 flex-wrap">
+            <button class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-surface-container-lowest text-on-surface font-label-md text-label-md shadow-sm hover:bg-surface-container-low transition-colors" type="button" onclick="alert('Đã xuất file cấu hình json IoT thành công.')">
+                <span class="material-symbols-outlined text-[18px] text-secondary">file_download</span>
+                Xuất File Cấu Hình (JSON)
+            </button>
+            <button class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-surface-container-lowest text-on-surface font-label-md text-label-md shadow-sm hover:bg-surface-container-low transition-colors" type="button" onclick="alert('Đang mở nhật ký hiệu chuẩn cảm biến định kỳ...')">
+                <span class="material-symbols-outlined text-[18px] text-secondary">history</span>
+                Nhật Ký Hiệu Chuẩn
+            </button>
+            <button class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary-container text-on-primary font-label-md text-label-md shadow-md hover:bg-primary transition-all" id="save-config-btn" type="button">
+                <span class="material-symbols-outlined text-[18px]">save</span>
+                Lưu &amp; Đồng Bộ IoT
+            </button>
+        </div>
+    </div>
+
+    <!-- Telemetry KPI Summary Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-space-md">
+        <!-- Card 1 -->
+        <div class="relative overflow-hidden rounded-xl bg-surface-container-lowest p-space-md shadow-sm flex flex-col justify-between">
+            <div class="flex items-start justify-between">
+                <div class="space-y-1">
+                    <span class="font-label-sm text-label-sm text-secondary uppercase tracking-wider font-semibold">Cảm Biến IoT Trực Tuyến</span>
+                    <div class="flex items-baseline gap-2">
+                        <span class="font-headline-md text-headline-md font-bold text-on-surface">48 / 48</span>
+                        <span class="font-label-sm text-label-sm text-emerald-700 font-semibold">100% Hoạt động</span>
+                    </div>
+                </div>
+                <div class="w-10 h-10 rounded-xl bg-surface-container-low flex items-center justify-center text-primary">
+                    <span class="material-symbols-outlined text-[22px]">sensors</span>
+                </div>
+            </div>
+            <div class="pt-3 mt-2 flex items-center justify-between font-body-sm text-body-sm text-on-surface-variant">
+                <span class="flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    Gateway LoRaWAN &amp; 4G
+                </span>
+                <span class="font-medium text-on-surface">RSSI: -62 dBm</span>
+            </div>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="relative overflow-hidden rounded-xl bg-surface-container-lowest p-space-md shadow-sm flex flex-col justify-between">
+            <div class="flex items-start justify-between">
+                <div class="space-y-1">
+                    <span class="font-label-sm text-label-sm text-secondary uppercase tracking-wider font-semibold">Nhiệt Độ Khoang Trung Tâm</span>
+                    <div class="flex items-baseline gap-2">
+                        <span class="font-headline-md text-headline-md font-bold text-on-surface">+3.8°C</span>
+                        <span class="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-label-sm text-label-sm font-semibold">Tối Ưu</span>
+                    </div>
+                </div>
+                <div class="w-10 h-10 rounded-xl bg-surface-container-low flex items-center justify-center text-primary">
+                    <span class="material-symbols-outlined text-[22px]">device_thermostat</span>
+                </div>
+            </div>
+            <div class="pt-3 mt-2 flex items-center justify-between font-body-sm text-body-sm text-on-surface-variant">
+                <span>Quy chuẩn: 2.0°C – 6.0°C</span>
+                <span class="font-medium text-on-surface">Sai số ±0.1°C</span>
+            </div>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="relative overflow-hidden rounded-xl bg-surface-container-lowest p-space-md shadow-sm flex flex-col justify-between">
+            <div class="flex items-start justify-between">
+                <div class="space-y-1">
+                    <span class="font-label-sm text-label-sm text-secondary uppercase tracking-wider font-semibold">Tủ Âm Sâu Huyết Tương</span>
+                    <div class="flex items-baseline gap-2">
+                        <span class="font-headline-md text-headline-md font-bold text-on-surface">-28.4°C</span>
+                        <span class="px-2 py-0.5 rounded-full bg-surface-container text-on-surface font-label-sm text-label-sm font-semibold">Đạt Chuẩn</span>
+                    </div>
+                </div>
+                <div class="w-10 h-10 rounded-xl bg-surface-container-low flex items-center justify-center text-primary">
+                    <span class="material-symbols-outlined text-[22px]">ac_unit</span>
+                </div>
+            </div>
+            <div class="pt-3 mt-2 flex items-center justify-between font-body-sm text-body-sm text-on-surface-variant">
+                <span>Quy định: ≤ -25.0°C</span>
+                <span class="font-medium text-on-surface">Gas nén: 1.4 MPa</span>
+            </div>
+        </div>
+
+        <!-- Card 4 -->
+        <div class="relative overflow-hidden rounded-xl bg-surface-container-lowest p-space-md shadow-sm flex flex-col justify-between">
+            <div class="flex items-start justify-between">
+                <div class="space-y-1">
+                    <span class="font-label-sm text-label-sm text-secondary uppercase tracking-wider font-semibold">Thời Gian Kích Hoạt Cảnh Báo</span>
+                    <div class="flex items-baseline gap-2">
+                        <span class="font-headline-md text-headline-md font-bold text-primary">&lt; 15 giây</span>
+                        <span class="font-label-sm text-label-sm text-secondary font-medium">Đa kênh đồng thời</span>
+                    </div>
+                </div>
+                <div class="w-10 h-10 rounded-xl bg-surface-container-low flex items-center justify-center text-primary">
+                    <span class="material-symbols-outlined text-[22px]">ring_volume</span>
+                </div>
+            </div>
+            <div class="pt-3 mt-2 flex items-center justify-between font-body-sm text-body-sm text-on-surface-variant">
+                <span>SMS + Còi hú + VoIP Gọi</span>
+                <span class="font-semibold text-emerald-700">Trễ 0.0s</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="overflow-x-auto">
+        <div class="flex items-center gap-2 p-1 bg-surface-container rounded-xl min-w-max">
+            <button class="flex items-center gap-2 px-4 py-2 rounded-lg bg-surface-container-lowest text-primary font-label-md text-label-md font-bold shadow-sm" type="button">
+                <span class="material-symbols-outlined text-[18px]">ac_unit</span>
+                Ngưỡng Kho Lạnh &amp; Chuỗi Cung Ứng (Cold Chain Rules)
+            </button>
+            <button class="flex items-center gap-2 px-4 py-2 rounded-lg text-secondary hover:text-on-surface font-label-md text-label-md transition-colors" type="button">
+                <span class="material-symbols-outlined text-[18px]">clinical_notes</span>
+                Tham Số Hiến Máu Lâm Sàng (Blood Criteria)
+            </button>
+            <button class="flex items-center gap-2 px-4 py-2 rounded-lg text-secondary hover:text-on-surface font-label-md text-label-md transition-colors" type="button">
+                <span class="material-symbols-outlined text-[18px]">badge</span>
+                Đồng Bộ Dân Cư VNeID &amp; C06
+            </button>
+            <button class="flex items-center gap-2 px-4 py-2 rounded-lg text-secondary hover:text-on-surface font-label-md text-label-md transition-colors" type="button">
+                <span class="material-symbols-outlined text-[18px]">key</span>
+                Ký Số SmartCA &amp; TSA
+            </button>
+            <button class="flex items-center gap-2 px-4 py-2 rounded-lg text-secondary hover:text-on-surface font-label-md text-label-md transition-colors" type="button">
+                <span class="material-symbols-outlined text-[18px]">settings_backup_restore</span>
+                Sao Lưu &amp; Khắc Phục Sự Cố
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content Layout (65% / 35%) -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start">
+        <!-- LEFT COLUMN (65% -> 8 cols) -->
+        <div class="lg:col-span-8 space-y-space-lg">
+            <!-- Section A: Cold Chain Zone Configurations -->
+            <div class="rounded-xl bg-surface-container-lowest p-space-lg shadow-sm space-y-space-lg">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div>
+                        <h2 class="font-headline-sm text-headline-sm font-bold text-on-surface">
+                            Cấu Hình Ngưỡng Cảnh Báo Nhiệt Độ &amp; Độ Ẩm Từng Phân Khu
+                        </h2>
+                        <p class="font-body-sm text-body-sm text-secondary">
+                            Thiết lập tự động đồng bộ xuống 48 đầu đọc Modbus/MQTT tại các kho bảo quản trung tâm và trạm vệ tinh.
+                        </p>
+                    </div>
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container font-label-sm text-label-sm font-medium text-on-surface">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                        Modbus Bus: 19200 bps
+                    </span>
+                </div>
+
+                <div class="space-y-space-md">
+                    <!-- Zone 1 -->
+                    <div class="rounded-xl bg-surface-container-low p-space-md space-y-4">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl bg-surface-container-lowest flex items-center justify-center text-primary font-bold shadow-sm">
+                                    01
+                                </div>
+                                <div>
+                                    <h3 class="font-title-md text-title-md font-bold text-on-surface">
+                                        Kho Lưu Trữ Máu Toàn Phần &amp; Khối Hồng Cầu
+                                    </h3>
+                                    <div class="flex items-center gap-2 text-secondary font-body-sm text-body-sm">
+                                        <span>Mã hiệu: ZONE-WB-01</span>
+                                        <span>•</span>
+                                        <span class="text-primary font-medium">Tiêu chuẩn ISBT 128 (2°C – 6°C)</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Switch button -->
+                            <label class="inline-flex items-center gap-2 cursor-pointer select-none">
+                                <span class="font-label-sm text-label-sm text-secondary font-semibold">Giám sát tự động</span>
+                                <input checked class="sr-only peer" type="checkbox">
+                                <div class="w-11 h-6 bg-surface-variant peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-container relative"></div>
+                            </label>
+                        </div>
+                        <!-- Parameters Sliders & Inputs -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-space-md pt-2">
+                            <!-- Warning Range -->
+                            <div class="rounded-xl bg-surface-container-lowest p-3 space-y-2">
+                                <div class="flex justify-between items-center font-label-sm text-label-sm">
+                                    <span class="font-bold text-amber-800 flex items-center gap-1">
+                                        <span class="material-symbols-outlined text-[16px]">warning</span>
+                                        Cảnh Báo Vàng (Mức 1)
+                                    </span>
+                                    <span class="px-1.5 py-0.5 rounded bg-surface-container text-on-surface font-semibold">&lt; 2.5°C | &gt; 5.5°C</span>
+                                </div>
+                                <div class="space-y-1">
+                                    <div class="flex justify-between font-body-sm text-body-sm text-secondary">
+                                        <span>Độ trễ kích hoạt</span>
+                                        <span class="font-semibold text-on-surface" id="wb-delay-val">5 phút</span>
+                                    </div>
+                                    <input class="w-full accent-amber-600 cursor-pointer" max="15" min="1" type="range" value="5" oninput="document.getElementById('wb-delay-val').innerText = this.value + ' phút'">
+                                </div>
+                                <span class="font-label-sm text-[11px] text-secondary block">Tránh báo động ảo khi mở cửa xuất nhập túi máu</span>
+                            </div>
+                            <!-- Critical Range -->
+                            <div class="rounded-xl bg-surface-container-lowest p-3 space-y-2">
+                                <div class="flex justify-between items-center font-label-sm text-label-sm">
+                                    <span class="font-bold text-primary flex items-center gap-1">
+                                        <span class="material-symbols-outlined text-[16px]">error</span>
+                                        Báo Động Đỏ (Mức 2)
+                                    </span>
+                                    <span class="px-1.5 py-0.5 rounded bg-surface-container text-primary font-semibold">&lt; 1.5°C | &gt; 6.5°C</span>
+                                </div>
+                                <div class="space-y-1">
+                                    <div class="flex justify-between font-body-sm text-body-sm text-secondary">
+                                        <span>Độ trễ kích hoạt</span>
+                                        <span class="font-semibold text-primary" id="wb-crit-val">0 giây (Tức thì)</span>
+                                    </div>
+                                    <input class="w-full accent-primary cursor-pointer" max="60" min="0" type="range" value="0" oninput="document.getElementById('wb-crit-val').innerText = this.value == 0 ? '0 giây (Tức thì)' : this.value + ' giây'">
+                                </div>
+                                <span class="font-label-sm text-[11px] text-secondary block">Kích hoạt còi hú trạm y tế và gọi tự động</span>
+                            </div>
+                            <!-- Relative Humidity -->
+                            <div class="rounded-xl bg-surface-container-lowest p-3 space-y-2">
+                                <div class="flex justify-between items-center font-label-sm text-label-sm">
+                                    <span class="font-bold text-on-surface flex items-center gap-1">
+                                        <span class="material-symbols-outlined text-[16px] text-secondary">humidity_mid</span>
+                                        Độ Ẩm Tương Đối (RH)
+                                    </span>
+                                    <span class="px-1.5 py-0.5 rounded bg-surface-container text-on-surface font-semibold">40% - 60%</span>
+                                </div>
+                                <div class="space-y-1">
+                                    <div class="flex justify-between font-body-sm text-body-sm text-secondary">
+                                        <span>Ngưỡng đọng sương</span>
+                                        <span class="font-semibold text-on-surface" id="wb-rh-val">&gt; 68% RH</span>
+                                    </div>
+                                    <input class="w-full accent-secondary cursor-pointer" max="80" min="30" type="range" value="68" oninput="document.getElementById('wb-rh-val').innerText = '> ' + this.value + '% RH'">
+                                </div>
+                                <span class="font-label-sm text-[11px] text-secondary block">Bảo vệ nhãn mã vạch ISBT 128 không bị nhòe rách</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Zone 2 -->
+                    <div class="rounded-xl bg-surface-container-low p-space-md space-y-4">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl bg-surface-container-lowest flex items-center justify-center text-primary font-bold shadow-sm">
+                                    02
+                                </div>
+                                <div>
+                                    <h3 class="font-title-md text-title-md font-bold text-on-surface">
+                                        Tủ Trữ Âm Sâu Huyết Tương &amp; Kết Tủa Lạnh (Cryo)
+                                    </h3>
+                                    <div class="flex items-center gap-2 text-secondary font-body-sm text-body-sm">
+                                        <span>Mã hiệu: ZONE-FFP-DEEP</span>
+                                        <span>•</span>
+                                        <span class="text-primary font-medium">Tiêu chuẩn: Nhiệt độ ≤ -25.0°C</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <label class="inline-flex items-center gap-2 cursor-pointer select-none">
+                                <span class="font-label-sm text-label-sm text-secondary font-semibold">Giám sát tự động</span>
+                                <input checked class="sr-only peer" type="checkbox">
+                                <div class="w-11 h-6 bg-surface-variant peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-container relative"></div>
+                            </label>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-space-md pt-2">
+                            <div class="rounded-xl bg-surface-container-lowest p-3 space-y-2">
+                                <div class="flex justify-between items-center font-label-sm text-label-sm">
+                                    <span class="font-bold text-on-surface">Điểm Đặt Chuẩn (Set Point)</span>
+                                    <span class="px-2 py-0.5 rounded bg-surface-container text-primary font-bold text-label-md" id="ffp-setpoint-val">-30.0°C</span>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <span class="font-label-sm text-label-sm text-secondary">-40°C</span>
+                                    <input class="w-full accent-primary cursor-pointer" max="-15" min="-40" type="range" value="-30" oninput="document.getElementById('ffp-setpoint-val').innerText = this.value + '.0°C'">
+                                    <span class="font-label-sm text-label-sm text-secondary">-15°C</span>
+                                </div>
+                                <div class="flex items-center justify-between text-[11px] font-label-sm text-secondary pt-1">
+                                    <span>Ngưỡng báo động đỏ: &gt; -20.0°C</span>
+                                    <span class="text-emerald-700 font-semibold">Tản nhiệt tối ưu</span>
+                                </div>
+                            </div>
+                            <div class="rounded-xl bg-surface-container-lowest p-3 space-y-2">
+                                <div class="flex justify-between items-center font-label-sm text-label-sm">
+                                    <span class="font-bold text-on-surface">Chống Rã Đông Ngoại Ý (Defrost Protect)</span>
+                                    <span class="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 font-semibold">Active Safe</span>
+                                </div>
+                                <p class="font-body-sm text-body-sm text-secondary">
+                                    Tự động ngắt chu kỳ xả tuyết nếu nhiệt độ buồng tăng đột biến vượt quá -18°C trong 10 phút.
+                                </p>
+                                <div class="flex items-center gap-2 pt-1 font-label-sm text-label-sm text-primary font-semibold">
+                                    <span class="material-symbols-outlined text-[16px]">shield</span>
+                                    Bảo vệ hoạt tính Yếu tố VIII &amp; Fibrinogen
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Zone 3 & Zone 4 Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-space-md">
+                        <!-- Zone 3: Platelets -->
+                        <div class="rounded-xl bg-surface-container-low p-space-md space-y-3">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-8 h-8 rounded-lg bg-surface-container-lowest flex items-center justify-center text-primary font-bold shadow-sm">
+                                        03
+                                    </div>
+                                    <div>
+                                        <h4 class="font-title-md text-title-md font-bold text-on-surface">Máy Lắc Tiểu Cầu</h4>
+                                        <span class="font-label-sm text-label-sm text-secondary">Agitator Incubator (20°C – 24°C)</span>
+                                    </div>
+                                </div>
+                                <input checked class="w-4 h-4 accent-primary rounded" type="checkbox">
+                            </div>
+                            <div class="space-y-2 pt-2">
+                                <div class="flex justify-between font-body-sm text-body-sm">
+                                    <span class="text-secondary">Tần số rung lắc:</span>
+                                    <span class="font-semibold text-on-surface">60 chu kỳ / phút</span>
+                                </div>
+                                <div class="flex justify-between font-body-sm text-body-sm">
+                                    <span class="text-secondary">Báo động ngắt lắc:</span>
+                                    <span class="font-semibold text-primary">Sau 30 giây dừng máy</span>
+                                </div>
+                                <div class="p-2 rounded bg-surface-container-lowest font-label-sm text-label-sm text-secondary flex items-center gap-1.5">
+                                    <span class="material-symbols-outlined text-[16px] text-amber-700">info</span>
+                                    Tránh kết cụm tiểu cầu không hồi phục
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Zone 4: Mobile Coolboxes -->
+                        <div class="rounded-xl bg-surface-container-low p-space-md space-y-3">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-8 h-8 rounded-lg bg-surface-container-lowest flex items-center justify-center text-primary font-bold shadow-sm">
+                                        04
+                                    </div>
+                                    <div>
+                                        <h4 class="font-title-md text-title-md font-bold text-on-surface">Thùng Lạnh Xe Lưu Động</h4>
+                                        <span class="font-label-sm text-label-sm text-secondary">Mobile Fleet Coolbox (2°C – 8°C)</span>
+                                    </div>
+                                </div>
+                                <input checked class="w-4 h-4 accent-primary rounded" type="checkbox">
+                            </div>
+                            <div class="space-y-2 pt-2">
+                                <div class="flex justify-between font-body-sm text-body-sm">
+                                    <span class="text-secondary">GPS &amp; Data Logger:</span>
+                                    <span class="font-semibold text-emerald-700">Đồng bộ 30 giây/lần</span>
+                                </div>
+                                <div class="flex justify-between font-body-sm text-body-sm">
+                                    <span class="text-secondary">Dung lượng gel đệm lạnh:</span>
+                                    <span class="font-semibold text-on-surface">Tiêu chuẩn 14 giờ</span>
+                                </div>
+                                <div class="p-2 rounded bg-surface-container-lowest font-label-sm text-label-sm text-secondary flex items-center gap-1.5">
+                                    <span class="material-symbols-outlined text-[16px] text-secondary">share_location</span>
+                                    Tự động chuyển tiếp sóng 4G/NB-IoT
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section B: Escalation Protocol Matrix -->
+            <div class="rounded-xl bg-surface-container-lowest p-space-lg shadow-sm space-y-space-md">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div>
+                        <h2 class="font-headline-sm text-headline-sm font-bold text-on-surface">
+                            Quy Trình Leo Thang Cảnh Báo Khi Có Sự Cố (Escalation Matrix)
+                        </h2>
+                        <p class="font-body-sm text-body-sm text-secondary">
+                            Ma trận tự động phân phối cảnh báo nhằm ngăn chặn tuyệt đối nguy cơ hỏng chế phẩm máu.
+                        </p>
+                    </div>
+                    <span class="px-2.5 py-1 rounded bg-surface-container font-label-sm text-label-sm font-semibold text-on-surface">
+                        Cơ chế kích hoạt 3 cấp
+                    </span>
+                </div>
+                <div class="space-y-3">
+                    <!-- Step 1 -->
+                    <div class="flex items-start gap-4 p-space-md rounded-xl bg-surface-container-low">
+                        <div class="w-9 h-9 rounded-full bg-surface-container text-on-surface-variant flex items-center justify-center shrink-0 font-bold font-label-lg text-label-lg">
+                            1
+                        </div>
+                        <div class="flex-1 space-y-1">
+                            <div class="flex flex-wrap items-center justify-between gap-2">
+                                <span class="font-title-md text-title-md font-bold text-on-surface">
+                                    Cấp 1: Cảnh Báo Nhẹ (Sai lệch kéo dài &gt; 5 phút)
+                                </span>
+                                <span class="px-2 py-0.5 rounded bg-surface-container font-label-sm text-label-sm text-secondary font-medium">Thời gian: 0 – 5 phút</span>
+                            </div>
+                            <p class="font-body-sm text-body-sm text-secondary">
+                                Đèn LED tủ chuyển vàng. Đẩy thông báo tức thì lên Web Dashboard điều hành và ứng dụng di động của Kỹ thuật viên phụ trách ca trực.
+                            </p>
+                        </div>
+                    </div>
+                    <!-- Step 2 -->
+                    <div class="flex items-start gap-4 p-space-md rounded-xl bg-secondary-container/40">
+                        <div class="w-9 h-9 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center shrink-0 font-bold font-label-lg text-label-lg">
+                            2
+                        </div>
+                        <div class="flex-1 space-y-1">
+                            <div class="flex flex-wrap items-center justify-between gap-2">
+                                <span class="font-title-md text-title-md font-bold text-on-surface">
+                                    Cấp 2: Báo Động Nguy Cơ (Sau 10 phút chưa khắc phục)
+                                </span>
+                                <span class="px-2 py-0.5 rounded bg-surface-container font-label-sm text-label-sm text-secondary font-medium">Thời gian: 5 – 10 phút</span>
+                            </div>
+                            <p class="font-body-sm text-body-sm text-secondary">
+                                Kích hoạt còi báo động phòng máy 85dB. Bắn tin nhắn SMS khẩn cấp và tin Zalo ZNS tới Trưởng kíp y tế và Thủ kho lạnh.
+                            </p>
+                        </div>
+                    </div>
+                    <!-- Step 3 -->
+                    <div class="flex items-start gap-4 p-space-md rounded-xl bg-surface-container-low">
+                        <div class="w-9 h-9 rounded-full bg-primary-container text-on-primary flex items-center justify-center shrink-0 font-bold font-label-lg text-label-lg">
+                            3
+                        </div>
+                        <div class="flex-1 space-y-1">
+                            <div class="flex flex-wrap items-center justify-between gap-2">
+                                <span class="font-title-md text-title-md font-bold text-primary">
+                                    Cấp 3: Khẩn Cấp Báo Động Đỏ (Nhiệt độ chạm ngưỡng nguy hiểm)
+                                </span>
+                                <span class="px-2 py-0.5 rounded bg-surface-container font-label-sm text-label-sm text-primary font-semibold">Tức thì / Sau 15 phút</span>
+                            </div>
+                            <p class="font-body-sm text-body-sm text-secondary">
+                                Tổng đài VoIP tự động gọi liên tục tới BS. Trưởng kíp Trần Mai Linh và Ban Giám đốc Viện TW. Kích hoạt chuyển nguồn máy phát điện dự phòng và hệ thống quạt tuần hoàn khẩn cấp.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT COLUMN (35% -> 4 cols) -->
+        <div class="lg:col-span-4 space-y-space-lg">
+            <!-- Right Card 1: Notification Channels & Contacts -->
+            <div class="rounded-xl bg-surface-container-lowest p-space-lg shadow-sm space-y-space-md">
+                <div class="flex items-center justify-between">
+                    <h3 class="font-title-md text-title-md font-bold text-on-surface">
+                        Kênh Cảnh Báo &amp; Danh Bạ
+                    </h3>
+                    <span class="material-symbols-outlined text-primary text-[20px]">cell_tower</span>
+                </div>
+                <!-- Channels status -->
+                <div class="space-y-2">
+                    <div class="flex items-center justify-between p-2.5 rounded-lg bg-surface-container-low font-body-sm text-body-sm">
+                        <div class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[18px] text-primary">sms</span>
+                            <span class="font-medium text-on-surface">SMS Brandname</span>
+                        </div>
+                        <span class="font-label-sm text-label-sm text-emerald-700 font-semibold">28,450 tin còn lại</span>
+                    </div>
+                    <div class="flex items-center justify-between p-2.5 rounded-lg bg-surface-container-low font-body-sm text-body-sm">
+                        <div class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[18px] text-primary">support_agent</span>
+                            <span class="font-medium text-on-surface">SIP Auto-dialer VoIP</span>
+                        </div>
+                        <span class="font-label-sm text-label-sm text-emerald-700 font-semibold">2 Kênh sẵn sàng</span>
+                    </div>
+                    <div class="flex items-center justify-between p-2.5 rounded-lg bg-surface-container-low font-body-sm text-body-sm">
+                        <div class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-[18px] text-primary">notifications_active</span>
+                            <span class="font-medium text-on-surface">Firebase Push (App CBYT)</span>
+                        </div>
+                        <span class="font-label-sm text-label-sm text-emerald-700 font-semibold">Đã đồng bộ</span>
+                    </div>
+                </div>
+                <!-- Emergency Duty Staff -->
+                <div class="space-y-3 pt-2">
+                    <span class="font-label-sm text-label-sm text-secondary uppercase tracking-wider font-semibold block">
+                        Danh Sách Gọi Tự Động (Ưu tiên gọi xoay vòng)
+                    </span>
+                    <div class="space-y-2">
+                        <!-- Staff 1 -->
+                        <div class="flex items-center justify-between p-2.5 rounded-xl bg-surface-container-low">
+                            <div class="flex items-center gap-2.5 min-w-0">
+                                <div class="w-8 h-8 rounded-full bg-primary-container text-on-primary flex items-center justify-center font-bold text-label-sm text-[11px] shrink-0">
+                                    UT1
+                                </div>
+                                <div class="truncate">
+                                    <p class="font-label-md text-label-md font-semibold text-on-surface truncate">BS. CKI Trần Mai Linh</p>
+                                    <p class="font-body-sm text-body-sm text-secondary truncate">Trưởng kíp • 0912.445.***</p>
+                                </div>
+                            </div>
+                            <span class="material-symbols-outlined text-[18px] text-emerald-600 shrink-0">phone_in_talk</span>
+                        </div>
+                        <!-- Staff 2 -->
+                        <div class="flex items-center justify-between p-2.5 rounded-xl bg-surface-container-low">
+                            <div class="flex items-center gap-2.5 min-w-0">
+                                <div class="w-8 h-8 rounded-full bg-surface-container text-on-surface-variant flex items-center justify-center font-bold text-label-sm text-[11px] shrink-0">
+                                    UT2
+                                </div>
+                                <div class="truncate">
+                                    <p class="font-label-md text-label-md font-semibold text-on-surface truncate">KTV. Nguyễn Văn Toàn</p>
+                                    <p class="font-body-sm text-body-sm text-secondary truncate">Thủ kho chuỗi lạnh • 0988.234.***</p>
+                                </div>
+                            </div>
+                            <span class="material-symbols-outlined text-[18px] text-secondary shrink-0">phone_in_talk</span>
+                        </div>
+                        <!-- Staff 3 -->
+                        <div class="flex items-center justify-between p-2.5 rounded-xl bg-surface-container-low">
+                            <div class="flex items-center gap-2.5 min-w-0">
+                                <div class="w-8 h-8 rounded-full bg-surface-container text-on-surface-variant flex items-center justify-center font-bold text-label-sm text-[11px] shrink-0">
+                                    UT3
+                                </div>
+                                <div class="truncate">
+                                    <p class="font-label-md text-label-md font-semibold text-on-surface truncate">KS. Lê Hoàng Nam</p>
+                                    <p class="font-body-sm text-body-sm text-secondary truncate">Kỹ sư hạ tầng y tế • 0903.882.***</p>
+                                </div>
+                            </div>
+                            <span class="material-symbols-outlined text-[18px] text-secondary shrink-0">phone_in_talk</span>
+                        </div>
+                    </div>
+                    <button class="w-full py-2 px-3 rounded-lg bg-surface-container text-primary font-label-sm text-label-sm font-semibold hover:bg-surface-container-high transition-colors flex items-center justify-center gap-1" type="button" onclick="alert('Mở form phân bổ nhân sự trực ca tiếp theo')">
+                        <span class="material-symbols-outlined text-[16px]">add</span>
+                        Thêm nhân sự trực ca tiếp theo
+                    </button>
+                </div>
+            </div>
+
+            <!-- Right Card 2: Quick Clinical Parameter Box -->
+            <div class="rounded-xl bg-surface-container-lowest p-space-lg shadow-sm space-y-space-md">
+                <div class="flex items-center justify-between">
+                    <h3 class="font-title-md text-title-md font-bold text-on-surface">
+                        Tham Số Hiến Máu (BYT)
+                    </h3>
+                    <span class="material-symbols-outlined text-primary text-[20px]">medical_information</span>
+                </div>
+                <div class="space-y-3 font-body-sm text-body-sm">
+                    <div class="flex items-center justify-between p-2 rounded-lg bg-surface-container-low">
+                        <span class="text-secondary">Hiến máu toàn phần lặp lại:</span>
+                        <span class="font-bold text-on-surface">84 ngày (12 tuần)</span>
+                    </div>
+                    <div class="flex items-center justify-between p-2 rounded-lg bg-surface-container-low">
+                        <span class="text-secondary">Hiến gạn tách tiểu cầu (Apheresis):</span>
+                        <span class="font-bold text-on-surface">21 ngày</span>
+                    </div>
+                    <div class="p-2.5 rounded-lg bg-surface-container-low space-y-1">
+                        <div class="flex justify-between">
+                            <span class="text-secondary">Thể tích lấy tối đa theo cân nặng:</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 pt-1 font-label-sm text-label-sm">
+                            <div class="p-1.5 rounded bg-surface-container-lowest text-center">
+                                <span class="text-secondary block">45 - 50 kg</span>
+                                <span class="font-bold text-on-surface">Tối đa 350 ml</span>
+                            </div>
+                            <div class="p-1.5 rounded bg-surface-container-lowest text-center">
+                                <span class="text-secondary block">&gt; 50 kg</span>
+                                <span class="font-bold text-primary">Tối đa 450 ml</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between p-2 rounded-lg bg-surface-container-low">
+                        <span class="text-secondary">Ngưỡng Hb tối thiểu:</span>
+                        <span class="font-bold text-on-surface">≥ 120 g/L (Nữ) | 125 (Nam)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Card 3: Drill & Emergency Test Panel -->
+            <div class="rounded-xl bg-surface-container-lowest p-space-lg shadow-sm space-y-space-md">
+                <div class="flex items-center justify-between">
+                    <h3 class="font-title-md text-title-md font-bold text-on-surface">
+                        Thực Nghiệm Báo Động (Drill Test)
+                    </h3>
+                    <span class="material-symbols-outlined text-secondary text-[20px]">science</span>
+                </div>
+                <p class="font-body-sm text-body-sm text-secondary">
+                    Kiểm tra định kỳ tính sẵn sàng của loa còi, tin nhắn khẩn và kết nối đường truyền SIP Trunking.
+                </p>
+                <div class="grid grid-cols-2 gap-2">
+                    <button class="py-2.5 px-3 rounded-xl bg-surface-container text-on-surface font-label-sm text-label-sm font-semibold hover:bg-surface-container-high transition-colors flex items-center justify-center gap-1.5" id="btn-test-siren" type="button">
+                        <span class="material-symbols-outlined text-[16px] text-primary">volume_up</span>
+                        Test Còi Báo
+                    </button>
+                    <button class="py-2.5 px-3 rounded-xl bg-surface-container text-on-surface font-label-sm text-label-sm font-semibold hover:bg-surface-container-high transition-colors flex items-center justify-center gap-1.5" id="btn-test-sms" type="button">
+                        <span class="material-symbols-outlined text-[16px] text-primary">send</span>
+                        Bắn SMS Mẫu
+                    </button>
+                </div>
+                <div class="p-3 rounded-xl bg-surface-container-low space-y-1">
+                    <div class="flex items-center gap-1.5 font-label-sm text-label-sm font-semibold text-on-surface">
+                        <span class="material-symbols-outlined text-[16px] text-emerald-600">check_circle</span>
+                        Nhật ký kiểm tra gần nhất
+                    </div>
+                    <p class="font-body-sm text-body-sm text-secondary">
+                        Hôm qua 02:14 Sáng: Test kết nối cảm biến Tủ đông số 4 - Đạt chuẩn phản hồi 120ms.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Modal (Hidden by default, triggered by JS) -->
+    <div class="fixed bottom-6 right-6 z-50 transform translate-y-24 opacity-0 transition-all duration-300 pointer-events-none" id="toast-notify">
+        <div class="flex items-center gap-3 px-5 py-3.5 rounded-xl bg-inverse-surface text-inverse-on-surface shadow-xl">
+            <span class="material-symbols-outlined text-emerald-400 text-[22px]">check_circle</span>
+            <div class="flex flex-col">
+                <span class="font-label-md text-label-md font-bold text-white">Đã lưu và đồng bộ thành công!</span>
+                <span class="font-body-sm text-body-sm text-surface-variant">48/48 cảm biến IoT đã nhận tham số cấu hình mới.</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function () {
+        const saveBtn = document.getElementById('save-config-btn');
+        const toast = document.getElementById('toast-notify');
+        const sirenBtn = document.getElementById('btn-test-siren');
+        const smsBtn = document.getElementById('btn-test-sms');
+
+        if (saveBtn && toast) {
+            saveBtn.addEventListener('click', function () {
+                toast.classList.remove('translate-y-24', 'opacity-0', 'pointer-events-none');
+                setTimeout(function () {
+                    toast.classList.add('translate-y-24', 'opacity-0', 'pointer-events-none');
+                }, 3500);
+            });
+        }
+
+        if (sirenBtn) {
+            sirenBtn.addEventListener('click', function () {
+                alert('Đã gửi xung kích hoạt kiểm tra còi hú 85dB trong 3 giây tại Trạm Kho Lạnh.');
+            });
+        }
+
+        if (smsBtn) {
+            smsBtn.addEventListener('click', function () {
+                alert('Đã gửi tin nhắn SMS khẩn cấp thử nghiệm tới danh sách nhân sự trực ban ca.');
+            });
+        }
+    })();
+</script>
