@@ -1,3 +1,9 @@
+// Họ và tên: Nguyễn Tiến Nam
+// Mã sinh viên: 23103100275
+// Nội dung thực hiện: Đăng kí, đăng nhập, đăng xuất,
+// đăng kí, dăng nhập, đăng xuất 
+
+
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
@@ -45,6 +51,7 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
         public async Task<IActionResult> Login(string tenDangNhap, string matKhau, bool rememberMe, string? returnUrl = null)
         {
             ViewData["ReturnUrl"] = returnUrl;
+            ViewBag.LoginTenDangNhap = tenDangNhap;
 
             if (string.IsNullOrWhiteSpace(tenDangNhap) || string.IsNullOrWhiteSpace(matKhau))
             {
@@ -143,6 +150,15 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
             double? canNang)
         {
             ViewBag.ActiveTab = "register";
+            ViewBag.RegTenDangNhap = tenDangNhap;
+            ViewBag.RegHoTen = hoTen;
+            ViewBag.RegEmail = email;
+            ViewBag.RegSoDienThoai = soDienThoai;
+            ViewBag.RegNhomMau = nhomMau;
+            ViewBag.RegCanNang = canNang;
+            ViewBag.RegMatKhau = matKhau;
+            ViewBag.RegXacNhanMatKhau = xacNhanMatKhau;
+            ViewBag.RegDongYDieuKhoan = true;
 
             if (string.IsNullOrWhiteSpace(tenDangNhap) ||
                 string.IsNullOrWhiteSpace(matKhau) ||
