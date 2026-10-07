@@ -15,11 +15,23 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
         }
 
         // GET: /DotHienMau
-        public async Task<IActionResult> Index(string? search, string? status, int? donViId, string? nhomMau, double? canNang)
+        public async Task<IActionResult> Index(string? search, string? status, int? donViId, string? nhomMau, double? canNang, string? thoiHan)
         {
             var query = _context.DotHienMaus
                 .Include(d => d.DonViToChuc)
                 .AsQueryable();
+            var today = DateTime.Today;
+
+            if (thoiHan == "conhan")
+            {
+                query = query.Where(d =>
+                    d.HanDangKy >= today);
+            }
+            else if (thoiHan == "hethan")
+            {
+                query = query.Where(d =>
+                    d.HanDangKy < today);
+            }
 
             // Tìm kiếm theo tên đợt, mô tả hoặc tên đơn vị tổ chức
             if (!string.IsNullOrWhiteSpace(search))
