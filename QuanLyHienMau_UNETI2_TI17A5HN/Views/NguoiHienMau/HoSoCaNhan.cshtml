@@ -1,9 +1,46 @@
+@model QuanLyHienMau_UNETI2_TI17A5HN.Models.NguoiHienMau
+
 @{
     ViewData["Title"] = "Hồ Sơ Người Hiến Máu & Chứng Nhận Điện Tử";
     Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var phieuList = Model?.PhieuDangKyHienMaus?.OrderByDescending(p => p.NgayNop).ToList() ?? new List<QuanLyHienMau_UNETI2_TI17A5HN.Models.PhieuDangKyHienMau>();
+    var successfulDonations = phieuList.Where(p => p.TrangThai == "Hiến máu thành công" || p.KetQuaHienMau?.KetQua == "Hiến máu thành công").ToList();
+    var totalCount = successfulDonations.Count > 0 ? successfulDonations.Count : phieuList.Count(p => p.TrangThai != "Đã hủy");
+    var totalVolume = totalCount * 350;
+    var peopleSaved = totalCount * 3;
+
+    var latestDonation = successfulDonations.FirstOrDefault() ?? phieuList.FirstOrDefault();
+    var latestDateStr = latestDonation?.NgayNop.ToString("dd/MM/yyyy") ?? "Chưa có";
+    var latestDotName = latestDonation?.DotHienMau?.TenDot ?? "Chưa tham gia đợt nào";
+
+    var age = Model?.NgaySinh.HasValue == true ? (DateTime.Now.Year - Model.NgaySinh.Value.Year) : 23;
+    var nhomMauDisplay = string.IsNullOrEmpty(Model?.NhomMau) ? "O Rh(+)" : Model.NhomMau;
+    var rankName = totalCount >= 5 ? "Huy Hiệu Vàng" : totalCount >= 3 ? "Huy Hiệu Bạc" : totalCount >= 1 ? "Huy Hiệu Đồng" : "Thành Viên Mới";
+    var rankBadge = totalCount >= 5 ? "Vàng" : totalCount >= 3 ? "Bạc" : totalCount >= 1 ? "Đồng" : "Mới";
 }
 
 <div class="flex flex-col w-full pb-12">
+    <!-- ALERT NOTIFICATIONS -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="w-full max-w-[1366px] mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+            <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center gap-3 shadow-sm">
+                <span class="material-symbols-outlined text-emerald-600 text-[24px]">check_circle</span>
+                <span class="font-body-md text-sm font-semibold">@TempData["SuccessMessage"]</span>
+            </div>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="w-full max-w-[1366px] mx-auto px-4 sm:px-6 lg:px-8 pt-4">
+            <div class="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 flex items-center gap-3 shadow-sm">
+                <span class="material-symbols-outlined text-rose-600 text-[24px]">error</span>
+                <span class="font-body-md text-sm font-semibold">@TempData["ErrorMessage"]</span>
+            </div>
+        </div>
+    }
+
     <!-- BREADCRUMB & PAGE HEADER -->
     <div class="w-full max-w-[1366px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-4">
         <!-- Breadcrumb -->
@@ -31,6 +68,10 @@
             </div>
             <!-- Action Buttons -->
             <div class="flex flex-wrap items-center gap-2 sm:gap-3 shrink-0">
+                <button onclick="openEditProfileModal()" class="bg-surface-container-high hover:bg-surface-container text-on-surface font-label-lg text-sm px-4 py-2.5 rounded-xl shadow-sm flex items-center gap-2 transition-colors cursor-pointer border border-outline-variant/40">
+                    <span class="material-symbols-outlined text-[20px] text-primary">edit</span>
+                    <span>Cập nhật hồ sơ</span>
+                </button>
                 <a asp-controller="DotHienMau" asp-action="Index" class="bg-primary hover:bg-primary-container text-on-primary font-label-lg text-sm px-4 py-2.5 rounded-xl shadow-md flex items-center gap-2 transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 cursor-pointer">
                     <span class="material-symbols-outlined text-[20px]">bloodtype</span>
                     <span>Đăng ký đợt hiến mới</span>
@@ -47,7 +88,7 @@
         </div>
     </div>
 
-    <!-- DONOR PROFILE BANNER (Card thông tin cá nhân, nhóm máu và thời gian hiến tiếp theo nằm cùng hàng trên desktop) -->
+    <!-- DONOR PROFILE BANNER -->
     <div class="w-full max-w-[1366px] mx-auto px-4 sm:px-6 lg:px-8 mb-6">
         <div class="bg-surface-container-lowest rounded-2xl shadow-md p-5 sm:p-6 border border-surface-container-high/60">
             <div class="flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-6">
@@ -60,42 +101,42 @@
                         </div>
                         <div class="absolute -bottom-1.5 -right-1.5 bg-secondary text-on-secondary px-2 py-0.5 rounded-full font-label-sm text-[11px] shadow flex items-center gap-1">
                             <span class="material-symbols-outlined text-[13px]">military_tech</span>
-                            <span>Bạc (4 lần)</span>
+                            <span>@rankBadge (@totalCount lần)</span>
                         </div>
                     </div>
                     <!-- Identity Details -->
                     <div class="flex flex-col gap-1 min-w-0">
                         <div class="flex flex-wrap items-center gap-2">
-                            <h2 class="font-headline-md text-xl sm:text-2xl text-on-surface font-extrabold truncate">Nguyễn Hoàng Nam</h2>
+                            <h2 class="font-headline-md text-xl sm:text-2xl text-on-surface font-extrabold truncate">@(Model?.HoTen ?? "Người Hiến Máu")</h2>
                             <div class="inline-flex items-center gap-1 bg-surface-container-high px-2 py-0.5 rounded-md text-on-surface">
                                 <span class="material-symbols-outlined text-[16px] text-primary" style="font-variation-settings: 'FILL' 1;">verified_user</span>
                                 <span class="font-label-sm text-xs font-semibold">Đã định danh VNeID Mức 2</span>
                             </div>
                         </div>
                         <div class="flex flex-wrap items-center gap-x-3 gap-y-1 font-body-sm text-xs sm:text-sm text-on-surface-variant mt-0.5">
-                            <span class="font-medium text-on-surface">CCCD: <span class="font-mono font-bold">001099028891</span></span>
+                            <span class="font-medium text-on-surface">Mã định danh: <span class="font-mono font-bold">#NHM-@(Model?.MaNguoiHien.ToString("D5") ?? "00001")</span></span>
                             <span>•</span>
-                            <span>18/06/1998 (27 tuổi)</span>
+                            <span>@(Model?.NgaySinh?.ToString("dd/MM/yyyy") ?? "Chưa cập nhật") (@age tuổi)</span>
                             <span>•</span>
-                            <span>Nam</span>
+                            <span>@(Model?.GioiTinh ?? "Nam")</span>
                             <span>•</span>
-                            <span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px] text-primary">call</span>0988 123 456</span>
+                            <span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px] text-primary">call</span>@(Model?.SoDienThoai ?? "Chưa có SĐT")</span>
                             <span>•</span>
-                            <span class="flex items-center gap-1 truncate"><span class="material-symbols-outlined text-[14px] text-primary">mail</span>hoangnam.vitalis@gmail.com</span>
+                            <span class="flex items-center gap-1 truncate"><span class="material-symbols-outlined text-[14px] text-primary">mail</span>@(Model?.Email ?? "Chưa có Email")</span>
                         </div>
                         <div class="flex items-center gap-1.5 text-on-surface-variant font-body-sm text-xs sm:text-sm mt-1">
                             <span class="material-symbols-outlined text-[16px] text-primary shrink-0">event_available</span>
-                            <span class="truncate">Đợt hiến gần nhất: <strong class="text-on-surface font-semibold">15/11/2025</strong> tại <span class="italic">Giọt Hồng Thanh Niên - NTĐ Cầu Giấy</span></span>
+                            <span class="truncate">Đợt hiến gần nhất: <strong class="text-on-surface font-semibold">@latestDateStr</strong> tại <span class="italic">@latestDotName</span></span>
                         </div>
                     </div>
                 </div>
 
-                <!-- Part 2 & Part 3: Blood Type Card + Donation Next Date (Nằm cùng hàng trên desktop) -->
+                <!-- Part 2 & Part 3: Blood Type Card + Donation Next Date -->
                 <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 shrink-0">
                     <!-- Part 2: Blood Type Card -->
                     <div class="bg-primary-fixed text-on-primary-fixed rounded-2xl p-4 flex flex-col items-center justify-center min-w-[140px] shadow-sm text-center border border-primary-fixed-dim">
                         <span class="font-label-sm text-xs text-primary uppercase font-bold tracking-wider">Nhóm Máu ABO/Rh</span>
-                        <span class="font-display-hero text-3xl sm:text-4xl leading-tight font-extrabold text-primary my-0.5">O Rh(+)</span>
+                        <span class="font-display-hero text-3xl sm:text-4xl leading-tight font-extrabold text-primary my-0.5">@nhomMauDisplay</span>
                         <span class="font-label-sm text-[11px] text-on-primary-fixed-variant bg-surface-container-lowest/90 px-2 py-0.5 rounded-full font-semibold">Phổ biến &amp; Cấp cứu</span>
                     </div>
 
@@ -106,15 +147,15 @@
                                 <span class="material-symbols-outlined text-[18px]">timelapse</span>
                                 <span class="font-label-md text-xs sm:text-sm font-bold">Chu kỳ hiến tiếp theo</span>
                             </div>
-                            <span class="bg-secondary-fixed text-on-secondary-fixed font-label-sm text-xs px-2 py-0.5 rounded font-bold">12/84 ngày</span>
+                            <span class="bg-secondary-fixed text-on-secondary-fixed font-label-sm text-xs px-2 py-0.5 rounded font-bold">Sẵn sàng</span>
                         </div>
                         <p class="font-body-sm text-xs sm:text-sm text-on-surface-variant leading-relaxed">
-                            Đủ điều kiện hiến lần tiếp theo sau <strong class="text-primary font-bold">72 ngày</strong> nữa.
-                            <span class="block text-[11px] text-on-surface-variant/80 mt-0.5">Dự kiến: <strong class="text-on-surface font-semibold">08/02/2026</strong> (Quy chuẩn 84 ngày BYT)</span>
+                            Đủ điều kiện hiến đợt tiếp theo.
+                            <span class="block text-[11px] text-on-surface-variant/80 mt-0.5">Quy chuẩn khoảng cách: <strong class="text-on-surface font-semibold">84 ngày theo Bộ Y Tế</strong></span>
                         </p>
                         <!-- Progress Bar -->
                         <div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden mt-2">
-                            <div class="bg-primary h-full rounded-full transition-all duration-500" style="width: 14.3%;"></div>
+                            <div class="bg-primary h-full rounded-full transition-all duration-500" style="width: 100%;"></div>
                         </div>
                     </div>
                 </div>
@@ -130,10 +171,10 @@
                 <div class="flex flex-col">
                     <span class="font-label-sm text-xs text-on-surface-variant uppercase font-semibold">Tổng số lần hiến</span>
                     <div class="flex items-baseline gap-1 mt-1">
-                        <span class="font-display-hero text-2xl sm:text-3xl font-extrabold text-primary">04</span>
+                        <span class="font-display-hero text-2xl sm:text-3xl font-extrabold text-primary">@totalCount.ToString("D2")</span>
                         <span class="font-label-md text-xs sm:text-sm text-on-surface-variant font-bold">lần</span>
                     </div>
-                    <span class="font-body-sm text-xs text-on-surface-variant mt-1">Đã trao tặng 1,300 mL máu</span>
+                    <span class="font-body-sm text-xs text-on-surface-variant mt-1">Đã trao tặng @totalVolume.ToString("N0") mL máu</span>
                 </div>
                 <div class="w-12 h-12 rounded-xl bg-primary-fixed flex items-center justify-center text-primary group-hover:scale-105 transition-transform shrink-0">
                     <span class="material-symbols-outlined text-[26px]" style="font-variation-settings: 'FILL' 1;">volunteer_activism</span>
@@ -145,7 +186,7 @@
                 <div class="flex flex-col">
                     <span class="font-label-sm text-xs text-on-surface-variant uppercase font-semibold">Bệnh nhân được tiếp sức</span>
                     <div class="flex items-baseline gap-1 mt-1">
-                        <span class="font-display-hero text-2xl sm:text-3xl font-extrabold text-tertiary">12</span>
+                        <span class="font-display-hero text-2xl sm:text-3xl font-extrabold text-tertiary">@peopleSaved.ToString("D2")</span>
                         <span class="font-label-md text-xs sm:text-sm text-on-surface-variant font-bold">người</span>
                     </div>
                     <span class="font-body-sm text-xs text-on-surface-variant mt-1">Quy đổi: 1 túi cứu 3 sinh mệnh</span>
@@ -160,9 +201,9 @@
                 <div class="flex flex-col">
                     <span class="font-label-sm text-xs text-on-surface-variant uppercase font-semibold">Hạng cống hiến</span>
                     <div class="flex items-center gap-1.5 mt-1">
-                        <span class="font-headline-md text-lg sm:text-xl font-extrabold text-on-surface">Huy Hiệu Bạc</span>
+                        <span class="font-headline-md text-lg sm:text-xl font-extrabold text-on-surface">@rankName</span>
                     </div>
-                    <span class="font-body-sm text-xs text-primary font-semibold mt-1">Còn 1 lần để nhận Huy Hiệu Vàng</span>
+                    <span class="font-body-sm text-xs text-primary font-semibold mt-1">Đóng góp tích cực cho cộng đồng</span>
                 </div>
                 <div class="w-12 h-12 rounded-xl bg-surface-container flex items-center justify-center text-secondary group-hover:scale-105 transition-transform shrink-0">
                     <span class="material-symbols-outlined text-[26px]" style="font-variation-settings: 'FILL' 1;">military_tech</span>
@@ -197,7 +238,7 @@
                     <div class="flex items-center gap-2 pb-4 overflow-x-auto border-b border-surface-container">
                         <button id="btn-tab-history" onclick="switchDonorTab('history')" class="bg-primary text-on-primary font-label-md text-sm px-4 py-2.5 rounded-xl shrink-0 transition-colors shadow-sm flex items-center gap-1.5 cursor-pointer font-bold">
                             <span class="material-symbols-outlined text-[18px]">history_edu</span>
-                            <span>Lịch sử hiến máu (4)</span>
+                            <span>Lịch sử đăng ký / hiến máu (@phieuList.Count)</span>
                         </button>
                         <button id="btn-tab-journey" onclick="switchDonorTab('journey')" class="bg-surface-container-low hover:bg-surface-container text-on-surface font-label-md text-sm px-4 py-2.5 rounded-xl shrink-0 transition-colors flex items-center gap-1.5 cursor-pointer font-semibold">
                             <span class="material-symbols-outlined text-[18px] text-primary">timeline</span>
@@ -211,127 +252,88 @@
 
                     <!-- TAB 1: DONATION HISTORY LIST -->
                     <div id="tab-content-history" class="flex flex-col gap-4 mt-4">
-                        <!-- Item 1: Lần 4 (Gần nhất) -->
-                        <div class="bg-surface-container-low rounded-2xl p-4 sm:p-5 relative overflow-hidden transition-all duration-200 hover:shadow-md border border-primary/20">
-                            <div class="flex items-start justify-between gap-2 flex-wrap">
-                                <div class="flex items-center gap-2">
-                                    <span class="bg-primary text-on-primary font-label-md text-xs px-2.5 py-1 rounded-lg font-bold">Lần 4</span>
-                                    <span class="font-title-md text-sm sm:text-base text-on-surface font-extrabold">Giọt Hồng Thanh Niên - Trao Đời Sự Sống 2025</span>
-                                </div>
-                                <span class="bg-surface-container-high text-on-surface font-label-sm text-xs px-2.5 py-1 rounded-full flex items-center gap-1 font-semibold">
-                                    <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
-                                    <span>15/11/2025</span>
-                                </span>
+                        @if (phieuList.Count == 0)
+                        {
+                            <div class="p-8 text-center bg-surface-container-low rounded-2xl border border-surface-container">
+                                <span class="material-symbols-outlined text-outline text-[48px]">volunteer_activism</span>
+                                <h3 class="font-headline-sm text-base text-on-surface font-bold mt-2">Bạn chưa đăng ký đợt hiến máu nào</h3>
+                                <p class="font-body-sm text-xs text-on-surface-variant mt-1">Hãy tham gia đăng ký đợt hiến máu gần nhất để trao tặng sự sống cho cộng đồng.</p>
+                                <a asp-controller="DotHienMau" asp-action="Index" class="mt-4 inline-flex items-center gap-2 bg-primary text-on-primary px-4 py-2 rounded-xl text-xs font-bold shadow hover:bg-primary-container transition-all">
+                                    <span class="material-symbols-outlined text-[18px]">bloodtype</span>
+                                    <span>Xem danh sách đợt hiến máu</span>
+                                </a>
                             </div>
-                            <!-- Metadata Grid -->
-                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 my-3 bg-surface-container-lowest/90 p-3 rounded-xl border border-surface-container">
-                                <div class="flex flex-col">
-                                    <span class="font-body-sm text-[11px] text-on-surface-variant">Mã túi máu ISBT 128</span>
-                                    <span class="font-label-md text-xs sm:text-sm font-mono text-primary font-bold">#BAG-2025-08991</span>
-                                </div>
-                                <div class="flex flex-col">
-                                    <span class="font-body-sm text-[11px] text-on-surface-variant">Thể tích máu</span>
-                                    <span class="font-title-md text-xs sm:text-sm text-on-surface font-bold">350 mL</span>
-                                </div>
-                                <div class="flex flex-col">
-                                    <span class="font-body-sm text-[11px] text-on-surface-variant">Nhóm máu ghi nhận</span>
-                                    <span class="font-title-md text-xs sm:text-sm text-primary font-bold">O Rh(+)</span>
-                                </div>
-                                <div class="flex flex-col">
-                                    <span class="font-body-sm text-[11px] text-on-surface-variant">Huyết sắc tố (Hb)</span>
-                                    <span class="font-title-md text-xs sm:text-sm text-on-surface font-bold">13.8 g/dL</span>
-                                </div>
-                            </div>
-                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
-                                <div class="flex items-center gap-1.5 text-on-surface">
-                                    <span class="material-symbols-outlined text-[18px] text-primary" style="font-variation-settings: 'FILL' 1;">task_alt</span>
-                                    <span class="font-body-sm text-xs sm:text-sm font-medium">Đã xét nghiệm an toàn &amp; Nhập kho lạnh Viện Huyết học TW</span>
-                                </div>
-                                <div class="flex items-center gap-2 shrink-0">
-                                    <button onclick="previewCertificate()" class="bg-primary text-on-primary font-label-sm text-xs px-3 py-1.5 rounded-lg flex items-center gap-1 hover:bg-primary-container transition-colors cursor-pointer font-semibold">
-                                        <span class="material-symbols-outlined text-[16px]">visibility</span>
-                                        <span>Xem GCN</span>
-                                    </button>
-                                    <button onclick="alert('Kết quả xét nghiệm Lần 4:\nHIV: Âm tính\nViêm gan B: Âm tính\nViêm gan C: Âm tính\nGiang mai: Âm tính\nSốt rét: Âm tính\n=> Đạt tiêu chuẩn an toàn truyền máu quốc gia.')" class="bg-surface-container-high hover:bg-surface-container text-on-surface font-label-sm text-xs px-3 py-1.5 rounded-lg flex items-center gap-1 transition-colors cursor-pointer font-semibold">
-                                        <span class="material-symbols-outlined text-[16px] text-primary">clinical_notes</span>
-                                        <span>5 Bệnh truyền nhiễm</span>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
+                        }
+                        else
+                        {
+                            @for (int i = 0; i < phieuList.Count; i++)
+                            {
+                                var item = phieuList[i];
+                                var isFirst = i == 0;
+                                var statusClass = item.TrangThai == "Hiến máu thành công" ? "bg-emerald-100 text-emerald-800" :
+                                                  item.TrangThai == "Đã hủy" ? "bg-rose-100 text-rose-800" :
+                                                  item.TrangThai == "Chờ xác nhận" ? "bg-amber-100 text-amber-800" :
+                                                  "bg-blue-100 text-blue-800";
 
-                        <!-- Item 2: Lần 3 -->
-                        <div class="bg-surface-container-lowest rounded-2xl p-4 sm:p-5 shadow-sm hover:shadow-md transition-shadow border border-surface-container">
-                            <div class="flex items-start justify-between gap-2 flex-wrap">
-                                <div class="flex items-center gap-2">
-                                    <span class="bg-surface-container-high text-on-surface font-label-md text-xs px-2.5 py-1 rounded-lg font-bold">Lần 3</span>
-                                    <span class="font-title-md text-sm sm:text-base text-on-surface font-bold">Hành Trình Đỏ Thủ Đô - Hè 2025</span>
+                                <div class="bg-surface-container-low rounded-2xl p-4 sm:p-5 relative overflow-hidden transition-all duration-200 hover:shadow-md border @(isFirst ? "border-primary/20" : "border-surface-container")">
+                                    <div class="flex items-start justify-between gap-2 flex-wrap">
+                                        <div class="flex items-center gap-2">
+                                            <span class="bg-primary text-on-primary font-label-md text-xs px-2.5 py-1 rounded-lg font-bold">Lần @(phieuList.Count - i)</span>
+                                            <span class="font-title-md text-sm sm:text-base text-on-surface font-extrabold">@(item.DotHienMau?.TenDot ?? "Đợt hiến máu nhân đạo")</span>
+                                        </div>
+                                        <div class="flex items-center gap-2">
+                                            <span class="px-2.5 py-1 rounded-full font-label-sm text-xs font-bold @statusClass">
+                                                @item.TrangThai
+                                            </span>
+                                            <span class="bg-surface-container-high text-on-surface font-label-sm text-xs px-2.5 py-1 rounded-full flex items-center gap-1 font-semibold">
+                                                <span>@item.NgayNop.ToString("dd/MM/yyyy")</span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <!-- Metadata Grid -->
+                                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 my-3 bg-surface-container-lowest/90 p-3 rounded-xl border border-surface-container">
+                                        <div class="flex flex-col">
+                                            <span class="font-body-sm text-[11px] text-on-surface-variant">Mã phiếu</span>
+                                            <span class="font-label-md text-xs sm:text-sm font-mono text-primary font-bold">#DKHM-@item.MaPhieu.ToString("D5")</span>
+                                        </div>
+                                        <div class="flex flex-col">
+                                            <span class="font-body-sm text-[11px] text-on-surface-variant">Đơn vị tiếp nhận</span>
+                                            <span class="font-title-md text-xs sm:text-sm text-on-surface font-bold truncate">@(item.DotHienMau?.DonViToChuc?.TenDonViToChuc ?? "UNETI")</span>
+                                        </div>
+                                        <div class="flex flex-col">
+                                            <span class="font-body-sm text-[11px] text-on-surface-variant">Nhóm máu</span>
+                                            <span class="font-title-md text-xs sm:text-sm text-primary font-bold">@nhomMauDisplay</span>
+                                        </div>
+                                        <div class="flex flex-col">
+                                            <span class="font-body-sm text-[11px] text-on-surface-variant">Kết quả lâm sàng</span>
+                                            <span class="font-title-md text-xs sm:text-sm text-on-surface font-bold">@(item.KetQuaHienMau?.KetQua ?? item.TrangThai)</span>
+                                        </div>
+                                    </div>
+                                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
+                                        <div class="flex items-center gap-1.5 text-on-surface">
+                                            <span class="material-symbols-outlined text-[18px] text-primary" style="font-variation-settings: 'FILL' 1;">task_alt</span>
+                                            <span class="font-body-sm text-xs sm:text-sm font-medium">@(item.LyDoHienMau ?? "Đã đăng ký tham gia chương trình")</span>
+                                        </div>
+                                        <div class="flex items-center gap-2 shrink-0">
+                                            <a asp-controller="DangKy" asp-action="TheoDoi" asp-route-id="@item.MaPhieu" class="bg-primary text-on-primary font-label-sm text-xs px-3 py-1.5 rounded-lg flex items-center gap-1 hover:bg-primary-container transition-colors cursor-pointer font-semibold">
+                                                <span class="material-symbols-outlined text-[16px]">visibility</span>
+                                                <span>Chi tiết phiếu</span>
+                                            </a>
+                                        </div>
+                                    </div>
                                 </div>
-                                <span class="font-label-sm text-xs text-on-surface-variant font-semibold">20/06/2025 • 350 mL</span>
-                            </div>
-                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mt-2 pt-1">
-                                <div class="flex items-center gap-1.5 text-tertiary">
-                                    <span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">favorite</span>
-                                    <span class="font-body-sm text-xs sm:text-sm font-semibold">Đã truyền cứu người bệnh phẫu thuật tim tại BV Bạch Mai (05/07/2025)</span>
-                                </div>
-                                <button onclick="alert('Túi máu #BAG-2025-04512 đã truyền thành công ngày 05/07/2025 tại BV Bạch Mai.')" class="text-primary hover:text-primary-container font-label-sm text-xs flex items-center gap-1 self-start sm:self-auto cursor-pointer font-bold">
-                                    <span>Chi tiết túi máu</span>
-                                    <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Item 3: Lần 2 -->
-                        <div class="bg-surface-container-lowest rounded-2xl p-4 sm:p-5 shadow-sm hover:shadow-md transition-shadow border border-surface-container">
-                            <div class="flex items-start justify-between gap-2 flex-wrap">
-                                <div class="flex items-center gap-2">
-                                    <span class="bg-surface-container-high text-on-surface font-label-md text-xs px-2.5 py-1 rounded-lg font-bold">Lần 2</span>
-                                    <span class="font-title-md text-sm sm:text-base text-on-surface font-bold">Giọt Máu Nghĩa Tình 2024</span>
-                                </div>
-                                <span class="font-label-sm text-xs text-on-surface-variant font-semibold">12/11/2024 • 350 mL</span>
-                            </div>
-                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mt-2 pt-1">
-                                <div class="flex items-center gap-1.5 text-on-surface-variant">
-                                    <span class="material-symbols-outlined text-[18px] text-primary">local_hospital</span>
-                                    <span class="font-body-sm text-xs sm:text-sm">Đã lưu trữ và điều phối Viện Nhi TW cho bệnh nhi tan máu bẩm sinh</span>
-                                </div>
-                                <button onclick="alert('Túi máu #BAG-2024-09923 đã điều phối tại Viện Nhi Trung Ương.')" class="text-primary hover:text-primary-container font-label-sm text-xs flex items-center gap-1 self-start sm:self-auto cursor-pointer font-bold">
-                                    <span>Chi tiết túi máu</span>
-                                    <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Item 4: Lần 1 -->
-                        <div class="bg-surface-container-lowest rounded-2xl p-4 sm:p-5 shadow-sm hover:shadow-md transition-shadow border border-surface-container">
-                            <div class="flex items-start justify-between gap-2 flex-wrap">
-                                <div class="flex items-center gap-2">
-                                    <span class="bg-surface-container-high text-on-surface font-label-md text-xs px-2.5 py-1 rounded-lg font-bold">Lần 1</span>
-                                    <span class="font-title-md text-sm sm:text-base text-on-surface font-bold">Trái Tim Cho Em - ĐHQG Hà Nội</span>
-                                </div>
-                                <span class="font-label-sm text-xs text-on-surface-variant font-semibold">08/03/2024 • 250 mL</span>
-                            </div>
-                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mt-2 pt-1">
-                                <div class="flex items-center gap-1.5 text-on-surface-variant">
-                                    <span class="material-symbols-outlined text-[18px] text-primary">check_circle</span>
-                                    <span class="font-body-sm text-xs sm:text-sm">Hoàn thành hiến lần đầu • Đã cấp GCN bản giấy &amp; số hóa</span>
-                                </div>
-                                <button onclick="alert('Túi máu #BAG-2024-01201 hiến lần đầu thành công.')" class="text-primary hover:text-primary-container font-label-sm text-xs flex items-center gap-1 self-start sm:self-auto cursor-pointer font-bold">
-                                    <span>Chi tiết túi máu</span>
-                                    <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
-                                </button>
-                            </div>
-                        </div>
+                            }
+                        }
                     </div>
 
-                    <!-- TAB 2: LIVE BLOOD JOURNEY (Túi #BAG-2025-08991) -->
+                    <!-- TAB 2: LIVE BLOOD JOURNEY -->
                     <div id="tab-content-journey" class="hidden flex-col gap-4 mt-4">
                         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                             <div class="flex items-center gap-2">
                                 <span class="material-symbols-outlined text-primary text-[24px]">route</span>
                                 <h3 class="font-headline-md text-base sm:text-lg text-on-surface font-bold">Hành Trình Giọt Máu Của Bạn</h3>
                             </div>
-                            <span class="font-label-md text-xs sm:text-sm font-mono text-primary bg-primary-fixed px-2.5 py-0.5 rounded-md font-bold">Túi máu: #BAG-2025-08991</span>
+                            <span class="font-label-md text-xs sm:text-sm font-mono text-primary bg-primary-fixed px-2.5 py-0.5 rounded-md font-bold">Mã hồ sơ: #NHM-@(Model?.MaNguoiHien.ToString("D5") ?? "00001")</span>
                         </div>
                         <p class="font-body-sm text-xs sm:text-sm text-on-surface-variant mb-2">
                             Hệ thống phân tách và vận chuyển máu thời gian thực theo tiêu chuẩn quản lý ngân hàng máu quốc gia.
@@ -349,10 +351,10 @@
                                 <div class="flex flex-col">
                                     <div class="flex items-center gap-2">
                                         <span class="font-title-md text-sm sm:text-base text-on-surface font-bold">Tiếp nhận &amp; Lấy máu toàn phần</span>
-                                        <span class="font-label-sm text-xs text-primary font-semibold">15/11/2025 09:45</span>
+                                        <span class="font-label-sm text-xs text-primary font-semibold">@latestDateStr</span>
                                     </div>
                                     <p class="font-body-sm text-xs sm:text-sm text-on-surface-variant mt-0.5">
-                                        Thực hiện tại Bàn lấy máu số 04, Điểm lưu động NTĐ Cầu Giấy. Lấy thành công 350 mL không có biến cố sau hiến.
+                                        Thực hiện tại Điểm tiếp nhận @latestDotName. Quy trình đảm bảo tuyệt đối an toàn vô trùng.
                                     </p>
                                 </div>
                             </div>
@@ -365,10 +367,10 @@
                                 <div class="flex flex-col">
                                     <div class="flex items-center gap-2">
                                         <span class="font-title-md text-sm sm:text-base text-on-surface font-bold">Xét nghiệm sinh học sàng lọc (NAT &amp; ELISA)</span>
-                                        <span class="font-label-sm text-xs text-primary font-semibold">15/11/2025 15:20</span>
+                                        <span class="font-label-sm text-xs text-primary font-semibold">Chuẩn Quốc Gia</span>
                                     </div>
                                     <p class="font-body-sm text-xs sm:text-sm text-on-surface-variant mt-0.5">
-                                        Tại Lab kiểm định ISO 15189 Viện Huyết học TW. Kết quả: Âm tính HIV, HBV, HCV, Giang mai, KST Sốt rét. Đạt chuẩn lưu thông.
+                                        Tại Lab kiểm định ISO 15189. Kết quả: Âm tính HIV, HBV, HCV, Giang mai, Sốt rét.
                                     </p>
                                 </div>
                             </div>
@@ -381,26 +383,26 @@
                                 <div class="flex flex-col">
                                     <div class="flex items-center gap-2">
                                         <span class="font-title-md text-sm sm:text-base text-on-surface font-bold">Nhập kho lạnh bảo quản trung tâm (2°C - 6°C)</span>
-                                        <span class="font-label-sm text-xs text-primary font-semibold">16/11/2025 08:30</span>
+                                        <span class="font-label-sm text-xs text-primary font-semibold">Kho Lưu Trữ</span>
                                     </div>
                                     <p class="font-body-sm text-xs sm:text-sm text-on-surface-variant mt-0.5">
-                                        Phân tách thành Khối hồng cầu, Huyết tương đông lạnh và Khối tiểu cầu. Lưu trữ tại Ngân hàng Máu Quốc gia.
+                                        Phân tách thành Khối hồng cầu, Huyết tương đông lạnh và Khối tiểu cầu.
                                     </p>
                                 </div>
                             </div>
 
                             <!-- Step 4 -->
                             <div class="relative flex items-start gap-4">
-                                <div class="absolute -left-6 top-0 w-6 h-6 rounded-full bg-tertiary text-on-tertiary flex items-center justify-center shadow-sm animate-pulse">
+                                <div class="absolute -left-6 top-0 w-6 h-6 rounded-full bg-tertiary text-on-tertiary flex items-center justify-center shadow-sm">
                                     <span class="material-symbols-outlined text-[14px]">local_shipping</span>
                                 </div>
                                 <div class="flex flex-col">
                                     <div class="flex items-center gap-2">
-                                        <span class="font-title-md text-sm sm:text-base text-tertiary font-bold">Điều phối khẩn cấp tới BV Hữu nghị Việt Đức</span>
-                                        <span class="bg-secondary-fixed text-on-secondary-fixed font-label-sm text-[11px] px-2 py-0.5 rounded-full font-bold">Đang điều phối</span>
+                                        <span class="font-title-md text-sm sm:text-base text-tertiary font-bold">Điều phối tới các cơ sở y tế tuyến đầu</span>
+                                        <span class="bg-secondary-fixed text-on-secondary-fixed font-label-sm text-[11px] px-2 py-0.5 rounded-full font-bold">Sẵn sàng</span>
                                     </div>
                                     <p class="font-body-sm text-xs sm:text-sm text-on-surface-variant mt-0.5">
-                                        Dự kiến tiếp nhận phục vụ kíp mổ cấp cứu chấn thương ngoại khoa ngày 18/11/2025. Bạn sẽ nhận thông báo khi truyền máu hoàn tất!
+                                        Sẵn sàng phục vụ cấp cứu và điều trị cho các bệnh nhân nặng.
                                     </p>
                                 </div>
                             </div>
@@ -410,7 +412,7 @@
                     <!-- TAB 3: LAB RESULTS -->
                     <div id="tab-content-lab" class="hidden flex-col gap-4 mt-4">
                         <div class="flex items-center justify-between">
-                            <h4 class="font-title-md text-sm sm:text-base font-bold text-on-surface">Kết Quả Xét Nghiệm Sinh Học Gần Nhất (15/11/2025)</h4>
+                            <h4 class="font-title-md text-sm sm:text-base font-bold text-on-surface">Kết Quả Xét Nghiệm Sinh Học Lâm Sàng</h4>
                             <span class="bg-emerald-100 text-emerald-800 font-label-sm text-xs px-2.5 py-1 rounded-full font-bold">Chuẩn ISO 15189</span>
                         </div>
                         <div class="overflow-x-auto">
@@ -429,7 +431,7 @@
                                         <td class="p-3 font-semibold">Kháng nguyên HIV Ag/Ab combo</td>
                                         <td class="p-3 text-secondary">ELISA thế hệ 4</td>
                                         <td class="p-3 text-secondary">S/CO &lt; 1.0</td>
-                                        <td class="p-3 font-mono font-bold text-emerald-700">Âm tính (0.12)</td>
+                                        <td class="p-3 font-mono font-bold text-emerald-700">Âm tính</td>
                                         <td class="p-3"><span class="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 font-bold text-xs">Đạt</span></td>
                                     </tr>
                                     <tr>
@@ -467,11 +469,11 @@
                 </div>
             </div>
 
-            <!-- RIGHT COLUMN: 2 COLS (~40%) -> Digital Certificate Card (KHÔNG CÓ THANH CUỘN BÊN TRONG, KHÔNG OVERLAP) -->
+            <!-- RIGHT COLUMN: 2 COLS (~40%) -> Digital Certificate Card -->
             <div class="lg:col-span-2 flex flex-col gap-4 w-full">
-                <!-- Certificate Frame Card: Pure flexbox layout, fully visible content without inner scrollbar -->
+                <!-- Certificate Frame Card -->
                 <div id="digital-certificate-card" class="bg-surface-container-lowest rounded-2xl shadow-lg p-5 sm:p-6 relative border-2 border-primary/20">
-                    <!-- Certificate Watermark (pointer-events-none, safe opacity) -->
+                    <!-- Certificate Watermark -->
                     <div class="absolute inset-0 opacity-[0.03] pointer-events-none flex items-center justify-center overflow-hidden">
                         <span class="material-symbols-outlined text-[280px] text-primary">health_and_safety</span>
                     </div>
@@ -490,7 +492,7 @@
                                 HIẾN MÁU TÌNH NGUYỆN
                             </span>
                             <span class="inline-block mt-1 font-mono text-[10px] sm:text-[11px] text-on-surface-variant bg-surface-container-high px-2.5 py-0.5 rounded-full font-bold">
-                                SỐ ĐỊNH DANH GCN: #GCN-VTL-2025-08991-HN
+                                SỐ ĐỊNH DANH GCN: #GCN-@(Model?.MaNguoiHien.ToString("D5") ?? "00001")-UNETI
                             </span>
                         </div>
                     </div>
@@ -502,18 +504,18 @@
                         </p>
                         <div class="bg-surface-container-low py-2.5 px-3 rounded-xl border border-surface-container-high">
                             <span class="font-headline-sm text-sm sm:text-base text-on-surface font-extrabold uppercase tracking-wide block">
-                                NGUYỄN HOÀNG NAM
+                                @(Model?.HoTen?.ToUpper() ?? "NGUYỄN HOÀNG NAM")
                             </span>
                             <div class="flex items-center justify-center gap-3 font-body-sm text-xs text-on-surface-variant mt-0.5">
-                                <span>Ngày sinh: <strong class="text-on-surface">18/06/1998</strong></span>
+                                <span>Ngày sinh: <strong class="text-on-surface">@(Model?.NgaySinh?.ToString("dd/MM/yyyy") ?? "18/06/1998")</strong></span>
                                 <span>•</span>
-                                <span>CCCD: <strong class="text-on-surface font-mono font-bold">001099028891</strong></span>
+                                <span>SĐT: <strong class="text-on-surface font-mono font-bold">@(Model?.SoDienThoai ?? "0988 123 456")</strong></span>
                             </div>
                         </div>
                         <div class="text-on-surface font-body-md text-xs sm:text-sm leading-relaxed px-1">
-                            Đã tình nguyện hiến <strong class="text-primary font-bold">350 mL Máu toàn phần</strong> (Nhóm máu O Rh+) vì sự sống của người bệnh.
+                            Đã tình nguyện hiến <strong class="text-primary font-bold">350 mL Máu toàn phần</strong> (Nhóm máu @nhomMauDisplay) vì sự sống của người bệnh.
                             <span class="block text-xs text-on-surface-variant mt-0.5">
-                                Tại đợt: <strong class="text-on-surface font-bold">Giọt Hồng Thanh Niên 2025</strong> - Ngày 15/11/2025.
+                                Đợt gần nhất: <strong class="text-on-surface font-bold">@latestDotName</strong> - Ngày @latestDateStr.
                             </span>
                         </div>
 
@@ -546,8 +548,8 @@
                                     <span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">verified</span>
                                     <span class="font-label-sm text-[10px] uppercase font-extrabold">KÝ SỐ HỢP LỆ</span>
                                 </div>
-                                <span class="font-label-sm text-[10px] text-on-surface font-bold mt-0.5">VIỆN HUYẾT HỌC TW</span>
-                                <span class="font-mono text-[9px] text-on-surface-variant">15/11/2025 18:22:04</span>
+                                <span class="font-label-sm text-[10px] text-on-surface font-bold mt-0.5">UNETI VITALIS</span>
+                                <span class="font-mono text-[9px] text-on-surface-variant">@DateTime.Now.ToString("dd/MM/yyyy HH:mm")</span>
                                 <span class="font-mono text-[8px] text-on-surface-variant">SHA256: 7f8a...9c4b</span>
                             </div>
                         </div>
@@ -584,117 +586,100 @@
             </div>
         </div>
     </div>
+</div>
 
-    <!-- SECTION: HEALTH MONITORING INSIGHTS -->
-    <div class="w-full max-w-[1366px] mx-auto px-4 sm:px-6 lg:px-8 mt-6">
-        <div class="bg-surface-container-lowest rounded-2xl shadow-sm p-5 sm:p-6 border border-surface-container">
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-5">
-                <div>
-                    <div class="flex items-center gap-2">
-                        <span class="material-symbols-outlined text-primary text-[24px]">vital_signs</span>
-                        <h3 class="font-headline-md text-lg sm:text-xl text-on-surface font-extrabold">Chỉ Số Sức Khỏe Huyết Học Cá Nhân Qua Các Lần Hiến</h3>
-                    </div>
-                    <p class="font-body-sm text-xs sm:text-sm text-on-surface-variant mt-1">
-                        Tổng hợp dữ liệu xét nghiệm lâm sàng trước và sau mỗi lần hiến máu, lưu trữ bảo mật theo tiêu chuẩn y tế quốc gia.
-                    </p>
+<!-- MODAL: CẬP NHẬT HỒ SƠ NGƯỜI HIẾN MÁU -->
+<div id="editProfileModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-inverse-surface/40 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300">
+    <div class="relative w-full max-w-2xl bg-surface-container-lowest rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6 max-h-[90vh] overflow-y-auto">
+        <div class="flex items-center justify-between pb-3 border-b border-surface-container-high">
+            <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary text-[24px]">manage_accounts</span>
+                <h3 class="font-headline-md text-lg sm:text-xl text-on-surface font-bold">Cập Nhật Hồ Sơ Người Hiến Máu</h3>
+            </div>
+            <button onclick="closeEditProfileModal()" class="w-8 h-8 rounded-full hover:bg-surface-container flex items-center justify-center text-secondary">
+                <span class="material-symbols-outlined text-[20px]">close</span>
+            </button>
+        </div>
+
+        <form asp-controller="NguoiHienMau" asp-action="HoSoCaNhan" method="post" class="space-y-4">
+            <input type="hidden" name="MaNguoiHien" value="@Model?.MaNguoiHien" />
+            <input type="hidden" name="MaTaiKhoan" value="@Model?.MaTaiKhoan" />
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="space-y-1 sm:col-span-2">
+                    <label class="font-label-md text-xs text-on-surface font-semibold">Họ và tên <span class="text-primary">*</span></label>
+                    <input type="text" name="HoTen" value="@Model?.HoTen" required class="w-full h-11 bg-surface-container-lowest text-on-surface px-4 rounded-xl text-sm border border-outline-variant/40 focus:ring-2 focus:ring-primary focus:outline-none" />
                 </div>
-                <div class="flex items-center gap-2 bg-surface-container-low px-3 py-1.5 rounded-xl border border-surface-container-high self-start md:self-auto">
-                    <span class="font-label-sm text-xs text-on-surface-variant font-medium">Bác sĩ phụ trách theo dõi:</span>
-                    <span class="font-title-md text-xs sm:text-sm text-primary font-bold">BS.CKII Phạm Hồng Sơn</span>
+
+                <div class="space-y-1">
+                    <label class="font-label-md text-xs text-on-surface font-semibold">Ngày sinh</label>
+                    <input type="date" name="NgaySinh" value="@(Model?.NgaySinh?.ToString("yyyy-MM-dd"))" class="w-full h-11 bg-surface-container-lowest text-on-surface px-3 rounded-xl text-sm border border-outline-variant/40 focus:ring-2 focus:ring-primary focus:outline-none" />
+                </div>
+
+                <div class="space-y-1">
+                    <label class="font-label-md text-xs text-on-surface font-semibold">Giới tính</label>
+                    <select name="GioiTinh" class="w-full h-11 bg-surface-container-lowest text-on-surface px-3 rounded-xl text-sm border border-outline-variant/40 focus:ring-2 focus:ring-primary focus:outline-none">
+                        <option value="Nam" selected="@(Model?.GioiTinh == "Nam")">Nam</option>
+                        <option value="Nữ" selected="@(Model?.GioiTinh == "Nữ")">Nữ</option>
+                        <option value="Khác" selected="@(Model?.GioiTinh == "Khác")">Khác</option>
+                    </select>
+                </div>
+
+                <div class="space-y-1">
+                    <label class="font-label-md text-xs text-on-surface font-semibold">Số điện thoại</label>
+                    <input type="tel" name="SoDienThoai" value="@Model?.SoDienThoai" class="w-full h-11 bg-surface-container-lowest text-on-surface px-4 rounded-xl text-sm border border-outline-variant/40 focus:ring-2 focus:ring-primary focus:outline-none" />
+                </div>
+
+                <div class="space-y-1">
+                    <label class="font-label-md text-xs text-on-surface font-semibold">Email</label>
+                    <input type="email" name="Email" value="@Model?.Email" class="w-full h-11 bg-surface-container-lowest text-on-surface px-4 rounded-xl text-sm border border-outline-variant/40 focus:ring-2 focus:ring-primary focus:outline-none" />
+                </div>
+
+                <div class="space-y-1">
+                    <label class="font-label-md text-xs text-on-surface font-semibold">Nhóm máu</label>
+                    <select name="NhomMau" class="w-full h-11 bg-surface-container-lowest text-on-surface px-3 rounded-xl text-sm border border-outline-variant/40 focus:ring-2 focus:ring-primary focus:outline-none">
+                        <option value="O Rh(+)" selected="@(Model?.NhomMau == "O Rh(+)")">O Rh(+)</option>
+                        <option value="A Rh(+)" selected="@(Model?.NhomMau == "A Rh(+)")">A Rh(+)</option>
+                        <option value="B Rh(+)" selected="@(Model?.NhomMau == "B Rh(+)")">B Rh(+)</option>
+                        <option value="AB Rh(+)" selected="@(Model?.NhomMau == "AB Rh(+)")">AB Rh(+)</option>
+                        <option value="O Rh(-)" selected="@(Model?.NhomMau == "O Rh(-)")">O Rh(-)</option>
+                        <option value="A Rh(-)" selected="@(Model?.NhomMau == "A Rh(-)")">A Rh(-)</option>
+                        <option value="B Rh(-)" selected="@(Model?.NhomMau == "B Rh(-)")">B Rh(-)</option>
+                        <option value="AB Rh(-)" selected="@(Model?.NhomMau == "AB Rh(-)")">AB Rh(-)</option>
+                        <option value="Chưa rõ" selected="@(Model?.NhomMau == "Chưa rõ")">Chưa rõ (Khám tại chỗ)</option>
+                    </select>
+                </div>
+
+                <div class="space-y-1">
+                    <label class="font-label-md text-xs text-on-surface font-semibold">Cân nặng (kg)</label>
+                    <input type="number" step="0.5" min="30" max="200" name="CanNang" value="@(Model?.CanNang ?? 60)" class="w-full h-11 bg-surface-container-lowest text-on-surface px-4 rounded-xl text-sm border border-outline-variant/40 focus:ring-2 focus:ring-primary focus:outline-none" />
+                </div>
+
+                <div class="space-y-1 sm:col-span-2">
+                    <label class="font-label-md text-xs text-on-surface font-semibold">Nghề nghiệp / Lớp / Khoa</label>
+                    <input type="text" name="NgheNghiep" value="@Model?.NgheNghiep" placeholder="VD: Sinh viên DHTI17A5HN - UNETI" class="w-full h-11 bg-surface-container-lowest text-on-surface px-4 rounded-xl text-sm border border-outline-variant/40 focus:ring-2 focus:ring-primary focus:outline-none" />
+                </div>
+
+                <div class="space-y-1 sm:col-span-2">
+                    <label class="font-label-md text-xs text-on-surface font-semibold">Địa chỉ liên hệ</label>
+                    <input type="text" name="DiaChi" value="@Model?.DiaChi" placeholder="VD: 218 Lĩnh Nam, Hoàng Mai, Hà Nội" class="w-full h-11 bg-surface-container-lowest text-on-surface px-4 rounded-xl text-sm border border-outline-variant/40 focus:ring-2 focus:ring-primary focus:outline-none" />
+                </div>
+
+                <div class="space-y-1 sm:col-span-2">
+                    <label class="font-label-md text-xs text-on-surface font-semibold">Ghi chú sức khỏe (nếu có)</label>
+                    <textarea name="GhiChuSucKhoe" rows="2" placeholder="Ghi chú về tiền sử dị ứng, thuốc đang dùng..." class="w-full bg-surface-container-lowest text-on-surface p-3 rounded-xl text-sm border border-outline-variant/40 focus:ring-2 focus:ring-primary focus:outline-none">@Model?.GhiChuSucKhoe</textarea>
                 </div>
             </div>
 
-            <!-- 3 Key Parameter Metric Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
-                <!-- Hb Metric -->
-                <div class="bg-surface-container-low rounded-2xl p-4 flex flex-col justify-between border border-surface-container-high/60">
-                    <div class="flex items-center justify-between">
-                        <span class="font-label-md text-xs sm:text-sm text-on-surface-variant font-semibold">Huyết sắc tố (Hemoglobin)</span>
-                        <span class="material-symbols-outlined text-primary text-[20px]" style="font-variation-settings: 'FILL' 1;">water_drop</span>
-                    </div>
-                    <div class="flex items-baseline gap-2 my-2">
-                        <span class="font-display-hero text-2xl sm:text-3xl font-extrabold text-on-surface">13.8</span>
-                        <span class="font-label-md text-xs sm:text-sm text-on-surface-variant font-bold">g/dL</span>
-                    </div>
-                    <!-- Sparkline SVG -->
-                    <div class="w-full h-8 flex items-center">
-                        <svg class="w-full h-full text-primary" fill="none" viewBox="0 0 100 25">
-                            <path d="M0 18 L33 14 L66 16 L100 8" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path>
-                            <circle cx="0" cy="18" fill="currentColor" r="2.5"></circle>
-                            <circle cx="33" cy="14" fill="currentColor" r="2.5"></circle>
-                            <circle cx="66" cy="16" fill="currentColor" r="2.5"></circle>
-                            <circle cx="100" cy="8" fill="currentColor" r="3.5"></circle>
-                        </svg>
-                    </div>
-                    <span class="font-body-sm text-xs text-primary font-bold mt-1">Ổn định tuyệt vời (Ngưỡng an toàn &gt; 12.5 g/dL)</span>
-                </div>
-
-                <!-- Blood Pressure Metric -->
-                <div class="bg-surface-container-low rounded-2xl p-4 flex flex-col justify-between border border-surface-container-high/60">
-                    <div class="flex items-center justify-between">
-                        <span class="font-label-md text-xs sm:text-sm text-on-surface-variant font-semibold">Huyết áp trung bình</span>
-                        <span class="material-symbols-outlined text-primary text-[20px]">monitor_heart</span>
-                    </div>
-                    <div class="flex items-baseline gap-2 my-2">
-                        <span class="font-display-hero text-2xl sm:text-3xl font-extrabold text-on-surface">115 / 75</span>
-                        <span class="font-label-md text-xs sm:text-sm text-on-surface-variant font-bold">mmHg</span>
-                    </div>
-                    <!-- Sparkline SVG -->
-                    <div class="w-full h-8 flex items-center">
-                        <svg class="w-full h-full text-tertiary" fill="none" viewBox="0 0 100 25">
-                            <path d="M0 12 L33 10 L66 14 L100 11" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path>
-                            <circle cx="0" cy="12" fill="currentColor" r="2.5"></circle>
-                            <circle cx="33" cy="10" fill="currentColor" r="2.5"></circle>
-                            <circle cx="66" cy="14" fill="currentColor" r="2.5"></circle>
-                            <circle cx="100" cy="11" fill="currentColor" r="3.5"></circle>
-                        </svg>
-                    </div>
-                    <span class="font-body-sm text-xs text-on-surface-variant font-semibold mt-1">Chỉ số lý tưởng cho hoạt động thể thao &amp; hiến máu</span>
-                </div>
-
-                <!-- Body Weight Metric -->
-                <div class="bg-surface-container-low rounded-2xl p-4 flex flex-col justify-between border border-surface-container-high/60">
-                    <div class="flex items-center justify-between">
-                        <span class="font-label-md text-xs sm:text-sm text-on-surface-variant font-semibold">Cân nặng duy trì</span>
-                        <span class="material-symbols-outlined text-primary text-[20px]">scale</span>
-                    </div>
-                    <div class="flex items-baseline gap-2 my-2">
-                        <span class="font-display-hero text-2xl sm:text-3xl font-extrabold text-on-surface">64.0</span>
-                        <span class="font-label-md text-xs sm:text-sm text-on-surface-variant font-bold">kg (BMI: 21.8)</span>
-                    </div>
-                    <!-- Sparkline SVG -->
-                    <div class="w-full h-8 flex items-center">
-                        <svg class="w-full h-full text-primary" fill="none" viewBox="0 0 100 25">
-                            <path d="M0 16 L33 15 L66 13 L100 13" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"></path>
-                            <circle cx="0" cy="16" fill="currentColor" r="2.5"></circle>
-                            <circle cx="33" cy="15" fill="currentColor" r="2.5"></circle>
-                            <circle cx="66" cy="13" fill="currentColor" r="2.5"></circle>
-                            <circle cx="100" cy="13" fill="currentColor" r="3.5"></circle>
-                        </svg>
-                    </div>
-                    <span class="font-body-sm text-xs text-on-surface-variant font-semibold mt-1">Đủ điều kiện thể tích hiến 350 - 450 mL</span>
-                </div>
-            </div>
-
-            <!-- Personalized Doctor Advisory Box -->
-            <div class="bg-primary-fixed/30 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center gap-4 border border-primary-fixed-dim">
-                <div class="w-12 h-12 rounded-2xl bg-primary text-on-primary flex items-center justify-center shrink-0 shadow-sm">
-                    <span class="material-symbols-outlined text-[24px]">support_agent</span>
-                </div>
-                <div class="flex flex-col flex-1">
-                    <div class="flex items-center gap-2">
-                        <span class="font-title-md text-sm sm:text-base text-primary font-extrabold">Lời khuyên cá nhân hóa từ Bác sĩ điều phối:</span>
-                        <span class="font-label-sm text-[11px] bg-primary text-on-primary px-2.5 py-0.5 rounded-full font-bold">Tự động</span>
-                    </div>
-                    <p class="font-body-md text-xs sm:text-sm text-on-surface mt-1 leading-relaxed">
-                        "Sức khỏe và chất lượng máu của bạn rất tốt, lượng huyết sắc tố tăng đều phản ánh lối sống lành mạnh. Hãy tiếp tục duy trì chế độ dinh dưỡng giàu sắt (thịt đỏ, rau lá xanh đậm), uống đủ 2 lít nước mỗi ngày và bạn có thể an tâm đăng ký đợt hiến máu tiếp theo từ ngày <strong class="text-primary font-bold">08/02/2026</strong>."
-                    </p>
-                </div>
-                <button onclick="askDoctor()" class="bg-surface-container-lowest hover:bg-surface-container-high text-primary font-label-md text-xs sm:text-sm px-4 py-2.5 rounded-xl shrink-0 transition-colors shadow-sm cursor-pointer font-bold border border-primary/20 self-start sm:self-auto">
-                    Đặt câu hỏi cho Bác sĩ
+            <div class="flex items-center justify-end gap-3 pt-4 border-t border-surface-container-high">
+                <button type="button" onclick="closeEditProfileModal()" class="px-4 py-2.5 rounded-xl text-on-surface font-label-md text-sm hover:bg-surface-container transition-colors">
+                    Hủy
+                </button>
+                <button type="submit" class="px-6 py-2.5 rounded-xl bg-primary text-on-primary font-label-md text-sm hover:bg-primary-container transition-all shadow-md font-bold">
+                    Lưu thay đổi
                 </button>
             </div>
-        </div>
+        </form>
     </div>
 </div>
 
@@ -734,37 +719,44 @@
         }
     }
 
+    function openEditProfileModal() {
+        const modal = document.getElementById('editProfileModal');
+        if (modal) {
+            modal.classList.remove('hidden');
+            setTimeout(() => { modal.classList.remove('opacity-0'); }, 20);
+        }
+    }
+
+    function closeEditProfileModal() {
+        const modal = document.getElementById('editProfileModal');
+        if (modal) {
+            modal.classList.add('opacity-0');
+            setTimeout(() => { modal.classList.add('hidden'); }, 300);
+        }
+    }
+
     function downloadCertificate() {
         alert("Đang chuẩn bị gói dữ liệu chứng nhận hiến máu điện tử (PDF ký số + Giấy chứng nhận phôi đỏ số hóa). File ZIP sẽ tự động tải xuống.");
     }
 
     function downloadPdf() {
-        alert("Đang tải file PDF Giấy Chứng Nhận Hiến Máu Tình Nguyện có chữ ký số xác thực SHA-256 từ Viện Huyết Học - Truyền Máu TW.");
+        alert("Đang tải file PDF Giấy Chứng Nhận Hiến Máu Tình Nguyện có chữ ký số xác thực SHA-256 từ Ban Chỉ Đạo Vận Động Hiến Máu Tình Nguyện.");
     }
 
     function saveToVNeID() {
-        alert("Đã gửi yêu cầu đồng bộ Giấy Chứng Nhận #GCN-VTL-2025-08991-HN vào Ví Giấy Tờ trên ứng dụng VNeID (Mức 2).");
+        alert("Đã gửi yêu cầu đồng bộ Giấy Chứng Nhận vào Ví Giấy Tờ trên ứng dụng VNeID (Mức 2).");
     }
 
     function shareBadge() {
         if (navigator.share) {
             navigator.share({
-                title: 'Huy Hiệu Hiến Máu Vitalis - Nguyễn Hoàng Nam',
-                text: 'Tôi vừa hoàn thành lần hiến máu thứ 4 tại Vitalis Blood Community! Mỗi giọt máu cho đi, một cuộc đời ở lại.',
+                title: 'Huy Hiệu Hiến Máu Vitalis - @(Model?.HoTen ?? "Người Hiến Máu")',
+                text: 'Tôi vừa tham gia hiến máu nhân đạo tại Vitalis Blood Community! Mỗi giọt máu cho đi, một cuộc đời ở lại.',
                 url: window.location.href
             }).catch(() => {});
         } else {
             alert('Đã sao chép liên kết chia sẻ huy hiệu hiến máu của bạn vào bộ nhớ tạm!');
         }
-    }
-
-    function previewCertificate() {
-        const cert = document.getElementById('digital-certificate-card');
-        if (cert) cert.scrollIntoView({ behavior: 'smooth' });
-    }
-
-    function askDoctor() {
-        alert("Hệ thống kết nối bác sĩ trực tuyến: Vui lòng liên hệ tổng đài 1900 6868 hoặc gửi câu hỏi qua hòm thư y tế chuyên môn.");
     }
 </script>
 }

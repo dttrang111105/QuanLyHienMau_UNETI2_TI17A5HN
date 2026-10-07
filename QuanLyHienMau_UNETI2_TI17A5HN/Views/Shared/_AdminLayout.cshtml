@@ -165,18 +165,17 @@
                         <span class="material-symbols-outlined text-[20px]">event_available</span>
                         <span class="font-label-md text-label-md">Đợt hiến máu (Campaigns)</span>
                     </a>
-                    <a asp-controller="Admin" asp-action="Dashboard" asp-fragment="approvalSection" class="flex items-center justify-between px-space-md py-2.5 rounded-xl text-inverse-on-surface hover:bg-surface-container-highest hover:text-on-surface transition-all duration-150">
+                    <a asp-controller="Admin" asp-action="PhieuDangKyHienMau" class="flex items-center justify-between px-space-md py-2.5 transition-all duration-150 @(currentController == "Admin" && (currentAction == "PhieuDangKyHienMau" || currentAction == "ChiTietPhieuDangKy") ? "bg-primary text-on-primary font-bold shadow-md rounded-xl" : "rounded-xl text-inverse-on-surface hover:bg-surface-container-highest hover:text-on-surface")">
                         <div class="flex items-center gap-space-sm">
                             <span class="material-symbols-outlined text-[20px]">assignment_turned_in</span>
                             <span class="font-label-md text-label-md">Phiếu đăng ký &amp; Duyệt</span>
                         </div>
-                        <span class="px-2 py-0.5 rounded-full bg-error text-on-error font-label-sm text-label-sm font-bold">14</span>
                     </a>
                     <a asp-controller="Admin" asp-action="LichKhamSangLoc" class="flex items-center gap-space-sm px-space-md py-2.5 transition-all duration-150 @(currentController == "Admin" && currentAction == "LichKhamSangLoc" ? "bg-primary text-on-primary font-bold shadow-md rounded-xl" : "rounded-xl text-inverse-on-surface hover:bg-surface-container-highest hover:text-on-surface")">
                         <span class="material-symbols-outlined text-[20px]">medical_services</span>
                         <span class="font-label-md text-label-md">Lịch khám sàng lọc</span>
                     </a>
-                    <a asp-controller="Admin" asp-action="KetQuaXetNghiem" class="flex items-center gap-space-sm px-space-md py-2.5 transition-all duration-150 @(currentController == "Admin" && currentAction == "KetQuaXetNghiem" ? "bg-primary text-on-primary font-bold shadow-md rounded-xl" : "rounded-xl text-inverse-on-surface hover:bg-surface-container-highest hover:text-on-surface")">
+                    <a asp-controller="Admin" asp-action="KetQuaHienMau" class="flex items-center gap-space-sm px-space-md py-2.5 transition-all duration-150 @(currentController == "Admin" && (currentAction == "KetQuaHienMau" || currentAction == "ChiTietKetQua" || currentAction == "KetQuaXetNghiem") ? "bg-primary text-on-primary font-bold shadow-md rounded-xl" : "rounded-xl text-inverse-on-surface hover:bg-surface-container-highest hover:text-on-surface")">
                         <span class="material-symbols-outlined text-[20px]">biotech</span>
                         <span class="font-label-md text-label-md">Kết quả hiến máu</span>
                     </a>
@@ -270,16 +269,19 @@
                 </button>
                 <div class="h-8 w-px bg-surface-container"></div>
                 <div class="flex items-center gap-space-sm pl-space-xs">
-                    <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0">
-                        <span class="material-symbols-outlined text-on-primary text-[18px]">person</span>
+                    <div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-on-primary font-bold text-xs shrink-0">
+                        @(User.Identity?.Name?.Length > 0 ? User.Identity.Name[0].ToString().ToUpper() : "A")
                     </div>
                     <div class="hidden md:flex flex-col text-left">
-                        <span class="font-label-md text-label-md text-on-surface font-semibold leading-tight">BS. CKI Trần Mai Linh</span>
-                        <span class="font-label-sm text-label-sm text-on-surface-variant leading-tight">Trưởng kíp • Viện Huyết học TW</span>
+                        <span class="font-label-md text-label-md text-on-surface font-semibold leading-tight">@(User.Identity?.Name ?? "Quản trị viên")</span>
+                        <span class="font-label-sm text-[11px] text-primary font-bold uppercase leading-tight">@(User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? "Admin")</span>
                     </div>
-                    <a asp-controller="Account" asp-action="Login" class="p-2 text-on-surface-variant hover:text-error hover:bg-error-container/40 rounded-xl transition-colors ml-1" title="Đăng xuất">
-                        <span class="material-symbols-outlined text-[20px]">logout</span>
-                    </a>
+                    <form method="post" asp-controller="Account" asp-action="Logout" class="inline">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="p-2 text-on-surface-variant hover:text-error hover:bg-error-container/40 rounded-xl transition-colors ml-1 cursor-pointer" title="Đăng xuất">
+                            <span class="material-symbols-outlined text-[20px]">logout</span>
+                        </button>
+                    </form>
                 </div>
             </div>
         </header>

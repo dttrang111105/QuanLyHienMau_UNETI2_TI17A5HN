@@ -1,0 +1,552 @@
+@model IEnumerable<QuanLyHienMau_UNETI2_TI17A5HN.Models.PhieuDangKyHienMau>
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Quản Lý & Duyệt Phiếu Đăng Ký Hiến Máu";
+
+    var dotHienMaus = ViewBag.DotHienMaus as List<QuanLyHienMau_UNETI2_TI17A5HN.Models.DotHienMau> ?? new List<QuanLyHienMau_UNETI2_TI17A5HN.Models.DotHienMau>();
+    var currentSearch = ViewBag.CurrentSearch as string;
+    var currentTrangThai = ViewBag.CurrentTrangThai as string;
+    var currentMaDot = ViewBag.CurrentMaDot as int?;
+    int currentPage = ViewBag.CurrentPage ?? 1;
+    int totalPages = ViewBag.TotalPages ?? 1;
+    int totalItems = ViewBag.TotalItems ?? 0;
+}
+
+<div class="flex flex-col w-full">
+    <!-- TOP HEADER / HERO -->
+    <div class="px-space-lg py-space-md bg-surface-container-lowest shadow-sm flex flex-col gap-space-md">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md">
+            <!-- Breadcrumb & Title -->
+            <div class="space-y-1">
+                <nav class="flex items-center gap-1.5 text-on-surface-variant font-label-sm text-label-sm">
+                    <span>Hệ thống Quản trị Y tế</span>
+                    <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+                    <span>Quản lý Y tế</span>
+                    <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+                    <span class="text-primary font-bold">Phiếu đăng ký &amp; Duyệt</span>
+                </nav>
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-primary-fixed flex items-center justify-center text-primary shrink-0 shadow-sm">
+                        <span class="material-symbols-outlined text-[24px]">assignment_turned_in</span>
+                    </div>
+                    <div>
+                        <h1 class="font-headline-md text-headline-md text-on-surface font-bold tracking-tight">
+                            Tiếp Nhận &amp; Phê Duyệt Phiếu Đăng Ký
+                        </h1>
+                        <p class="font-body-sm text-body-sm text-on-surface-variant">
+                            Xem xét thông tin người hiến máu, duyệt điều kiện tham gia, phân bổ lịch khám sàng lọc và theo dõi trạng thái tiếp nhận.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-wrap items-center gap-space-sm shrink-0">
+                <a asp-controller="Admin" asp-action="LichKhamSangLoc" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-surface-container-low text-on-surface hover:bg-surface-container font-label-md text-label-md transition-all shadow-sm">
+                    <span class="material-symbols-outlined text-[18px]">medical_services</span>
+                    <span>Xem Lịch Khám Sàng Lọc</span>
+                </a>
+                <a asp-controller="DotHienMau" asp-action="Index" class="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-on-primary hover:bg-primary-container font-label-md text-label-md shadow-md transition-all">
+                    <span class="material-symbols-outlined text-[18px]">event</span>
+                    <span>Danh Sách Đợt Hiến</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Filter & Search Toolbar -->
+        <form method="get" asp-controller="Admin" asp-action="PhieuDangKyHienMau" class="grid grid-cols-1 md:grid-cols-12 gap-space-sm pt-space-xs">
+            <!-- Search input -->
+            <div class="md:col-span-4 relative">
+                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">search</span>
+                <input type="search" name="search" value="@currentSearch" placeholder="Tìm theo Mã phiếu, Họ tên, SĐT, Email..." class="w-full h-11 pl-10 pr-3 bg-surface-container-low rounded-xl font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-sm placeholder:text-on-surface-variant/70" />
+            </div>
+
+            <!-- Status filter -->
+            <div class="md:col-span-3 relative">
+                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">filter_alt</span>
+                <select name="trangThai" class="w-full h-11 pl-10 pr-8 bg-surface-container-low rounded-xl font-body-sm text-body-sm text-on-surface appearance-none focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-sm cursor-pointer">
+                    <option value="all" selected="@(string.IsNullOrEmpty(currentTrangThai) || currentTrangThai == "all")">Tất cả trạng thái</option>
+                    <option value="Chờ xác nhận" selected="@(currentTrangThai == "Chờ xác nhận")">Chờ xác nhận</option>
+                    <option value="Đã xác nhận" selected="@(currentTrangThai == "Đã xác nhận")">Đã xác nhận</option>
+                    <option value="Chờ khám sàng lọc" selected="@(currentTrangThai == "Chờ khám sàng lọc")">Chờ khám sàng lọc</option>
+                    <option value="Đã khám sàng lọc" selected="@(currentTrangThai == "Đã khám sàng lọc")">Đã khám sàng lọc</option>
+                    <option value="Hiến máu thành công" selected="@(currentTrangThai == "Hiến máu thành công")">Hiến máu thành công</option>
+                    <option value="Không đủ điều kiện hiến" selected="@(currentTrangThai == "Không đủ điều kiện hiến")">Không đủ điều kiện hiến</option>
+                    <option value="Từ chối" selected="@(currentTrangThai == "Từ chối")">Từ chối</option>
+                    <option value="Đã hủy" selected="@(currentTrangThai == "Đã hủy")">Đã hủy</option>
+                </select>
+                <span class="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none text-[18px]">arrow_drop_down</span>
+            </div>
+
+            <!-- Campaign filter -->
+            <div class="md:col-span-3 relative">
+                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">campaign</span>
+                <select name="maDot" class="w-full h-11 pl-10 pr-8 bg-surface-container-low rounded-xl font-body-sm text-body-sm text-on-surface appearance-none focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-sm cursor-pointer">
+                    <option value="" selected="@(!currentMaDot.HasValue)">Tất cả đợt hiến</option>
+                    @foreach (var dot in dotHienMaus)
+                    {
+                        <option value="@dot.MaDot" selected="@(currentMaDot == dot.MaDot)">@dot.TenDot (@dot.NgayBatDauDangKy.ToString("dd/MM/yyyy"))</option>
+                    }
+                </select>
+                <span class="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none text-[18px]">arrow_drop_down</span>
+            </div>
+
+            <!-- Buttons -->
+            <div class="md:col-span-2 flex items-center gap-2">
+                <button type="submit" class="flex-1 h-11 rounded-xl bg-primary text-on-primary hover:bg-primary-container font-label-md text-label-md font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm">
+                    <span class="material-symbols-outlined text-[18px]">filter_list</span>
+                    <span>Lọc</span>
+                </button>
+                <a asp-controller="Admin" asp-action="PhieuDangKyHienMau" class="h-11 px-3 rounded-xl bg-surface-container text-on-surface hover:bg-surface-container-high transition-colors flex items-center justify-center" title="Xóa bộ lọc">
+                    <span class="material-symbols-outlined text-[18px]">restart_alt</span>
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- MAIN BODY -->
+    <div class="p-space-lg space-y-space-md">
+        <!-- Toast Alerts -->
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="p-space-md rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 flex items-center gap-3 shadow-sm">
+                <span class="material-symbols-outlined text-emerald-600 text-[24px]">check_circle</span>
+                <div class="flex-1 font-body-md text-body-md font-medium">@TempData["SuccessMessage"]</div>
+            </div>
+        }
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="p-space-md rounded-2xl bg-error-container/60 border border-error text-on-error-container flex items-center gap-3 shadow-sm">
+                <span class="material-symbols-outlined text-error text-[24px]">error</span>
+                <div class="flex-1 font-body-md text-body-md font-medium">@TempData["ErrorMessage"]</div>
+            </div>
+        }
+
+        <!-- KPI Statistic Cards Ribbon -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-space-sm">
+            <!-- Total -->
+            <a asp-controller="Admin" asp-action="PhieuDangKyHienMau" class="bg-surface-container-lowest p-3 rounded-2xl shadow-sm hover:bg-surface-container-low transition-all flex flex-col justify-between">
+                <span class="text-on-surface-variant font-label-sm text-label-sm font-medium">Tổng số phiếu</span>
+                <span class="font-headline-md text-headline-md font-bold text-on-surface mt-1">@ViewBag.TotalCount</span>
+            </a>
+
+            <!-- Cho xac nhan -->
+            <a asp-controller="Admin" asp-action="PhieuDangKyHienMau" asp-route-trangThai="Chờ xác nhận" class="bg-surface-container-lowest p-3 rounded-2xl shadow-sm hover:bg-surface-container-low transition-all flex flex-col justify-between border-l-4 border-amber-500">
+                <div class="flex items-center justify-between">
+                    <span class="text-amber-800 font-label-sm text-label-sm font-bold">Chờ xác nhận</span>
+                    <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span>
+                </div>
+                <span class="font-headline-md text-headline-md font-bold text-amber-900 mt-1">@ViewBag.ChoXacNhanCount</span>
+            </a>
+
+            <!-- Da xac nhan -->
+            <a asp-controller="Admin" asp-action="PhieuDangKyHienMau" asp-route-trangThai="Đã xác nhận" class="bg-surface-container-lowest p-3 rounded-2xl shadow-sm hover:bg-surface-container-low transition-all flex flex-col justify-between border-l-4 border-sky-500">
+                <span class="text-sky-800 font-label-sm text-label-sm font-bold">Đã xác nhận</span>
+                <span class="font-headline-md text-headline-md font-bold text-sky-900 mt-1">@ViewBag.DaXacNhanCount</span>
+            </a>
+
+            <!-- Cho kham -->
+            <a asp-controller="Admin" asp-action="PhieuDangKyHienMau" asp-route-trangThai="Chờ khám sàng lọc" class="bg-surface-container-lowest p-3 rounded-2xl shadow-sm hover:bg-surface-container-low transition-all flex flex-col justify-between border-l-4 border-primary">
+                <span class="text-primary font-label-sm text-label-sm font-bold">Chờ khám</span>
+                <span class="font-headline-md text-headline-md font-bold text-primary mt-1">@ViewBag.ChoKhamCount</span>
+            </a>
+
+            <!-- Da kham -->
+            <a asp-controller="Admin" asp-action="PhieuDangKyHienMau" asp-route-trangThai="Đã khám sàng lọc" class="bg-surface-container-lowest p-3 rounded-2xl shadow-sm hover:bg-surface-container-low transition-all flex flex-col justify-between border-l-4 border-emerald-500">
+                <span class="text-emerald-800 font-label-sm text-label-sm font-bold">Đã khám sàng lọc</span>
+                <span class="font-headline-md text-headline-md font-bold text-emerald-900 mt-1">@ViewBag.DaKhamCount</span>
+            </a>
+
+            <!-- Tu choi / Huy -->
+            <a asp-controller="Admin" asp-action="PhieuDangKyHienMau" asp-route-trangThai="Từ chối" class="bg-surface-container-lowest p-3 rounded-2xl shadow-sm hover:bg-surface-container-low transition-all flex flex-col justify-between border-l-4 border-surface-container-highest">
+                <span class="text-on-surface-variant font-label-sm text-label-sm font-medium">Từ chối / Hủy</span>
+                <span class="font-headline-md text-headline-md font-bold text-on-surface-variant mt-1">@( (int)ViewBag.TuChoiCount + (int)ViewBag.DaHuyCount )</span>
+            </a>
+        </div>
+
+        <!-- Table Container -->
+        <div class="bg-surface-container-lowest rounded-2xl shadow-sm overflow-hidden flex flex-col">
+            <!-- Table Header Bar -->
+            <div class="p-space-md bg-surface-container-low flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-primary text-[20px]">list_alt</span>
+                    <h2 class="font-title-md text-title-md font-bold text-on-surface">Danh Sách Phiếu Đăng Ký Hiến Máu</h2>
+                    <span class="px-2.5 py-0.5 rounded-full bg-surface-container text-on-surface-variant font-label-sm text-label-sm font-semibold">
+                        @totalItems phiếu
+                    </span>
+                </div>
+                <div class="text-on-surface-variant font-label-sm text-label-sm">
+                    Trang @currentPage / @totalPages
+                </div>
+            </div>
+
+            <!-- Table -->
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-surface-container font-label-md text-label-md text-on-surface-variant">
+                            <th class="p-3 w-28">Mã Phiếu</th>
+                            <th class="p-3 min-w-[220px]">Người Hiến Máu</th>
+                            <th class="p-3 min-w-[200px]">Đợt Hiến &amp; Ngày Nộp</th>
+                            <th class="p-3 min-w-[160px]">Thông Tin Khám</th>
+                            <th class="p-3 min-w-[160px]">Trạng Thái</th>
+                            <th class="p-3 w-44 text-center">Thao Tác</th>
+                        </tr>
+                    </thead>
+                    <tbody class="font-body-sm text-body-sm divide-y divide-surface-container">
+                        @if (!Model.Any())
+                        {
+                            <tr>
+                                <td colspan="6" class="p-12 text-center text-on-surface-variant">
+                                    <div class="flex flex-col items-center justify-center gap-2">
+                                        <span class="material-symbols-outlined text-[48px] text-on-surface-variant/40">inbox</span>
+                                        <p class="font-title-md text-title-md font-semibold">Không tìm thấy phiếu đăng ký nào</p>
+                                        <p class="text-body-sm text-on-surface-variant/70">Thử thay đổi từ khóa tìm kiếm hoặc bỏ chọn bộ lọc.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var p in Model)
+                            {
+                                var activeLich = p.LichKhamSangLocs.OrderByDescending(l => l.ThoiGianBatDau).FirstOrDefault();
+                                <tr class="hover:bg-surface-container-low transition-colors">
+                                    <!-- Ma Phieu -->
+                                    <td class="p-3 align-top">
+                                        <a asp-controller="Admin" asp-action="ChiTietPhieuDangKy" asp-route-id="@p.MaPhieu" class="font-label-md text-label-md font-bold text-primary hover:underline block">
+                                            #DKHM-@p.MaPhieu.ToString("D5")
+                                        </a>
+                                        <span class="text-[11px] text-on-surface-variant">@p.NgayNop.ToString("HH:mm")</span>
+                                    </td>
+
+                                    <!-- Nguoi Hien Mau -->
+                                    <td class="p-3 align-top">
+                                        <div class="flex items-center gap-2.5">
+                                            <div class="w-9 h-9 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-xs shrink-0">
+                                                @(p.NguoiHienMau?.HoTen?.Length > 0 ? p.NguoiHienMau.HoTen[0].ToString().ToUpper() : "N")
+                                            </div>
+                                            <div class="min-w-0">
+                                                <a asp-controller="Admin" asp-action="ChiTietPhieuDangKy" asp-route-id="@p.MaPhieu" class="font-label-md text-label-md font-bold text-on-surface hover:text-primary transition-colors truncate block">
+                                                    @(p.NguoiHienMau?.HoTen ?? "Chưa rõ họ tên")
+                                                </a>
+                                                <div class="flex flex-wrap items-center gap-1.5 text-[12px] text-on-surface-variant">
+                                                    @if (!string.IsNullOrEmpty(p.NguoiHienMau?.SoDienThoai))
+                                                    {
+                                                        <span>@p.NguoiHienMau.SoDienThoai</span>
+                                                    }
+                                                    @if (!string.IsNullOrEmpty(p.NguoiHienMau?.NhomMau))
+                                                    {
+                                                        <span class="px-1.5 py-0.2 rounded bg-primary-fixed text-primary font-bold text-[10px]">@p.NguoiHienMau.NhomMau</span>
+                                                    }
+                                                    @if (p.NguoiHienMau?.CanNang.HasValue == true)
+                                                    {
+                                                        <span>• @p.NguoiHienMau.CanNang kg</span>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+
+                                    <!-- Dot Hien & Ngay Nop -->
+                                    <td class="p-3 align-top">
+                                        <p class="font-label-md text-label-md font-semibold text-on-surface line-clamp-1" title="@p.DotHienMau?.TenDot">
+                                            @(p.DotHienMau?.TenDot ?? "Chưa chỉ định")
+                                        </p>
+                                        <p class="text-[12px] text-on-surface-variant flex items-center gap-1 mt-0.5">
+                                            <span class="material-symbols-outlined text-[14px]">calendar_today</span>
+                                            Nộp: @p.NgayNop.ToString("dd/MM/yyyy HH:mm")
+                                        </p>
+                                        @if (p.DotHienMau?.DonViToChuc != null)
+                                        {
+                                            <p class="text-[11px] text-on-surface-variant truncate">@p.DotHienMau.DonViToChuc.TenDonViToChuc</p>
+                                        }
+                                    </td>
+
+                                    <!-- Lich Kham -->
+                                    <td class="p-3 align-top">
+                                        @if (activeLich != null)
+                                        {
+                                            <p class="font-label-sm text-label-sm font-semibold text-on-surface flex items-center gap-1">
+                                                <span class="material-symbols-outlined text-[14px] text-primary">schedule</span>
+                                                @activeLich.ThoiGianBatDau.ToString("dd/MM HH:mm") - @activeLich.ThoiGianKetThuc.ToString("HH:mm")
+                                            </p>
+                                            <p class="text-[11px] text-on-surface-variant truncate">BS: @(activeLich.BacSiSangLoc ?? "Chưa phân công")</p>
+                                            <span class="inline-block mt-0.5 px-1.5 py-0.2 rounded text-[10px] font-semibold @(activeLich.TrangThai == "Đã hoàn thành" ? "bg-emerald-100 text-emerald-800" : activeLich.TrangThai == "Đã hủy" ? "bg-surface-container text-on-surface-variant" : "bg-sky-100 text-sky-800")">
+                                                Lịch: @activeLich.TrangThai
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-[12px] text-on-surface-variant/70 italic">Chưa tạo lịch</span>
+                                        }
+                                    </td>
+
+                                    <!-- Trang Thai -->
+                                    <td class="p-3 align-top">
+                                        @if (p.TrangThai == "Chờ xác nhận")
+                                        {
+                                            <span class="px-2.5 py-1 rounded-full bg-amber-100 text-amber-900 font-label-sm text-label-sm font-bold inline-flex items-center gap-1">
+                                                <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                                                Chờ xác nhận
+                                            </span>
+                                        }
+                                        else if (p.TrangThai == "Đã xác nhận")
+                                        {
+                                            <span class="px-2.5 py-1 rounded-full bg-sky-100 text-sky-900 font-label-sm text-label-sm font-bold inline-flex items-center gap-1">
+                                                <span class="material-symbols-outlined text-[14px]">check</span>
+                                                Đã xác nhận
+                                            </span>
+                                        }
+                                        else if (p.TrangThai == "Chờ khám sàng lọc")
+                                        {
+                                            <span class="px-2.5 py-1 rounded-full bg-primary/10 text-primary font-label-sm text-label-sm font-bold inline-flex items-center gap-1">
+                                                <span class="material-symbols-outlined text-[14px]">medical_services</span>
+                                                Chờ khám sàng lọc
+                                            </span>
+                                        }
+                                        else if (p.TrangThai == "Đã khám sàng lọc")
+                                        {
+                                            <span class="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-900 font-label-sm text-label-sm font-bold inline-flex items-center gap-1">
+                                                <span class="material-symbols-outlined text-[14px]">done_all</span>
+                                                Đã khám sàng lọc
+                                            </span>
+                                        }
+                                        else if (p.TrangThai == "Hiến máu thành công")
+                                        {
+                                            <span class="px-2.5 py-1 rounded-full bg-emerald-600 text-on-primary font-label-sm text-label-sm font-bold inline-flex items-center gap-1">
+                                                <span class="material-symbols-outlined text-[14px]">verified</span>
+                                                Hiến máu thành công
+                                            </span>
+                                        }
+                                        else if (p.TrangThai == "Từ chối")
+                                        {
+                                            <span class="px-2.5 py-1 rounded-full bg-error-container text-on-error-container font-label-sm text-label-sm font-bold inline-flex items-center gap-1">
+                                                <span class="material-symbols-outlined text-[14px]">cancel</span>
+                                                Từ chối
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="px-2.5 py-1 rounded-full bg-surface-container text-on-surface-variant font-label-sm text-label-sm font-semibold">
+                                                @p.TrangThai
+                                            </span>
+                                        }
+
+                                        @if (!string.IsNullOrEmpty(p.GhiChuXacNhan))
+                                        {
+                                            <p class="text-[11px] text-on-surface-variant mt-1 line-clamp-1" title="@p.GhiChuXacNhan">
+                                                Ghi chú: @p.GhiChuXacNhan
+                                            </p>
+                                        }
+                                    </td>
+
+                                    <!-- Thao Tac -->
+                                    <td class="p-3 align-top text-center">
+                                        <div class="flex items-center justify-center gap-1">
+                                            <!-- View details -->
+                                            <a asp-controller="Admin" asp-action="ChiTietPhieuDangKy" asp-route-id="@p.MaPhieu" class="p-2 rounded-xl bg-surface-container text-on-surface hover:bg-surface-container-high transition-colors" title="Xem chi tiết hồ sơ">
+                                                <span class="material-symbols-outlined text-[18px]">visibility</span>
+                                            </a>
+
+                                            @if (p.TrangThai == "Chờ xác nhận")
+                                            {
+                                                <!-- Quick Confirm -->
+                                                <button type="button" onclick="openConfirmModal(@p.MaPhieu, '@(p.NguoiHienMau?.HoTen ?? "")')" class="p-2 rounded-xl bg-emerald-600 text-on-primary hover:bg-emerald-700 transition-colors shadow-sm" title="Duyệt / Xác nhận">
+                                                    <span class="material-symbols-outlined text-[18px]">check</span>
+                                                </button>
+
+                                                <!-- Quick Reject -->
+                                                <button type="button" onclick="openRejectModal(@p.MaPhieu, '@(p.NguoiHienMau?.HoTen ?? "")')" class="p-2 rounded-xl bg-error text-on-error hover:bg-error/90 transition-colors shadow-sm" title="Từ chối">
+                                                    <span class="material-symbols-outlined text-[18px]">close</span>
+                                                </button>
+                                            }
+                                            else if (p.TrangThai == "Đã xác nhận")
+                                            {
+                                                <!-- Chuyen cho kham -->
+                                                <form method="post" asp-controller="Admin" asp-action="ChuyenChoKham" class="inline">
+                                                    @Html.AntiForgeryToken()
+                                                    <input type="hidden" name="id" value="@p.MaPhieu" />
+                                                    <input type="hidden" name="returnUrl" value="@Context.Request.Path@Context.Request.QueryString" />
+                                                    <button type="submit" class="p-2 rounded-xl bg-primary text-on-primary hover:bg-primary-container transition-colors shadow-sm" title="Chuyển sang Chờ khám sàng lọc">
+                                                        <span class="material-symbols-outlined text-[18px]">play_arrow</span>
+                                                    </button>
+                                                </form>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination Bar -->
+            @if (totalPages > 1)
+            {
+                <div class="p-space-md bg-surface-container-low flex flex-col sm:flex-row items-center justify-between gap-space-sm">
+                    <span class="font-body-sm text-body-sm text-on-surface-variant">
+                        Hiển thị <strong>@Model.Count()</strong> trên tổng số <strong>@totalItems</strong> phiếu đăng ký
+                    </span>
+                    <div class="flex items-center gap-1 font-label-md text-label-md">
+                        <!-- Prev -->
+                        <a asp-controller="Admin" asp-action="PhieuDangKyHienMau"
+                           asp-route-page="@(currentPage - 1)"
+                           asp-route-search="@currentSearch"
+                           asp-route-trangThai="@currentTrangThai"
+                           asp-route-maDot="@currentMaDot"
+                           class="px-3 py-1.5 rounded-lg border border-outline-variant text-on-surface hover:bg-surface-container @(currentPage <= 1 ? "opacity-40 pointer-events-none" : "")">
+                            « Trước
+                        </a>
+
+                        @for (int i = 1; i <= totalPages; i++)
+                        {
+                            if (i == 1 || i == totalPages || (i >= currentPage - 2 && i <= currentPage + 2))
+                            {
+                                <a asp-controller="Admin" asp-action="PhieuDangKyHienMau"
+                                   asp-route-page="@i"
+                                   asp-route-search="@currentSearch"
+                                   asp-route-trangThai="@currentTrangThai"
+                                   asp-route-maDot="@currentMaDot"
+                                   class="px-3 py-1.5 rounded-lg font-bold @(i == currentPage ? "bg-primary text-on-primary shadow-sm" : "border border-outline-variant text-on-surface hover:bg-surface-container")">
+                                    @i
+                                </a>
+                            }
+                            else if (i == currentPage - 3 || i == currentPage + 3)
+                            {
+                                <span class="px-2 py-1 text-on-surface-variant">...</span>
+                            }
+                        }
+
+                        <!-- Next -->
+                        <a asp-controller="Admin" asp-action="PhieuDangKyHienMau"
+                           asp-route-page="@(currentPage + 1)"
+                           asp-route-search="@currentSearch"
+                           asp-route-trangThai="@currentTrangThai"
+                           asp-route-maDot="@currentMaDot"
+                           class="px-3 py-1.5 rounded-lg border border-outline-variant text-on-surface hover:bg-surface-container @(currentPage >= totalPages ? "opacity-40 pointer-events-none" : "")">
+                            Sau »
+                        </a>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: CONFIRM / DUYET PHIEU -->
+<div id="confirmModal" class="fixed inset-0 z-50 bg-inverse-surface/40 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-surface-container-lowest rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden flex flex-col">
+        <div class="p-space-md bg-surface-container flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-emerald-600 text-[22px]">verified</span>
+                <h3 class="font-title-md text-title-md font-bold text-on-surface">Duyệt &amp; Xác Nhận Phiếu Đăng Ký</h3>
+            </div>
+            <button class="w-8 h-8 rounded-lg bg-surface-container-low text-on-surface hover:bg-surface-container-highest flex items-center justify-center" onclick="closeConfirmModal()">
+                <span class="material-symbols-outlined text-[18px]">close</span>
+            </button>
+        </div>
+        <form method="post" asp-controller="Admin" asp-action="XacNhanPhieu" class="p-space-lg space-y-space-md">
+            @Html.AntiForgeryToken()
+            <input type="hidden" id="confirmPhieuId" name="id" value="" />
+            <input type="hidden" name="returnUrl" value="@Context.Request.Path@Context.Request.QueryString" />
+
+            <div>
+                <p class="font-body-md text-body-md text-on-surface">
+                    Bạn đang thực hiện xác nhận phiếu đăng ký cho tình nguyện viên:
+                </p>
+                <p id="confirmDonorName" class="font-title-md text-title-md font-bold text-primary mt-1"></p>
+            </div>
+
+            <div>
+                <label class="block font-label-md text-label-md font-bold text-on-surface mb-1">Ghi chú xác nhận (tùy chọn):</label>
+                <textarea name="ghiChu" rows="3" placeholder="Nhập ghi chú hoặc dặn dò cho người hiến (nếu có)..." class="w-full p-3 bg-surface-container-low rounded-xl font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20"></textarea>
+            </div>
+
+            <div class="p-3 bg-emerald-50 rounded-xl flex items-center gap-2 text-emerald-900 font-label-sm text-label-sm">
+                <span class="material-symbols-outlined text-[18px] text-emerald-600">info</span>
+                <span>Sau khi xác nhận, trạng thái phiếu sẽ chuyển sang "Đã xác nhận". Lịch khám sàng lọc được giữ nguyên hoặc chuẩn bị tiếp nhận.</span>
+            </div>
+
+            <div class="flex items-center justify-end gap-space-sm pt-2">
+                <button type="button" class="px-4 py-2 rounded-xl bg-surface-container text-on-surface hover:bg-surface-container-high font-label-md text-label-md font-semibold transition-colors" onclick="closeConfirmModal()">
+                    Hủy bỏ
+                </button>
+                <button type="submit" class="px-5 py-2 rounded-xl bg-emerald-600 text-on-primary hover:bg-emerald-700 font-label-md text-label-md font-bold shadow-md transition-all">
+                    Xác Nhận Phiếu
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- MODAL: REJECT / TU CHOI PHIEU -->
+<div id="rejectModal" class="fixed inset-0 z-50 bg-inverse-surface/40 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-surface-container-lowest rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden flex flex-col">
+        <div class="p-space-md bg-surface-container flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-error text-[22px]">cancel</span>
+                <h3 class="font-title-md text-title-md font-bold text-on-surface">Từ Chối Phiếu Đăng Ký</h3>
+            </div>
+            <button class="w-8 h-8 rounded-lg bg-surface-container-low text-on-surface hover:bg-surface-container-highest flex items-center justify-center" onclick="closeRejectModal()">
+                <span class="material-symbols-outlined text-[18px]">close</span>
+            </button>
+        </div>
+        <form method="post" asp-controller="Admin" asp-action="TuChoiPhieu" class="p-space-lg space-y-space-md">
+            @Html.AntiForgeryToken()
+            <input type="hidden" id="rejectPhieuId" name="id" value="" />
+            <input type="hidden" name="returnUrl" value="@Context.Request.Path@Context.Request.QueryString" />
+
+            <div>
+                <p class="font-body-md text-body-md text-on-surface">
+                    Từ chối tiếp nhận phiếu đăng ký của tình nguyện viên:
+                </p>
+                <p id="rejectDonorName" class="font-title-md text-title-md font-bold text-error mt-1"></p>
+            </div>
+
+            <div>
+                <label class="block font-label-md text-label-md font-bold text-on-surface mb-1">Lý do từ chối <span class="text-error">*</span>:</label>
+                <textarea name="lyDoTuChoi" required rows="3" placeholder="Nhập lý do cụ thể (Ví dụ: Chưa đủ khoảng cách hiến 84 ngày, chưa đủ cân nặng tối thiểu, có tiền sử bệnh lý chống chỉ định...)" class="w-full p-3 bg-surface-container-low rounded-xl font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-error/20"></textarea>
+            </div>
+
+            <div class="p-3 bg-error-container/40 rounded-xl flex items-center gap-2 text-on-error-container font-label-sm text-label-sm">
+                <span class="material-symbols-outlined text-[18px] text-error">warning</span>
+                <span>Lưu ý: Khi từ chối, toàn bộ lịch khám sàng lọc liên quan sẽ tự động chuyển sang trạng thái "Đã hủy".</span>
+            </div>
+
+            <div class="flex items-center justify-end gap-space-sm pt-2">
+                <button type="button" class="px-4 py-2 rounded-xl bg-surface-container text-on-surface hover:bg-surface-container-high font-label-md text-label-md font-semibold transition-colors" onclick="closeRejectModal()">
+                    Đóng lại
+                </button>
+                <button type="submit" class="px-5 py-2 rounded-xl bg-error text-on-error hover:bg-error/90 font-label-md text-label-md font-bold shadow-md transition-all">
+                    Xác Nhận Từ Chối
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function openConfirmModal(id, donorName) {
+            document.getElementById('confirmPhieuId').value = id;
+            document.getElementById('confirmDonorName').textContent = donorName + ' (#DKHM-' + String(id).padStart(5, '0') + ')';
+            document.getElementById('confirmModal').classList.remove('hidden');
+        }
+
+        function closeConfirmModal() {
+            document.getElementById('confirmModal').classList.add('hidden');
+        }
+
+        function openRejectModal(id, donorName) {
+            document.getElementById('rejectPhieuId').value = id;
+            document.getElementById('rejectDonorName').textContent = donorName + ' (#DKHM-' + String(id).padStart(5, '0') + ')';
+            document.getElementById('rejectModal').classList.remove('hidden');
+        }
+
+        function closeRejectModal() {
+            document.getElementById('rejectModal').classList.add('hidden');
+        }
+    </script>
+}

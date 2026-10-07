@@ -1,6 +1,26 @@
+@model QuanLyHienMau_UNETI2_TI17A5HN.Models.PhieuDangKyHienMau
+
 @{
-    ViewData["Title"] = "Theo Dõi Trạng Thái Phiếu Đăng Ký Hiến Máu";
-    var ticketCode = ViewData["TicketCode"] as string ?? "#VTL-UNETI-08991";
+    ViewData["Title"] = Model != null ? $"Theo Dõi Phiếu Đăng Ký #DKHM-{Model.MaPhieu:D5}" : "Theo Dõi Trạng Thái Phiếu Đăng Ký Hiến Máu";
+    var danhSachPhieu = ViewBag.DanhSachPhieu as List<QuanLyHienMau_UNETI2_TI17A5HN.Models.PhieuDangKyHienMau> ?? new List<QuanLyHienMau_UNETI2_TI17A5HN.Models.PhieuDangKyHienMau>();
+    var ticketCode = Model != null ? $"#DKHM-{Model.MaPhieu:D5}" : "Chưa có phiếu";
+    var trangThai = Model?.TrangThai ?? "Chờ xác nhận";
+
+    // Xác định bước của Stepper
+    int stepNumber = 1;
+    if (trangThai == "Chờ xác nhận") stepNumber = 1;
+    else if (trangThai == "Đã xác nhận") stepNumber = 2;
+    else if (trangThai == "Chờ khám sàng lọc") stepNumber = 3;
+    else if (trangThai == "Đã khám sàng lọc") stepNumber = 4;
+    else if (trangThai == "Hiến máu thành công") stepNumber = 5;
+    else if (trangThai == "Không đủ điều kiện hiến" || trangThai == "Từ chối" || trangThai == "Đã hủy") stepNumber = -1;
+
+    var statusBadgeClass = trangThai == "Hiến máu thành công" ? "bg-emerald-50 text-emerald-700" :
+                           trangThai == "Không đủ điều kiện hiến" ? "bg-rose-50 text-rose-700" :
+                           trangThai == "Từ chối" ? "bg-rose-50 text-rose-700" :
+                           trangThai == "Đã hủy" ? "bg-stone-100 text-stone-700" :
+                           trangThai == "Chờ xác nhận" ? "bg-amber-50 text-amber-800" :
+                           "bg-blue-50 text-blue-700";
 }
 
 <div class="flex flex-col w-full">
@@ -14,12 +34,12 @@
             <span>/</span>
             <a asp-controller="DangKy" asp-action="TheoDoi" class="hover:text-primary transition-colors">Tra cứu &amp; Theo dõi phiếu</a>
             <span>/</span>
-            <span class="text-on-surface font-semibold">Phiếu đăng ký @ticketCode</span>
+            <span class="text-on-surface font-semibold">@ticketCode</span>
         </div>
         <div class="flex items-center gap-3">
             <div class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-surface-container-high text-secondary font-label-sm text-label-sm">
                 <span class="inline-block w-2 h-2 rounded-full bg-primary animate-pulse"></span>
-                Cập nhật hệ thống: 10 phút trước
+                Cập nhật: @DateTime.Now.ToString("HH:mm dd/MM/yyyy")
             </div>
             <button class="hidden sm:inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-surface-container-lowest text-on-surface hover:text-primary hover:bg-surface-container shadow-sm transition-all font-label-md text-label-md" onclick="window.print()">
                 <span class="material-symbols-outlined text-[18px]">print</span>
@@ -28,390 +48,523 @@
         </div>
     </div>
 
+    <!-- ALERTS -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="max-w-[1240px] w-full mx-auto px-6 pb-4">
+            <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center gap-3 shadow-sm">
+                <span class="material-symbols-outlined text-emerald-600 text-[24px]">check_circle</span>
+                <span class="font-body-md text-sm font-semibold">@TempData["SuccessMessage"]</span>
+            </div>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="max-w-[1240px] w-full mx-auto px-6 pb-4">
+            <div class="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 flex items-center gap-3 shadow-sm">
+                <span class="material-symbols-outlined text-rose-600 text-[24px]">error</span>
+                <span class="font-body-md text-sm font-semibold">@TempData["ErrorMessage"]</span>
+            </div>
+        </div>
+    }
+
     <!-- Main Content Wrap -->
     <div class="max-w-[1240px] w-full mx-auto px-6 pb-20 space-y-8">
-        <!-- 1. Hero Summary Card -->
-        <div class="w-full bg-surface-container-lowest rounded-2xl p-6 lg:p-8 shadow-sm relative overflow-hidden">
-            <div class="absolute -right-24 -top-24 w-80 h-80 rounded-full bg-primary/5 blur-3xl pointer-events-none"></div>
-            <div class="absolute -left-20 -bottom-20 w-60 h-60 rounded-full bg-primary-fixed/20 blur-2xl pointer-events-none"></div>
-            <div class="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-surface-container-high">
-                <div class="space-y-3">
-                    <div class="flex flex-wrap items-center gap-3">
-                        <span class="font-headline-md text-headline-md text-on-surface tracking-tight font-bold">
-                            Mã hồ sơ: <span class="text-primary">@ticketCode</span>
-                        </span>
-                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 font-label-sm text-label-sm font-semibold">
-                            <span class="material-symbols-outlined text-[16px] text-emerald-600">verified</span>
-                            ĐÃ XÁC NHẬN - CHỜ KHÁM SÀNG LỌC
-                        </span>
-                    </div>
-                    <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6 text-on-surface-variant font-body-md text-body-md">
-                        <div class="flex items-center gap-2">
-                            <span class="material-symbols-outlined text-primary text-[20px]">campaign</span>
-                            <span class="font-semibold text-on-surface">Chiến dịch:</span> Giọt Hồng UNETI – Trao Đời Sự Sống 2026
-                        </div>
-                        <div class="flex items-center gap-2">
-                            <span class="material-symbols-outlined text-primary text-[20px]">badge</span>
-                            <span class="font-semibold text-on-surface">Người hiến:</span> Nguyễn Hoàng Nam
-                            <span class="bg-surface-container-high text-secondary px-2 py-0.5 rounded text-[11px] font-label-sm">CCCD: ••••••••8891 (VNeID L2)</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="flex flex-wrap items-center gap-3">
-                    <button class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-surface-container-low hover:bg-surface-container text-on-surface font-label-md text-label-md transition-all shadow-sm" onclick="alert('Đang xuất phiếu đăng ký dạng PDF...');">
-                        <span class="material-symbols-outlined text-[18px] text-primary">picture_as_pdf</span>
-                        Tải phiếu PDF
-                    </button>
-                    <button class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-secondary-fixed/40 hover:bg-secondary-fixed text-primary font-label-md text-label-md transition-all" onclick="toggleRescheduleModal()">
-                        <span class="material-symbols-outlined text-[18px]">edit_calendar</span>
-                        Đổi ca hẹn / Hủy
-                    </button>
+        @if (Model == null)
+        {
+            <div class="w-full bg-surface-container-lowest rounded-2xl p-12 shadow-sm text-center space-y-4 border border-surface-container">
+                <span class="material-symbols-outlined text-outline text-[64px]">assignment_late</span>
+                <h2 class="font-headline-md text-xl text-on-surface font-bold">Chưa Có Phiếu Đăng Ký Nào</h2>
+                <p class="font-body-md text-sm text-on-surface-variant max-w-md mx-auto">
+                    Bạn hiện chưa nộp phiếu đăng ký hiến máu nào hoặc phiếu yêu cầu không tồn tại.
+                </p>
+                <div class="pt-2">
+                    <a asp-controller="DotHienMau" asp-action="Index" class="inline-flex items-center gap-2 bg-primary text-on-primary font-bold px-6 py-3 rounded-xl shadow hover:bg-primary-container transition-all">
+                        <span class="material-symbols-outlined text-[20px]">bloodtype</span>
+                        <span>Đăng ký tham gia đợt hiến máu</span>
+                    </a>
                 </div>
             </div>
+        }
+        else
+        {
+            <!-- Ticket Selector Dropdown if multiple tickets exist -->
+            @if (danhSachPhieu.Count > 1)
+            {
+                <div class="w-full bg-surface-container-low p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 border border-surface-container">
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-primary text-[20px]">view_list</span>
+                        <span class="font-title-md text-sm font-bold text-on-surface">Danh sách phiếu đăng ký của bạn (@danhSachPhieu.Count phiếu):</span>
+                    </div>
+                    <div class="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
+                        @foreach (var p in danhSachPhieu)
+                        {
+                            var isActive = p.MaPhieu == Model.MaPhieu;
+                            <a asp-controller="DangKy" asp-action="TheoDoi" asp-route-id="@p.MaPhieu" class="px-3 py-1.5 rounded-xl font-label-sm text-xs font-semibold whitespace-nowrap transition-all @(isActive ? "bg-primary text-on-primary shadow-sm" : "bg-surface-container-lowest hover:bg-surface-container text-on-surface border border-outline-variant/30")">
+                                #DKHM-@p.MaPhieu.ToString("D5") (@p.TrangThai)
+                            </a>
+                        }
+                    </div>
+                </div>
+            }
 
-            <!-- Quick Metrics Strip -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-6">
-                <div class="flex items-start gap-3 p-3.5 rounded-xl bg-surface-container-low/70">
-                    <div class="w-10 h-10 rounded-xl bg-primary-fixed flex items-center justify-center text-primary shrink-0">
-                        <span class="material-symbols-outlined text-[22px]">schedule</span>
-                    </div>
-                    <div>
-                        <div class="font-label-sm text-label-sm text-secondary uppercase">Khung giờ hẹn</div>
-                        <div class="font-title-md text-title-md text-on-surface mt-0.5">07:30 - 09:30</div>
-                        <div class="font-body-sm text-body-sm text-on-surface-variant">15/11/2026</div>
-                    </div>
-                </div>
-                <div class="flex items-start gap-3 p-3.5 rounded-xl bg-surface-container-low/70">
-                    <div class="w-10 h-10 rounded-xl bg-secondary-fixed flex items-center justify-center text-secondary shrink-0">
-                        <span class="material-symbols-outlined text-[22px]">pin_drop</span>
-                    </div>
-                    <div>
-                        <div class="font-label-sm text-label-sm text-secondary uppercase">Địa điểm tiếp nhận</div>
-                        <div class="font-title-md text-title-md text-on-surface mt-0.5">Hội trường Nhà C - UNETI</div>
-                        <div class="font-body-sm text-body-sm text-on-surface-variant truncate max-w-[200px]">218 Lĩnh Nam, Hoàng Mai</div>
-                    </div>
-                </div>
-                <div class="flex items-start gap-3 p-3.5 rounded-xl bg-surface-container-low/70">
-                    <div class="w-10 h-10 rounded-xl bg-rose-100 flex items-center justify-center text-primary-container shrink-0">
-                        <span class="material-symbols-outlined text-[22px]">water_drop</span>
-                    </div>
-                    <div>
-                        <div class="font-label-sm text-label-sm text-secondary uppercase">Nhóm máu &amp; Thể tích</div>
-                        <div class="font-title-md text-title-md text-primary font-bold mt-0.5">Nhóm O Rh(+) • 350ml</div>
-                        <div class="font-body-sm text-body-sm text-on-surface-variant">Hiến máu toàn phần</div>
-                    </div>
-                </div>
-                <div class="flex items-start gap-3 p-3.5 rounded-xl bg-surface-container-low/70">
-                    <div class="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-700 shrink-0">
-                        <span class="material-symbols-outlined text-[22px]">qr_code_scanner</span>
-                    </div>
-                    <div>
-                        <div class="font-label-sm text-label-sm text-secondary uppercase">Cổng Check-in</div>
-                        <div class="font-title-md text-title-md text-emerald-800 font-bold mt-0.5">Bàn tiếp nhận Số 03</div>
-                        <div class="font-body-sm text-body-sm text-emerald-700">Khám sơ bộ &amp; Đo HA</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- 2. INTERACTIVE STATUS TIMELINE -->
-        <div class="w-full bg-surface-container-lowest rounded-2xl p-6 lg:p-8 shadow-sm space-y-6">
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-surface-container-high">
-                <div>
-                    <span class="font-label-sm text-label-sm uppercase tracking-wider text-primary font-bold">Lộ Trình Minh Bạch</span>
-                    <h2 class="font-headline-md text-headline-md text-on-surface mt-0.5">Quy Trình 5 Chặng &amp; Trạng Thái Theo Thời Gian Thực</h2>
-                </div>
-                <div class="flex items-center gap-2">
-                    <button class="px-3.5 py-1.5 rounded-lg text-label-md font-label-md bg-primary text-on-primary shadow-sm transition-all" id="btnStandard" onclick="setFlowView('standard')">
-                        Lộ trình thực tế
-                    </button>
-                    <button class="px-3.5 py-1.5 rounded-lg text-label-md font-label-md bg-surface-container-low hover:bg-surface-container text-secondary transition-all" id="btnBranches" onclick="setFlowView('branches')">
-                        Sơ đồ rẽ nhánh ngoại lệ
-                    </button>
-                </div>
-            </div>
-
-            <!-- Main Interactive Horizontal 5-Step Stepper -->
-            <div class="pt-4 pb-2" id="standardTimelineView">
-                <div class="grid grid-cols-1 md:grid-cols-5 gap-6 relative">
-                    <div class="hidden md:block absolute top-7 left-10 right-10 h-1 bg-surface-container-high z-0">
-                        <div class="h-full bg-gradient-to-r from-emerald-500 via-emerald-500 to-primary w-[52%] rounded-full transition-all duration-700"></div>
-                    </div>
-                    <!-- Step 1 -->
-                    <div class="relative z-10 flex flex-col items-start md:items-center text-left md:text-center group">
-                        <div class="w-14 h-14 rounded-2xl bg-emerald-600 text-on-primary flex items-center justify-center shadow-md shadow-emerald-500/20 mb-3">
-                            <span class="material-symbols-outlined text-[28px]">task_alt</span>
-                        </div>
-                        <span class="inline-block px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-label-sm text-[11px] font-bold mb-1">
-                            CHẶNG 1 • XONG
-                        </span>
-                        <h3 class="font-title-md text-title-md text-on-surface">Đăng ký hồ sơ</h3>
-                        <p class="font-body-sm text-body-sm text-secondary mt-1">10/11/2026 • 14:32</p>
-                    </div>
-                    <!-- Step 2 -->
-                    <div class="relative z-10 flex flex-col items-start md:items-center text-left md:text-center group">
-                        <div class="w-14 h-14 rounded-2xl bg-emerald-600 text-on-primary flex items-center justify-center shadow-md shadow-emerald-500/20 mb-3">
-                            <span class="material-symbols-outlined text-[28px]">verified_user</span>
-                        </div>
-                        <span class="inline-block px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-label-sm text-[11px] font-bold mb-1">
-                            CHẶNG 2 • XONG
-                        </span>
-                        <h3 class="font-title-md text-title-md text-on-surface">Phê duyệt y tế</h3>
-                        <p class="font-body-sm text-body-sm text-secondary mt-1">10/11/2026 • 16:45</p>
-                    </div>
-                    <!-- Step 3 (Current) -->
-                    <div class="relative z-10 flex flex-col items-start md:items-center text-left md:text-center">
-                        <div class="w-14 h-14 rounded-2xl bg-primary text-on-primary flex items-center justify-center shadow-lg shadow-primary/30 ring-4 ring-primary-fixed mb-3 animate-bounce">
-                            <span class="material-symbols-outlined text-[28px]">stethoscope</span>
-                        </div>
-                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-primary text-on-primary font-label-sm text-[11px] font-bold mb-1">
-                            <span class="w-1.5 h-1.5 rounded-full bg-on-primary animate-ping"></span>
-                            HIỆN TẠI (CHỜ KHÁM)
-                        </span>
-                        <h3 class="font-title-md text-title-md text-primary font-bold">Khám sàng lọc tại chỗ</h3>
-                        <p class="font-body-sm text-body-sm text-on-surface font-semibold mt-1">15/11/2026 • 07:30</p>
-                    </div>
-                    <!-- Step 4 -->
-                    <div class="relative z-10 flex flex-col items-start md:items-center text-left md:text-center opacity-65 group">
-                        <div class="w-14 h-14 rounded-2xl bg-surface-container-high text-secondary flex items-center justify-center mb-3">
-                            <span class="material-symbols-outlined text-[28px]">bloodtype</span>
-                        </div>
-                        <span class="inline-block px-2.5 py-0.5 rounded-full bg-surface-container text-secondary font-label-sm text-[11px] font-semibold mb-1">
-                            CHẶNG 4 • DỰ KIẾN
-                        </span>
-                        <h3 class="font-title-md text-title-md text-on-surface">Tiếp nhận lấy máu</h3>
-                        <p class="font-body-sm text-body-sm text-secondary mt-1">~08:00 - 08:30</p>
-                    </div>
-                    <!-- Step 5 -->
-                    <div class="relative z-10 flex flex-col items-start md:items-center text-left md:text-center opacity-65 group">
-                        <div class="w-14 h-14 rounded-2xl bg-surface-container-high text-secondary flex items-center justify-center mb-3">
-                            <span class="material-symbols-outlined text-[28px]">card_membership</span>
-                        </div>
-                        <span class="inline-block px-2.5 py-0.5 rounded-full bg-surface-container text-secondary font-label-sm text-[11px] font-semibold mb-1">
-                            CHẶNG 5 • DỰ KIẾN
-                        </span>
-                        <h3 class="font-title-md text-title-md text-on-surface">Nghỉ ngơi &amp; Cấp thẻ</h3>
-                        <p class="font-body-sm text-body-sm text-secondary mt-1">~08:45 - 09:15</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Alternate View: Sơ đồ rẽ nhánh ngoại lệ -->
-            <div class="hidden pt-4 pb-2 space-y-4" id="branchesView">
-                <div class="p-4 rounded-xl bg-amber-50 text-amber-900 font-body-sm text-body-sm flex items-start gap-3">
-                    <span class="material-symbols-outlined text-amber-700 text-[22px] mt-0.5 shrink-0">account_tree</span>
-                    <div>
-                        <span class="font-semibold block">Hệ thống xử lý kịch bản y tế thông minh (Exception Pathways)</span>
-                        Để đảm bảo an toàn tuyệt đối cho người hiến và nguồn máu tiếp nhận, hệ thống hỗ trợ 3 nhánh tự động:
-                    </div>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div class="p-5 rounded-xl bg-surface-container-low flex flex-col justify-between space-y-3">
-                        <div class="space-y-2">
-                            <div class="flex items-center justify-between">
-                                <span class="px-2.5 py-1 rounded bg-rose-100 text-error font-label-sm text-label-sm font-bold">Nhánh Ngoại lệ A</span>
-                                <span class="material-symbols-outlined text-error text-[20px]">cancel</span>
-                            </div>
-                            <h4 class="font-title-md text-title-md text-on-surface font-bold">Từ chối duyệt sơ bộ</h4>
-                            <p class="font-body-sm text-body-sm text-on-surface-variant">
-                                Kích hoạt khi: Khoảng cách giữa 2 lần hiến chưa đủ 84 ngày, hoặc người hiến đang dùng kháng sinh.
-                            </p>
-                        </div>
-                    </div>
-                    <div class="p-5 rounded-xl bg-surface-container-low flex flex-col justify-between space-y-3">
-                        <div class="space-y-2">
-                            <div class="flex items-center justify-between">
-                                <span class="px-2.5 py-1 rounded bg-amber-100 text-amber-800 font-label-sm text-label-sm font-bold">Nhánh Ngoại lệ B</span>
-                                <span class="material-symbols-outlined text-amber-700 text-[20px]">health_and_safety</span>
-                            </div>
-                            <h4 class="font-title-md text-title-md text-on-surface font-bold">Hoãn hiến tại bàn khám</h4>
-                            <p class="font-body-sm text-body-sm text-on-surface-variant">
-                                Kích hoạt khi: Bác sĩ đo HA không ổn định (&lt;90 hoặc &gt;140mmHg), thiếu máu Hb &lt; 120g/l.
-                            </p>
-                        </div>
-                    </div>
-                    <div class="p-5 rounded-xl bg-surface-container-low flex flex-col justify-between space-y-3">
-                        <div class="space-y-2">
-                            <div class="flex items-center justify-between">
-                                <span class="px-2.5 py-1 rounded bg-surface-container-high text-secondary font-label-sm text-label-sm font-bold">Nhánh Ngoại lệ C</span>
-                                <span class="material-symbols-outlined text-secondary text-[20px]">event_busy</span>
-                            </div>
-                            <h4 class="font-title-md text-title-md text-on-surface font-bold">Người hiến hủy ca hẹn</h4>
-                            <p class="font-body-sm text-body-sm text-on-surface-variant">
-                                Kích hoạt khi: Người đăng ký có lịch bận đột xuất, chủ động bấm hủy trước giờ hẹn.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- 3. TWO-COLUMN WORKFLOW SECTION -->
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-            <div class="lg:col-span-7 space-y-6">
-                <!-- Panel 3.1: Thông tin người hiến -->
-                <div class="bg-surface-container-lowest rounded-2xl p-6 lg:p-7 shadow-sm space-y-5">
-                    <div class="flex items-center justify-between">
-                        <h3 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2">
-                            <span class="material-symbols-outlined text-primary text-[24px]">folder_shared</span>
-                            Hồ Sơ Đăng Ký Y Tế
-                        </h3>
-                        <span class="text-xs px-2.5 py-1 bg-surface-container font-label-sm text-secondary rounded-md">Khớp dữ liệu UNETI</span>
-                    </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                        <div class="space-y-1">
-                            <span class="font-label-sm text-label-sm text-secondary">Họ và tên người hiến</span>
-                            <p class="font-title-md text-title-md text-on-surface font-semibold">Nguyễn Hoàng Nam</p>
-                        </div>
-                        <div class="space-y-1">
-                            <span class="font-label-sm text-label-sm text-secondary">Ngày sinh &amp; Giới tính</span>
-                            <p class="font-title-md text-title-md text-on-surface">14/08/2003 (23 tuổi) • Nam</p>
-                        </div>
-                        <div class="space-y-1">
-                            <span class="font-label-sm text-label-sm text-secondary">Số điện thoại liên hệ</span>
-                            <p class="font-title-md text-title-md text-on-surface">0988 123 456</p>
-                        </div>
-                        <div class="space-y-1">
-                            <span class="font-label-sm text-label-sm text-secondary">Cân nặng &amp; Chiều cao</span>
-                            <p class="font-title-md text-title-md text-on-surface">64 kg • 172 cm</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Panel 3.2: Checklist chuẩn bị -->
-                <div class="bg-surface-container-lowest rounded-2xl p-6 lg:p-7 shadow-sm space-y-5">
-                    <h3 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2">
-                        <span class="material-symbols-outlined text-primary text-[24px]">fact_check</span>
-                        Checklist Chuẩn Bị Trước Giờ Hẹn
-                    </h3>
+            <!-- 1. Hero Summary Card -->
+            <div class="w-full bg-surface-container-lowest rounded-2xl p-6 lg:p-8 shadow-sm relative overflow-hidden">
+                <div class="absolute -right-24 -top-24 w-80 h-80 rounded-full bg-primary/5 blur-3xl pointer-events-none"></div>
+                <div class="absolute -left-20 -bottom-20 w-60 h-60 rounded-full bg-primary-fixed/20 blur-2xl pointer-events-none"></div>
+                <div class="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-surface-container-high">
                     <div class="space-y-3">
-                        <label class="flex items-start gap-3.5 p-3 rounded-xl hover:bg-surface-container-low transition-colors cursor-pointer group">
-                            <input checked="" class="mt-1 w-5 h-5 rounded accent-primary text-on-primary cursor-pointer" type="checkbox">
-                            <div class="space-y-0.5">
-                                <span class="font-title-md text-title-md text-on-surface group-hover:text-primary transition-colors">Mang theo CCCD gắn chip hoặc App VNeID mức 2</span>
+                        <div class="flex flex-wrap items-center gap-3">
+                            <span class="font-headline-md text-headline-md text-on-surface tracking-tight font-bold">
+                                Mã hồ sơ: <span class="text-primary">@ticketCode</span>
+                            </span>
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full @statusBadgeClass font-label-sm text-label-sm font-semibold">
+                                <span class="material-symbols-outlined text-[16px]">verified</span>
+                                @trangThai.ToUpper()
+                            </span>
+                        </div>
+                        <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-6 text-on-surface-variant font-body-md text-body-md">
+                            <div class="flex items-center gap-2">
+                                <span class="material-symbols-outlined text-primary text-[20px]">campaign</span>
+                                <span class="font-semibold text-on-surface">Chiến dịch:</span> @(Model.DotHienMau?.TenDot ?? "Hiến máu tình nguyện UNETI")
                             </div>
-                        </label>
-                        <label class="flex items-start gap-3.5 p-3 rounded-xl hover:bg-surface-container-low transition-colors cursor-pointer group">
-                            <input checked="" class="mt-1 w-5 h-5 rounded accent-primary text-on-primary cursor-pointer" type="checkbox">
-                            <div class="space-y-0.5">
-                                <span class="font-title-md text-title-md text-on-surface group-hover:text-primary transition-colors">Đảm bảo ngủ đủ ít nhất 6 tiếng đêm hôm trước</span>
+                            <div class="flex items-center gap-2">
+                                <span class="material-symbols-outlined text-primary text-[20px]">badge</span>
+                                <span class="font-semibold text-on-surface">Người hiến:</span> @(Model.NguoiHienMau?.HoTen ?? "Người hiến máu")
+                                <span class="bg-surface-container-high text-secondary px-2 py-0.5 rounded text-[11px] font-label-sm">#NHM-@(Model.MaNguoiHien.ToString("D5"))</span>
                             </div>
-                        </label>
-                        <label class="flex items-start gap-3.5 p-3 rounded-xl hover:bg-surface-container-low transition-colors cursor-pointer group">
-                            <input class="mt-1 w-5 h-5 rounded accent-primary text-on-primary cursor-pointer" type="checkbox">
-                            <div class="space-y-0.5">
-                                <span class="font-title-md text-title-md text-on-surface group-hover:text-primary transition-colors">Ăn sáng nhẹ, tuyệt đối KHÔNG ăn dầu mỡ &amp; uống sữa</span>
-                            </div>
-                        </label>
-                        <label class="flex items-start gap-3.5 p-3 rounded-xl hover:bg-surface-container-low transition-colors cursor-pointer group">
-                            <input class="mt-1 w-5 h-5 rounded accent-primary text-on-primary cursor-pointer" type="checkbox">
-                            <div class="space-y-0.5">
-                                <span class="font-title-md text-title-md text-on-surface group-hover:text-primary transition-colors">Uống từ 300ml - 500ml nước ấm trước khi đến</span>
-                            </div>
-                        </label>
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-3">
+                        <a asp-controller="NguoiHienMau" asp-action="HoSoCaNhan" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-surface-container-low hover:bg-surface-container text-on-surface font-label-md text-label-md transition-all shadow-sm">
+                            <span class="material-symbols-outlined text-[18px] text-primary">person</span>
+                            Hồ sơ cá nhân
+                        </a>
+                        @if (trangThai == "Chờ xác nhận" || trangThai == "Đã xác nhận")
+                        {
+                            <button class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 font-label-md text-label-md transition-all cursor-pointer font-semibold border border-rose-200" onclick="toggleRescheduleModal()">
+                                <span class="material-symbols-outlined text-[18px]">cancel</span>
+                                Hủy phiếu đăng ký
+                            </button>
+                        }
+                    </div>
+                </div>
+
+                <!-- Quick Metrics Strip -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-6">
+                    <div class="flex items-start gap-3 p-3.5 rounded-xl bg-surface-container-low/70">
+                        <div class="w-10 h-10 rounded-xl bg-primary-fixed flex items-center justify-center text-primary shrink-0">
+                            <span class="material-symbols-outlined text-[22px]">schedule</span>
+                        </div>
+                        <div>
+                            <div class="font-label-sm text-label-sm text-secondary uppercase">Khung giờ hẹn</div>
+                            <div class="font-title-md text-title-md text-on-surface mt-0.5">@(Model.GhiChu ?? "Ca 1: 07:30 - 09:30")</div>
+                            <div class="font-body-sm text-body-sm text-on-surface-variant">@(Model.DotHienMau?.NgayBatDauDangKy.ToString("dd/MM/yyyy") ?? Model.NgayNop.ToString("dd/MM/yyyy"))</div>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-3 p-3.5 rounded-xl bg-surface-container-low/70">
+                        <div class="w-10 h-10 rounded-xl bg-secondary-fixed flex items-center justify-center text-secondary shrink-0">
+                            <span class="material-symbols-outlined text-[22px]">pin_drop</span>
+                        </div>
+                        <div>
+                            <div class="font-label-sm text-label-sm text-secondary uppercase">Địa điểm tiếp nhận</div>
+                            <div class="font-title-md text-title-md text-on-surface mt-0.5 truncate max-w-[180px]">@(Model.DotHienMau?.DonViToChuc?.TenDonViToChuc ?? "UNETI")</div>
+                            <div class="font-body-sm text-body-sm text-on-surface-variant truncate max-w-[200px]">Cơ sở UNETI Hà Nội</div>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-3 p-3.5 rounded-xl bg-surface-container-low/70">
+                        <div class="w-10 h-10 rounded-xl bg-rose-100 flex items-center justify-center text-primary-container shrink-0">
+                            <span class="material-symbols-outlined text-[22px]">water_drop</span>
+                        </div>
+                        <div>
+                            <div class="font-label-sm text-label-sm text-secondary uppercase">Nhóm máu &amp; Thể tích</div>
+                            <div class="font-title-md text-title-md text-primary font-bold mt-0.5">@(string.IsNullOrEmpty(Model.NguoiHienMau?.NhomMau) ? "O Rh(+)" : Model.NguoiHienMau.NhomMau) • @(Model.LyDoHienMau ?? "350ml")</div>
+                            <div class="font-body-sm text-body-sm text-on-surface-variant">Hiến máu toàn phần</div>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-3 p-3.5 rounded-xl bg-surface-container-low/70">
+                        <div class="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-700 shrink-0">
+                            <span class="material-symbols-outlined text-[22px]">qr_code_scanner</span>
+                        </div>
+                        <div>
+                            <div class="font-label-sm text-label-sm text-secondary uppercase">Cổng Check-in</div>
+                            <div class="font-title-md text-title-md text-emerald-800 font-bold mt-0.5">Bàn tiếp nhận Số 01</div>
+                            <div class="font-body-sm text-body-sm text-emerald-700">Khám sơ bộ &amp; Đo HA</div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- CỘT PHẢI (5 cols) - E-Ticket QR Code -->
-            <div class="lg:col-span-5 space-y-6">
-                <div class="bg-gradient-to-b from-primary via-primary-container to-tertiary-container rounded-3xl p-6 text-on-primary shadow-xl shadow-primary/20 relative overflow-hidden">
-                    <div class="flex items-center justify-between pb-4 border-b border-white/20">
-                        <div class="flex items-center gap-2">
-                            <span class="material-symbols-outlined text-[24px]">bloodtype</span>
-                            <span class="font-headline-sm text-headline-sm font-bold tracking-tight">VITALIS PASS</span>
+            <!-- 2. INTERACTIVE STATUS TIMELINE -->
+            <div class="w-full bg-surface-container-lowest rounded-2xl p-6 lg:p-8 shadow-sm space-y-6">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-surface-container-high">
+                    <div>
+                        <span class="font-label-sm text-label-sm uppercase tracking-wider text-primary font-bold">Lộ Trình Minh Bạch</span>
+                        <h2 class="font-headline-md text-headline-md text-on-surface mt-0.5">Quy Trình 5 Chặng &amp; Trạng Thái Theo Thời Gian Thực</h2>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button class="px-3.5 py-1.5 rounded-lg text-label-md font-label-md bg-primary text-on-primary shadow-sm transition-all" id="btnStandard" onclick="setFlowView('standard')">
+                            Lộ trình thực tế
+                        </button>
+                        <button class="px-3.5 py-1.5 rounded-lg text-label-md font-label-md bg-surface-container-low hover:bg-surface-container text-secondary transition-all" id="btnBranches" onclick="setFlowView('branches')">
+                            Sơ đồ rẽ nhánh ngoại lệ
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Main Interactive Horizontal 5-Step Stepper -->
+                <div class="pt-4 pb-2" id="standardTimelineView">
+                    @if (trangThai == "Đã hủy")
+                    {
+                        <div class="p-6 rounded-2xl bg-rose-50 border border-rose-200 text-center space-y-2">
+                            <span class="material-symbols-outlined text-rose-600 text-[40px]">cancel</span>
+                            <h3 class="font-headline-sm text-base text-rose-800 font-bold">Phiếu Đăng Ký Đã Hủy</h3>
+                            <p class="font-body-sm text-xs text-rose-700 max-w-md mx-auto">
+                                @(Model.GhiChuXacNhan ?? "Phiếu đăng ký đã được hủy thành công theo yêu cầu của bạn.")
+                            </p>
                         </div>
-                        <span class="px-2.5 py-1 rounded-full bg-white/20 text-on-primary text-xs font-label-sm font-semibold tracking-wide uppercase">
-                            Check-in 1 Chạm
+                    }
+                    else
+                    {
+                        <div class="grid grid-cols-1 md:grid-cols-5 gap-6 relative">
+                            <!-- Step 1 -->
+                            <div class="relative z-10 flex flex-col items-start md:items-center text-left md:text-center">
+                                <div class="w-14 h-14 rounded-2xl @(stepNumber >= 1 ? "bg-emerald-600 text-on-primary" : "bg-surface-container-high text-secondary") flex items-center justify-center shadow-md shadow-emerald-500/20 mb-3">
+                                    <span class="material-symbols-outlined text-[28px]">task_alt</span>
+                                </div>
+                                <span class="inline-block px-2.5 py-0.5 rounded-full @(stepNumber >= 1 ? "bg-emerald-100 text-emerald-800" : "bg-surface-container text-secondary") font-label-sm text-[11px] font-bold mb-1">
+                                    CHẶNG 1 • @(stepNumber >= 1 ? "HOÀN TẤT" : "CHỜ")
+                                </span>
+                                <h3 class="font-title-md text-title-md text-on-surface font-bold">Đăng ký hồ sơ</h3>
+                                <p class="font-body-sm text-body-sm text-secondary mt-1">@Model.NgayNop.ToString("dd/MM/yyyy • HH:mm")</p>
+                            </div>
+
+                            <!-- Step 2 -->
+                            <div class="relative z-10 flex flex-col items-start md:items-center text-left md:text-center">
+                                <div class="w-14 h-14 rounded-2xl @(stepNumber >= 2 ? "bg-emerald-600 text-on-primary" : stepNumber == 1 ? "bg-primary text-on-primary ring-4 ring-primary-fixed animate-bounce" : "bg-surface-container-high text-secondary") flex items-center justify-center mb-3">
+                                    <span class="material-symbols-outlined text-[28px]">verified_user</span>
+                                </div>
+                                <span class="inline-block px-2.5 py-0.5 rounded-full @(stepNumber >= 2 ? "bg-emerald-100 text-emerald-800" : "bg-surface-container text-secondary") font-label-sm text-[11px] font-bold mb-1">
+                                    CHẶNG 2 • @(stepNumber >= 2 ? "HOÀN TẤT" : stepNumber == 1 ? "ĐANG XỬ LÝ" : "CHỜ")
+                                </span>
+                                <h3 class="font-title-md text-title-md text-on-surface font-bold">Phê duyệt y tế</h3>
+                                <p class="font-body-sm text-body-sm text-secondary mt-1">@(Model.NgayXuLy.HasValue ? Model.NgayXuLy.Value.ToString("dd/MM/yyyy • HH:mm") : "Tự động xét duyệt")</p>
+                            </div>
+
+                            <!-- Step 3 -->
+                            <div class="relative z-10 flex flex-col items-start md:items-center text-left md:text-center">
+                                <div class="w-14 h-14 rounded-2xl @(stepNumber >= 3 ? "bg-emerald-600 text-on-primary" : stepNumber == 2 ? "bg-primary text-on-primary ring-4 ring-primary-fixed" : "bg-surface-container-high text-secondary") flex items-center justify-center mb-3">
+                                    <span class="material-symbols-outlined text-[28px]">stethoscope</span>
+                                </div>
+                                <span class="inline-block px-2.5 py-0.5 rounded-full @(stepNumber >= 3 ? "bg-emerald-100 text-emerald-800" : "bg-surface-container text-secondary") font-label-sm text-[11px] font-bold mb-1">
+                                    CHẶNG 3 • @(stepNumber >= 3 ? "HOÀN TẤT" : "KHÁM LÂM SÀNG")
+                                </span>
+                                <h3 class="font-title-md text-title-md text-on-surface font-bold">Khám sàng lọc tại chỗ</h3>
+                                <p class="font-body-sm text-body-sm text-secondary mt-1">@(Model.DotHienMau?.NgayBatDauDangKy.ToString("dd/MM/yyyy") ?? "Tại điểm hiến")</p>
+                            </div>
+
+                            <!-- Step 4 -->
+                            <div class="relative z-10 flex flex-col items-start md:items-center text-left md:text-center opacity-85">
+                                <div class="w-14 h-14 rounded-2xl @(stepNumber >= 4 ? "bg-emerald-600 text-on-primary" : "bg-surface-container-high text-secondary") flex items-center justify-center mb-3">
+                                    <span class="material-symbols-outlined text-[28px]">bloodtype</span>
+                                </div>
+                                <span class="inline-block px-2.5 py-0.5 rounded-full @(stepNumber >= 4 ? "bg-emerald-100 text-emerald-800" : "bg-surface-container text-secondary") font-label-sm text-[11px] font-semibold mb-1">
+                                    CHẶNG 4 • @(stepNumber >= 4 ? "HOÀN TẤT" : "DỰ KIẾN")
+                                </span>
+                                <h3 class="font-title-md text-title-md text-on-surface">Tiếp nhận lấy máu</h3>
+                                <p class="font-body-sm text-body-sm text-secondary mt-1">250 - 350 - 450 mL</p>
+                            </div>
+
+                            <!-- Step 5 -->
+                            <div class="relative z-10 flex flex-col items-start md:items-center text-left md:text-center opacity-85">
+                                <div class="w-14 h-14 rounded-2xl @(stepNumber >= 5 ? "bg-emerald-600 text-on-primary" : "bg-surface-container-high text-secondary") flex items-center justify-center mb-3">
+                                    <span class="material-symbols-outlined text-[28px]">card_membership</span>
+                                </div>
+                                <span class="inline-block px-2.5 py-0.5 rounded-full @(stepNumber >= 5 ? "bg-emerald-100 text-emerald-800" : "bg-surface-container text-secondary") font-label-sm text-[11px] font-semibold mb-1">
+                                    CHẶNG 5 • @(stepNumber >= 5 ? "HOÀN TẤT" : "DỰ KIẾN")
+                                </span>
+                                <h3 class="font-title-md text-title-md text-on-surface">Cấp GCN điện tử</h3>
+                                <p class="font-body-sm text-body-sm text-secondary mt-1">Tích hợp VNeID</p>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <!-- Alternate View: Sơ đồ rẽ nhánh ngoại lệ -->
+                <div class="hidden pt-4 pb-2 space-y-4" id="branchesView">
+                    <div class="p-4 rounded-xl bg-amber-50 text-amber-900 font-body-sm text-body-sm flex items-start gap-3">
+                        <span class="material-symbols-outlined text-amber-700 text-[22px] mt-0.5 shrink-0">account_tree</span>
+                        <div>
+                            <span class="font-semibold block">Hệ thống xử lý kịch bản y tế thông minh (Exception Pathways)</span>
+                            Để đảm bảo an toàn tuyệt đối cho người hiến và nguồn máu tiếp nhận, hệ thống hỗ trợ 3 nhánh tự động:
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="p-5 rounded-xl bg-surface-container-low flex flex-col justify-between space-y-3">
+                            <div class="space-y-2">
+                                <div class="flex items-center justify-between">
+                                    <span class="px-2.5 py-1 rounded bg-rose-100 text-error font-label-sm text-label-sm font-bold">Nhánh Ngoại lệ A</span>
+                                    <span class="material-symbols-outlined text-error text-[20px]">cancel</span>
+                                </div>
+                                <h4 class="font-title-md text-title-md text-on-surface font-bold">Từ chối duyệt sơ bộ</h4>
+                                <p class="font-body-sm text-body-sm text-on-surface-variant">
+                                    Kích hoạt khi: Khoảng cách giữa 2 lần hiến chưa đủ 84 ngày, hoặc người hiến đang dùng kháng sinh.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="p-5 rounded-xl bg-surface-container-low flex flex-col justify-between space-y-3">
+                            <div class="space-y-2">
+                                <div class="flex items-center justify-between">
+                                    <span class="px-2.5 py-1 rounded bg-amber-100 text-amber-800 font-label-sm text-label-sm font-bold">Nhánh Ngoại lệ B</span>
+                                    <span class="material-symbols-outlined text-amber-700 text-[20px]">health_and_safety</span>
+                                </div>
+                                <h4 class="font-title-md text-title-md text-on-surface font-bold">Hoãn hiến tại bàn khám</h4>
+                                <p class="font-body-sm text-body-sm text-on-surface-variant">
+                                    Kích hoạt khi: Bác sĩ đo HA không ổn định (&lt;90 hoặc &gt;140mmHg), thiếu máu Hb &lt; 120g/l.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="p-5 rounded-xl bg-surface-container-low flex flex-col justify-between space-y-3">
+                            <div class="space-y-2">
+                                <div class="flex items-center justify-between">
+                                    <span class="px-2.5 py-1 rounded bg-surface-container-high text-secondary font-label-sm text-label-sm font-bold">Nhánh Ngoại lệ C</span>
+                                    <span class="material-symbols-outlined text-secondary text-[20px]">event_busy</span>
+                                </div>
+                                <h4 class="font-title-md text-title-md text-on-surface font-bold">Người hiến hủy ca hẹn</h4>
+                                <p class="font-body-sm text-body-sm text-on-surface-variant">
+                                    Kích hoạt khi: Người đăng ký có lịch bận đột xuất, chủ động bấm hủy trước giờ hẹn.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CLINICAL BLOOD DONATION RESULT CARD (MODULE 5) -->
+            @if (Model.KetQuaHienMau != null || trangThai == "Hiến máu thành công" || trangThai == "Không đủ điều kiện hiến")
+            {
+                var isSuccessRes = Model.KetQuaHienMau?.KetQua == "Hiến máu thành công" || trangThai == "Hiến máu thành công";
+                <div class="w-full bg-surface-container-lowest rounded-2xl p-6 lg:p-8 shadow-sm space-y-4 border @(isSuccessRes ? "border-emerald-200" : "border-rose-200")">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-surface-container-high">
+                        <div class="flex items-center gap-2.5">
+                            <span class="material-symbols-outlined @(isSuccessRes ? "text-emerald-600" : "text-rose-600") text-[28px]">
+                                @(isSuccessRes ? "verified" : "health_and_safety")
+                            </span>
+                            <div>
+                                <span class="font-label-sm text-label-sm uppercase tracking-wider text-secondary font-bold">Kết Quả Lâm Sàng &amp; Tiếp Nhận Máu</span>
+                                <h3 class="font-headline-sm text-lg font-bold text-on-surface">
+                                    @(Model.KetQuaHienMau?.KetQua ?? trangThai)
+                                </h3>
+                            </div>
+                        </div>
+                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold @(isSuccessRes ? "bg-emerald-100 text-emerald-800" : "bg-rose-100 text-rose-800")">
+                            <span class="material-symbols-outlined text-[14px]">@(isSuccessRes ? "check_circle" : "cancel")</span>
+                            @(Model.KetQuaHienMau?.KetQua ?? trangThai)
                         </span>
                     </div>
-                    <div class="py-6 flex flex-col items-center text-center">
-                        <div class="p-4 rounded-2xl bg-surface-container-lowest text-on-surface shadow-2xl relative group">
-                            <svg class="w-44 h-44" fill="currentColor" viewBox="0 0 100 100">
-                                <path d="M5,5 h30 v30 h-30 z M10,10 v20 h20 v-20 z M15,15 h10 v10 h-10 z"></path>
-                                <path d="M65,5 h30 v30 h-30 z M70,10 v20 h20 v-20 z M75,15 h10 v10 h-10 z"></path>
-                                <path d="M5,65 h30 v30 h-30 z M10,70 v20 h20 v-20 z M15,75 h10 v10 h-10 z"></path>
-                                <rect height="6" width="6" x="42" y="8"></rect>
-                                <rect height="6" width="6" x="52" y="16"></rect>
-                                <rect height="6" width="6" x="42" y="24"></rect>
-                                <rect height="6" width="6" x="8" y="42"></rect>
-                                <rect height="6" width="6" x="18" y="50"></rect>
-                                <circle cx="50" cy="50" fill="#ffffff" r="13"></circle>
-                                <circle cx="50" cy="50" fill="#c6283d" r="11"></circle>
-                            </svg>
-                            <div class="text-[11px] font-label-sm text-secondary mt-2 tracking-widest font-mono">
-                                CODE: @ticketCode
+
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
+                        <div class="p-4 rounded-xl bg-surface-container-low space-y-1">
+                            <span class="font-label-sm text-xs text-secondary block uppercase">Đánh giá chất lượng</span>
+                            <div class="flex items-center gap-1.5 text-on-surface font-bold text-lg">
+                                @if (Model.KetQuaHienMau?.DiemDanhGia.HasValue == true)
+                                {
+                                    <span class="material-symbols-outlined text-amber-500 text-[20px]">star</span>
+                                    <span>@Model.KetQuaHienMau.DiemDanhGia.Value.ToString("0.0")</span>
+                                    <span class="text-xs text-secondary font-normal">/ 10 điểm</span>
+                                }
+                                else
+                                {
+                                    <span class="text-xs text-secondary font-normal italic">Đạt tiêu chuẩn</span>
+                                }
                             </div>
                         </div>
-                        <div class="mt-4 space-y-1">
-                            <p class="font-title-md text-title-md font-bold text-on-primary">
-                                Nguyễn Hoàng Nam • O Rh(+)
-                            </p>
-                            <p class="text-xs text-on-primary/80">
-                                Khung giờ hiệu lực: <strong class="text-on-primary">07:30 – 09:30, 15/11/2026</strong>
-                            </p>
+
+                        <div class="p-4 rounded-xl bg-surface-container-low space-y-1">
+                            <span class="font-label-sm text-xs text-secondary block uppercase">Thể tích tiếp nhận</span>
+                            <div class="text-on-surface font-bold text-lg text-primary">
+                                @(isSuccessRes ? (Model.LyDoHienMau ?? "350 mL") : "0 mL (Hoãn hiến)")
+                            </div>
+                        </div>
+
+                        <div class="p-4 rounded-xl bg-surface-container-low space-y-1">
+                            <span class="font-label-sm text-xs text-secondary block uppercase">Ngày cập nhật kết quả</span>
+                            <div class="text-on-surface font-semibold text-sm">
+                                @(Model.KetQuaHienMau?.NgayCapNhat?.ToString("dd/MM/yyyy HH:mm") ?? Model.NgayXuLy?.ToString("dd/MM/yyyy HH:mm") ?? "Hôm nay")
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(Model.KetQuaHienMau?.NhanXet))
+                    {
+                        <div class="p-4 rounded-xl bg-surface-container-low/70 border border-surface-container space-y-1">
+                            <span class="font-label-sm text-xs text-secondary block font-bold">Ghi nhận / Lời dặn của Bác sĩ:</span>
+                            <p class="text-body-sm text-on-surface leading-relaxed">@Model.KetQuaHienMau.NhanXet</p>
+                        </div>
+                    }
+                </div>
+            }
+
+            <!-- 3. TWO-COLUMN WORKFLOW SECTION -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                <div class="lg:col-span-7 space-y-6">
+                    <!-- Panel 3.1: Thông tin người hiến -->
+                    <div class="bg-surface-container-lowest rounded-2xl p-6 lg:p-7 shadow-sm space-y-5">
+                        <div class="flex items-center justify-between">
+                            <h3 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2">
+                                <span class="material-symbols-outlined text-primary text-[24px]">folder_shared</span>
+                                Hồ Sơ Đăng Ký Y Tế
+                            </h3>
+                            <span class="text-xs px-2.5 py-1 bg-surface-container font-label-sm text-secondary rounded-md">Đồng bộ cơ sở dữ liệu UNETI</span>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                            <div class="space-y-1">
+                                <span class="font-label-sm text-label-sm text-secondary">Họ và tên người hiến</span>
+                                <p class="font-title-md text-title-md text-on-surface font-semibold">@(Model.NguoiHienMau?.HoTen ?? "Chưa cập nhật")</p>
+                            </div>
+                            <div class="space-y-1">
+                                <span class="font-label-sm text-label-sm text-secondary">Ngày sinh &amp; Giới tính</span>
+                                <p class="font-title-md text-title-md text-on-surface">@(Model.NguoiHienMau?.NgaySinh?.ToString("dd/MM/yyyy") ?? "Chưa rõ") • @(Model.NguoiHienMau?.GioiTinh ?? "Nam")</p>
+                            </div>
+                            <div class="space-y-1">
+                                <span class="font-label-sm text-label-sm text-secondary">Số điện thoại liên hệ</span>
+                                <p class="font-title-md text-title-md text-on-surface">@(Model.NguoiHienMau?.SoDienThoai ?? "Chưa có SĐT")</p>
+                            </div>
+                            <div class="space-y-1">
+                                <span class="font-label-sm text-label-sm text-secondary">Cân nặng ghi nhận</span>
+                                <p class="font-title-md text-title-md text-on-surface">@(Model.NguoiHienMau?.CanNang ?? 64) kg</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Panel 3.2: Checklist chuẩn bị -->
+                    <div class="bg-surface-container-lowest rounded-2xl p-6 lg:p-7 shadow-sm space-y-5">
+                        <h3 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2">
+                            <span class="material-symbols-outlined text-primary text-[24px]">fact_check</span>
+                            Checklist Chuẩn Bị Trước Giờ Hẹn
+                        </h3>
+                        <div class="space-y-3">
+                            <label class="flex items-start gap-3.5 p-3 rounded-xl hover:bg-surface-container-low transition-colors cursor-pointer group">
+                                <input checked="" class="mt-1 w-5 h-5 rounded accent-primary text-on-primary cursor-pointer" type="checkbox">
+                                <div class="space-y-0.5">
+                                    <span class="font-title-md text-title-md text-on-surface group-hover:text-primary transition-colors">Mang theo CCCD gắn chip hoặc App VNeID mức 2</span>
+                                </div>
+                            </label>
+                            <label class="flex items-start gap-3.5 p-3 rounded-xl hover:bg-surface-container-low transition-colors cursor-pointer group">
+                                <input checked="" class="mt-1 w-5 h-5 rounded accent-primary text-on-primary cursor-pointer" type="checkbox">
+                                <div class="space-y-0.5">
+                                    <span class="font-title-md text-title-md text-on-surface group-hover:text-primary transition-colors">Đảm bảo ngủ đủ ít nhất 6 tiếng đêm hôm trước</span>
+                                </div>
+                            </label>
+                            <label class="flex items-start gap-3.5 p-3 rounded-xl hover:bg-surface-container-low transition-colors cursor-pointer group">
+                                <input class="mt-1 w-5 h-5 rounded accent-primary text-on-primary cursor-pointer" type="checkbox">
+                                <div class="space-y-0.5">
+                                    <span class="font-title-md text-title-md text-on-surface group-hover:text-primary transition-colors">Ăn sáng nhẹ, tuyệt đối KHÔNG ăn dầu mỡ &amp; uống sữa</span>
+                                </div>
+                            </label>
+                            <label class="flex items-start gap-3.5 p-3 rounded-xl hover:bg-surface-container-low transition-colors cursor-pointer group">
+                                <input class="mt-1 w-5 h-5 rounded accent-primary text-on-primary cursor-pointer" type="checkbox">
+                                <div class="space-y-0.5">
+                                    <span class="font-title-md text-title-md text-on-surface group-hover:text-primary transition-colors">Uống từ 300ml - 500ml nước ấm trước khi đến</span>
+                                </div>
+                            </label>
                         </div>
                     </div>
                 </div>
 
-                <!-- BÁC SĨ PHỤ TRÁCH -->
-                <div class="bg-surface-container-lowest rounded-2xl p-6 shadow-sm space-y-4">
-                    <div class="flex items-center justify-between">
-                        <h4 class="font-headline-sm text-headline-sm text-on-surface">Bác Sĩ Phụ Trách</h4>
-                        <span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-xs font-semibold">Trực điểm khám</span>
+                <!-- CỘT PHẢI (5 cols) - E-Ticket QR Code -->
+                <div class="lg:col-span-5 space-y-6">
+                    <div class="bg-gradient-to-b from-primary via-primary-container to-tertiary-container rounded-3xl p-6 text-on-primary shadow-xl shadow-primary/20 relative overflow-hidden">
+                        <div class="flex items-center justify-between pb-4 border-b border-white/20">
+                            <div class="flex items-center gap-2">
+                                <span class="material-symbols-outlined text-[24px]">bloodtype</span>
+                                <span class="font-headline-sm text-headline-sm font-bold tracking-tight">VITALIS PASS</span>
+                            </div>
+                            <span class="px-2.5 py-1 rounded-full bg-white/20 text-on-primary text-xs font-label-sm font-semibold tracking-wide uppercase">
+                                Check-in 1 Chạm
+                            </span>
+                        </div>
+                        <div class="py-6 flex flex-col items-center text-center">
+                            <div class="p-4 rounded-2xl bg-surface-container-lowest text-on-surface shadow-2xl relative group">
+                                <svg class="w-44 h-44" fill="currentColor" viewBox="0 0 100 100">
+                                    <path d="M5,5 h30 v30 h-30 z M10,10 v20 h20 v-20 z M15,15 h10 v10 h-10 z"></path>
+                                    <path d="M65,5 h30 v30 h-30 z M70,10 v20 h20 v-20 z M75,15 h10 v10 h-10 z"></path>
+                                    <path d="M5,65 h30 v30 h-30 z M10,70 v20 h20 v-20 z M15,75 h10 v10 h-10 z"></path>
+                                    <rect height="6" width="6" x="42" y="8"></rect>
+                                    <rect height="6" width="6" x="52" y="16"></rect>
+                                    <rect height="6" width="6" x="42" y="24"></rect>
+                                    <rect height="6" width="6" x="8" y="42"></rect>
+                                    <rect height="6" width="6" x="18" y="50"></rect>
+                                    <circle cx="50" cy="50" fill="#ffffff" r="13"></circle>
+                                    <circle cx="50" cy="50" fill="#c6283d" r="11"></circle>
+                                </svg>
+                                <div class="text-[11px] font-label-sm text-secondary mt-2 tracking-widest font-mono font-bold">
+                                    CODE: @ticketCode
+                                </div>
+                            </div>
+                            <div class="mt-4 space-y-1">
+                                <p class="font-title-md text-title-md font-bold text-on-primary">
+                                    @(Model.NguoiHienMau?.HoTen ?? "Người hiến máu") • @(string.IsNullOrEmpty(Model.NguoiHienMau?.NhomMau) ? "O Rh(+)" : Model.NguoiHienMau.NhomMau)
+                                </p>
+                                <p class="text-xs text-on-primary/80">
+                                    Khung giờ hiệu lực: <strong class="text-on-primary">@(Model.GhiChu ?? "Ca 1: 07:30 - 09:30")</strong>
+                                </p>
+                            </div>
+                        </div>
                     </div>
-                    <div class="flex items-center gap-4 pt-1">
-                        <img class="w-16 h-16 rounded-2xl object-cover shrink-0 shadow-sm" src="~/images/doctor_nurse.png" alt="BS. CKI Trần Mai Linh">
-                        <div class="space-y-1">
-                            <p class="font-title-md text-title-md text-on-surface font-bold">BS. CKI Trần Mai Linh</p>
-                            <p class="font-body-sm text-body-sm text-secondary">Trưởng kíp khám sàng lọc UNETI</p>
-                            <p class="text-xs text-primary font-medium">Bệnh viện Huyết học Truyền máu</p>
+
+                    <!-- BÁC SĨ PHỤ TRÁCH -->
+                    <div class="bg-surface-container-lowest rounded-2xl p-6 shadow-sm space-y-4">
+                        <div class="flex items-center justify-between">
+                            <h4 class="font-headline-sm text-headline-sm text-on-surface">Bác Sĩ Phụ Trách</h4>
+                            <span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-xs font-semibold">Trực điểm khám</span>
+                        </div>
+                        <div class="flex items-center gap-4 pt-1">
+                            <img class="w-16 h-16 rounded-2xl object-cover shrink-0 shadow-sm" src="~/images/doctor_nurse.png" alt="BS. CKI Trần Mai Linh">
+                            <div class="space-y-1">
+                                <p class="font-title-md text-title-md text-on-surface font-bold">BS. CKI Trần Mai Linh</p>
+                                <p class="font-body-sm text-body-sm text-secondary">Trưởng kíp khám sàng lọc UNETI</p>
+                                <p class="text-xs text-primary font-medium">Bệnh viện Huyết học Truyền máu</p>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <!-- MODAL: ĐỔI CA HẸN -->
-    <div class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-inverse-surface/40 backdrop-blur-sm transition-opacity" id="rescheduleModal">
-        <div class="bg-surface-container-lowest max-w-lg w-full rounded-3xl p-6 lg:p-8 shadow-2xl space-y-6">
-            <div class="flex items-center justify-between pb-3 border-b border-surface-container-high">
-                <div class="flex items-center gap-2">
-                    <span class="material-symbols-outlined text-primary text-[24px]">edit_calendar</span>
-                    <h3 class="font-headline-sm text-headline-sm text-on-surface">Thay Đổi / Hủy Ca Hẹn</h3>
+            <!-- MODAL: HỦY PHIẾU ĐĂNG KÝ -->
+            <div class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-inverse-surface/40 backdrop-blur-sm transition-opacity" id="rescheduleModal">
+                <div class="bg-surface-container-lowest max-w-lg w-full rounded-3xl p-6 lg:p-8 shadow-2xl space-y-6">
+                    <div class="flex items-center justify-between pb-3 border-b border-surface-container-high">
+                        <div class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-rose-600 text-[24px]">cancel</span>
+                            <h3 class="font-headline-sm text-headline-sm text-on-surface">Xác Nhận Hủy Phiếu Đăng Ký</h3>
+                        </div>
+                        <button class="w-8 h-8 rounded-full hover:bg-surface-container flex items-center justify-center text-secondary" onclick="toggleRescheduleModal()">
+                            <span class="material-symbols-outlined text-[20px]">close</span>
+                        </button>
+                    </div>
+                    <p class="font-body-md text-body-md text-on-surface-variant">
+                        Bạn có chắc chắn muốn hủy phiếu đăng ký <strong class="text-on-surface">@ticketCode</strong> cho đợt hiến máu <strong class="text-primary">@(Model.DotHienMau?.TenDot)</strong> không?
+                    </p>
+                    <div class="p-4 rounded-xl bg-rose-50 text-rose-800 text-xs leading-relaxed border border-rose-200">
+                        <strong>Lưu ý:</strong> Sau khi hủy, vị trí đặt hẹn sẽ được nhường cho tình nguyện viên khác. Bạn có thể đăng ký lại bất kỳ lúc nào nếu đợt hiến còn mở.
+                    </div>
+                    
+                    <form asp-controller="DangKy" asp-action="Huy" method="post" class="space-y-4">
+                        <input type="hidden" name="id" value="@Model.MaPhieu" />
+
+                        <div class="flex items-center justify-end gap-3 pt-4 border-t border-surface-container-high">
+                            <button type="button" class="px-4 py-2.5 rounded-xl text-on-surface font-label-md text-label-md hover:bg-surface-container transition-colors" onclick="toggleRescheduleModal()">
+                                Giữ lại phiếu
+                            </button>
+                            <button type="submit" class="px-5 py-2.5 rounded-xl bg-rose-600 text-white font-label-md text-label-md hover:bg-rose-700 transition-all shadow-md font-bold">
+                                Xác nhận hủy phiếu
+                            </button>
+                        </div>
+                    </form>
                 </div>
-                <button class="w-8 h-8 rounded-full hover:bg-surface-container flex items-center justify-center text-secondary" onclick="toggleRescheduleModal()">
-                    <span class="material-symbols-outlined text-[20px]">close</span>
-                </button>
             </div>
-            <p class="font-body-md text-body-md text-on-surface-variant">
-                Quý khách đang thao tác cho hồ sơ <strong class="text-on-surface">@ticketCode</strong>. Vui lòng chọn hành động:
-            </p>
-            <div class="space-y-3">
-                <label class="flex items-start gap-3 p-3.5 rounded-xl border border-surface-container-high hover:border-primary/40 cursor-pointer transition-all">
-                    <input checked="" class="mt-1 w-4 h-4 accent-primary" name="rescheduleAction" type="radio">
-                    <div>
-                        <span class="font-title-md text-title-md text-on-surface block">Chuyển sang khung giờ khác cùng ngày</span>
-                        <p class="text-xs text-secondary mt-0.5">Ca 09:30 - 11:30 ngày 15/11/2026 (Còn 18 chỗ trống)</p>
-                    </div>
-                </label>
-                <label class="flex items-start gap-3 p-3.5 rounded-xl border border-surface-container-high hover:border-error/40 cursor-pointer transition-all">
-                    <input class="mt-1 w-4 h-4 accent-error" name="rescheduleAction" type="radio">
-                    <div>
-                        <span class="font-title-md text-title-md text-error block">Hủy phiếu đăng ký này</span>
-                    </div>
-                </label>
-            </div>
-            <div class="flex items-center justify-end gap-3 pt-4 border-t border-surface-container-high">
-                <button class="px-4 py-2.5 rounded-xl text-on-surface font-label-md text-label-md hover:bg-surface-container transition-colors" onclick="toggleRescheduleModal()">
-                    Đóng
-                </button>
-                <button class="px-5 py-2.5 rounded-xl bg-primary text-on-primary font-label-md text-label-md hover:bg-primary-container transition-all shadow-md" onclick="alert('Yêu cầu điều chỉnh ca hẹn đã được gửi đến Ban Điều Phối Vitalis.'); toggleRescheduleModal();">
-                    Xác nhận thay đổi
-                </button>
-            </div>
-        </div>
+        }
     </div>
 </div>
 
@@ -423,22 +576,24 @@
             const btnStandard = document.getElementById('btnStandard');
             const btnBranches = document.getElementById('btnBranches');
 
+            if (!standardView || !branchesView) return;
+
             if (type === 'standard') {
                 standardView.classList.remove('hidden');
                 branchesView.classList.add('hidden');
-                btnStandard.className = 'px-3.5 py-1.5 rounded-lg text-label-md font-label-md bg-primary text-on-primary shadow-sm transition-all';
-                btnBranches.className = 'px-3.5 py-1.5 rounded-lg text-label-md font-label-md bg-surface-container-low hover:bg-surface-container text-secondary transition-all';
+                if (btnStandard) btnStandard.className = 'px-3.5 py-1.5 rounded-lg text-label-md font-label-md bg-primary text-on-primary shadow-sm transition-all';
+                if (btnBranches) btnBranches.className = 'px-3.5 py-1.5 rounded-lg text-label-md font-label-md bg-surface-container-low hover:bg-surface-container text-secondary transition-all';
             } else {
                 standardView.classList.add('hidden');
                 branchesView.classList.remove('hidden');
-                btnBranches.className = 'px-3.5 py-1.5 rounded-lg text-label-md font-label-md bg-primary text-on-primary shadow-sm transition-all';
-                btnStandard.className = 'px-3.5 py-1.5 rounded-lg text-label-md font-label-md bg-surface-container-low hover:bg-surface-container text-secondary transition-all';
+                if (btnBranches) btnBranches.className = 'px-3.5 py-1.5 rounded-lg text-label-md font-label-md bg-primary text-on-primary shadow-sm transition-all';
+                if (btnStandard) btnStandard.className = 'px-3.5 py-1.5 rounded-lg text-label-md font-label-md bg-surface-container-low hover:bg-surface-container text-secondary transition-all';
             }
         }
 
         function toggleRescheduleModal() {
             const modal = document.getElementById('rescheduleModal');
-            modal.classList.toggle('hidden');
+            if (modal) modal.classList.toggle('hidden');
         }
     </script>
 }
