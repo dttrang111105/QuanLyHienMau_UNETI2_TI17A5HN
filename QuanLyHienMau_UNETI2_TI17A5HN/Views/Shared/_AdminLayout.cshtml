@@ -165,7 +165,7 @@
                         <span class="material-symbols-outlined text-[20px]">event_available</span>
                         <span class="font-label-md text-label-md">Đợt hiến máu (Campaigns)</span>
                     </a>
-                    <a asp-controller="Admin" asp-action="Dashboard" asp-fragment="approvalSection" class="flex items-center justify-between px-space-md py-2.5 rounded-xl text-inverse-on-surface hover:bg-surface-container-highest hover:text-on-surface transition-all duration-150">
+                    <a asp-controller="Phieu" asp-action="Index" class="flex items-center justify-between px-space-md py-2.5 transition-all duration-150 @(currentController == "Phieu" ? "bg-primary text-on-primary font-bold shadow-md rounded-xl" : "rounded-xl text-inverse-on-surface hover:bg-surface-container-highest hover:text-on-surface")">
                         <div class="flex items-center gap-space-sm">
                             <span class="material-symbols-outlined text-[20px]">assignment_turned_in</span>
                             <span class="font-label-md text-label-md">Phiếu đăng ký &amp; Duyệt</span>

@@ -1,0 +1,72 @@
+@model PhieuDangKyViewModel
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Tiếp nhận và quản lý phiếu";
+}
+
+<div class="min-h-screen bg-[#f5f7fb]">
+    <div class="mx-auto max-w-[1500px] space-y-6 p-5 lg:p-8">
+        <section class="relative isolate overflow-hidden rounded-[28px] bg-gradient-to-br from-[#74172b] via-[#9b1735] to-[#c3334c] px-6 py-8 text-white shadow-xl shadow-rose-950/10 md:px-9 md:py-10">
+            <div class="absolute -right-12 -top-28 -z-10 h-80 w-80 rounded-full border-[45px] border-white/[0.06]"></div>
+            <div class="absolute right-40 top-28 -z-10 h-32 w-32 rounded-full bg-rose-300/10 blur-2xl"></div>
+            <div class="flex flex-col justify-between gap-7 lg:flex-row lg:items-end">
+                <div class="max-w-2xl">
+                    <div class="mb-4 flex items-center gap-2 text-xs font-semibold uppercase tracking-[.18em] text-rose-100/80"><span class="material-symbols-outlined text-lg">health_and_safety</span> Cổng điều hành y tế <span class="text-rose-200/50">/</span> Quản lý phiếu</div>
+                    <h1 class="font-headline-lg text-3xl font-bold tracking-tight md:text-4xl">Tiếp nhận &amp; quản lý phiếu</h1>
+                    <p class="mt-3 max-w-xl text-sm leading-6 text-rose-50/85 md:text-base">Theo dõi hồ sơ đăng ký, kiểm tra thông tin và xử lý xác nhận theo đúng quy trình hiến máu.</p>
+                </div>
+                <div class="flex items-center gap-3 rounded-2xl border border-white/15 bg-white/10 px-4 py-3 backdrop-blur-sm">
+                    <span class="flex h-11 w-11 items-center justify-center rounded-xl bg-white/15"><span class="material-symbols-outlined text-2xl">assignment</span></span>
+                    <div><p class="text-xs font-medium text-rose-100">Kết quả hiện tại</p><p class="text-2xl font-bold">@Model.Phieu.Count <span class="text-sm font-medium text-rose-100">phiếu</span></p></div>
+                </div>
+            </div>
+            <div class="mt-7 flex flex-wrap gap-x-6 gap-y-2 border-t border-white/15 pt-4 text-xs text-rose-100/80"><span class="inline-flex items-center gap-2"><span class="h-2 w-2 rounded-full bg-emerald-300"></span> Quy trình trạng thái được kiểm soát</span><span class="inline-flex items-center gap-2"><span class="material-symbols-outlined text-base">manage_search</span> Tra cứu và lọc hồ sơ</span></div>
+        </section>
+
+        @if (TempData["ThongBao"] is string ok) { <div class="flex items-start gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-emerald-900 shadow-sm"><span class="material-symbols-outlined">check_circle</span><span>@ok</span></div> }
+        @if (TempData["Loi"] is string err) { <div class="flex items-start gap-3 rounded-2xl border border-rose-200 bg-rose-50 p-4 text-rose-900 shadow-sm"><span class="material-symbols-outlined">error</span><span>@err</span></div> }
+
+        <section class="overflow-hidden rounded-[24px] border border-slate-200/80 bg-white shadow-sm shadow-slate-900/[0.03]">
+            <div class="flex flex-col gap-2 border-b border-slate-100 px-6 py-5 md:flex-row md:items-center md:justify-between">
+                <div><h2 class="text-lg font-bold tracking-tight text-slate-900">Bộ lọc hồ sơ</h2><p class="mt-1 text-sm text-slate-500">Kết hợp nhiều điều kiện để tìm nhanh phiếu cần xử lý.</p></div>
+                <span class="inline-flex w-fit items-center gap-2 rounded-full bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-600"><span class="material-symbols-outlined text-base text-rose-700">tune</span> Bộ lọc nâng cao</span>
+            </div>
+            <form method="get" class="grid gap-4 p-6 sm:grid-cols-2 xl:grid-cols-4">
+                <label class="block text-xs font-bold uppercase tracking-wide text-slate-500">Họ tên người hiến
+                    <span class="relative mt-2 block"><span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-lg text-slate-400">person_search</span><input name="hoTen" value="@Model.HoTen" class="h-11 w-full rounded-xl border border-slate-200 bg-slate-50/70 pl-10 pr-3 text-sm font-medium normal-case tracking-normal text-slate-800 outline-none transition placeholder:font-normal placeholder:text-slate-400 focus:border-rose-400 focus:bg-white focus:ring-4 focus:ring-rose-100" placeholder="Nhập tên người hiến" /></span>
+                </label>
+                <label class="block text-xs font-bold uppercase tracking-wide text-slate-500">Đợt hiến máu
+                    <span class="relative mt-2 block"><span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-lg text-slate-400">event</span><input name="tenDot" value="@Model.TenDot" class="h-11 w-full rounded-xl border border-slate-200 bg-slate-50/70 pl-10 pr-3 text-sm font-medium normal-case tracking-normal text-slate-800 outline-none transition placeholder:font-normal placeholder:text-slate-400 focus:border-rose-400 focus:bg-white focus:ring-4 focus:ring-rose-100" placeholder="Nhập tên đợt" /></span>
+                </label>
+                <label class="block text-xs font-bold uppercase tracking-wide text-slate-500">Đơn vị tổ chức
+                    <select name="donVi" class="mt-2 h-11 w-full rounded-xl border border-slate-200 bg-slate-50/70 px-3 text-sm font-medium normal-case tracking-normal text-slate-700 outline-none transition focus:border-rose-400 focus:bg-white focus:ring-4 focus:ring-rose-100"><option value="">Tất cả đơn vị</option>@foreach (var d in Model.DonViToChuc) { <option value="@d" selected="@(Model.DonVi == d)">@d</option> }</select>
+                </label>
+                <label class="block text-xs font-bold uppercase tracking-wide text-slate-500">Trạng thái phiếu
+                    <select name="trangThai" class="mt-2 h-11 w-full rounded-xl border border-slate-200 bg-slate-50/70 px-3 text-sm font-medium normal-case tracking-normal text-slate-700 outline-none transition focus:border-rose-400 focus:bg-white focus:ring-4 focus:ring-rose-100"><option value="">Tất cả trạng thái</option>@foreach (var s in TrangThaiPhieu.TatCa) { <option value="@s" selected="@(Model.TrangThai == s)">@s</option> }</select>
+                </label>
+                <label class="block text-xs font-bold uppercase tracking-wide text-slate-500">Ngày nộp từ
+                    <input name="tuNgay" type="date" value="@Model.TuNgay?.ToString("yyyy-MM-dd")" class="mt-2 h-11 w-full rounded-xl border border-slate-200 bg-slate-50/70 px-3 text-sm font-medium normal-case tracking-normal text-slate-700 outline-none transition focus:border-rose-400 focus:bg-white focus:ring-4 focus:ring-rose-100" />
+                </label>
+                <label class="block text-xs font-bold uppercase tracking-wide text-slate-500">Đến ngày
+                    <input name="denNgay" type="date" value="@Model.DenNgay?.ToString("yyyy-MM-dd")" class="mt-2 h-11 w-full rounded-xl border border-slate-200 bg-slate-50/70 px-3 text-sm font-medium normal-case tracking-normal text-slate-700 outline-none transition focus:border-rose-400 focus:bg-white focus:ring-4 focus:ring-rose-100" />
+                </label>
+                <label class="block text-xs font-bold uppercase tracking-wide text-slate-500">Sắp xếp theo
+                    <select name="sapXep" class="mt-2 h-11 w-full rounded-xl border border-slate-200 bg-slate-50/70 px-3 text-sm font-medium normal-case tracking-normal text-slate-700 outline-none transition focus:border-rose-400 focus:bg-white focus:ring-4 focus:ring-rose-100"><option value="ngaymoi" selected="@(Model.SapXep == "ngaymoi")">Ngày nộp mới nhất</option><option value="ngaycu" selected="@(Model.SapXep == "ngaycu")">Ngày nộp cũ nhất</option><option value="ten" selected="@(Model.SapXep == "ten")">Tên người hiến A–Z</option></select>
+                </label>
+                <div class="flex items-end gap-2"><button class="inline-flex h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-[#9b1735] px-5 text-sm font-bold text-white shadow-md shadow-rose-900/15 transition hover:-translate-y-0.5 hover:bg-[#7e102a]" type="submit"><span class="material-symbols-outlined text-lg">search</span>Áp dụng lọc</button><a asp-action="Index" class="inline-flex h-11 items-center justify-center rounded-xl border border-slate-200 px-4 text-sm font-semibold text-slate-600 transition hover:border-slate-300 hover:bg-slate-50">Xóa</a></div>
+            </form>
+        </section>
+
+        <section class="overflow-hidden rounded-[24px] border border-slate-200/80 bg-white shadow-sm shadow-slate-900/[0.03]">
+            <div class="flex flex-col gap-2 border-b border-slate-100 px-6 py-5 sm:flex-row sm:items-center sm:justify-between"><div><h2 class="text-lg font-bold tracking-tight text-slate-900">Danh sách phiếu</h2><p class="mt-1 text-sm text-slate-500">Thông tin hồ sơ và trạng thái xử lý mới nhất.</p></div><span class="rounded-lg bg-rose-50 px-3 py-1.5 text-xs font-bold text-rose-800">@Model.Phieu.Count kết quả</span></div>
+            <div class="overflow-x-auto"><table class="w-full min-w-[920px] text-left text-sm"><thead class="bg-slate-50/80 text-[11px] font-bold uppercase tracking-wider text-slate-500"><tr><th class="px-6 py-4">Mã phiếu</th><th class="px-6 py-4">Người hiến máu</th><th class="px-6 py-4">Đợt / Đơn vị tổ chức</th><th class="px-6 py-4">Ngày nộp</th><th class="px-6 py-4">Trạng thái</th><th class="px-6 py-4 text-right">Chi tiết</th></tr></thead><tbody class="divide-y divide-slate-100">
+            @foreach (var p in Model.Phieu) {
+                var badge = p.TrangThai == TrangThaiPhieu.ChoXacNhan ? "bg-amber-50 text-amber-800 ring-amber-200" : p.TrangThai == TrangThaiPhieu.DaXacNhan || p.TrangThai == TrangThaiPhieu.HienMauThanhCong ? "bg-emerald-50 text-emerald-800 ring-emerald-200" : p.TrangThai == TrangThaiPhieu.TuChoi || p.TrangThai == TrangThaiPhieu.KhongDuDieuKien || p.TrangThai == TrangThaiPhieu.DaHuy ? "bg-rose-50 text-rose-800 ring-rose-200" : "bg-blue-50 text-blue-800 ring-blue-200";
+                <tr class="group transition hover:bg-rose-50/30"><td class="px-6 py-4"><span class="font-bold text-slate-800">@p.MaPhieu</span></td><td class="px-6 py-4"><div class="flex items-center gap-3"><span class="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-rose-100 to-orange-50 text-sm font-bold text-rose-800">@p.HoTenNguoiHien[..1]</span><div><p class="font-semibold text-slate-800">@p.HoTenNguoiHien</p><p class="mt-0.5 text-xs text-slate-500">Nhóm máu <strong class="text-slate-700">@p.NhomMau</strong></p></div></div></td><td class="px-6 py-4"><p class="font-semibold text-slate-800">@p.TenDot</p><p class="mt-1 text-xs text-slate-500">@p.DonViToChuc</p></td><td class="px-6 py-4"><p class="font-medium text-slate-700">@p.NgayNop.ToString("dd/MM/yyyy")</p><p class="mt-1 text-xs text-slate-400">@p.NgayNop.ToString("HH:mm")</p></td><td class="px-6 py-4"><span class="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold ring-1 ring-inset @badge"><span class="h-1.5 w-1.5 rounded-full bg-current"></span>@p.TrangThai</span></td><td class="px-6 py-4 text-right"><a asp-action="Details" asp-route-id="@p.Id" class="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-700 transition hover:border-rose-200 hover:bg-rose-50 hover:text-rose-800">Mở hồ sơ<span class="material-symbols-outlined text-base">arrow_forward</span></a></td></tr>
+            }
+            @if (Model.Phieu.Count == 0) { <tr><td colspan="6" class="px-6 py-16 text-center"><span class="material-symbols-outlined text-4xl text-slate-300">search_off</span><p class="mt-3 font-semibold text-slate-700">Không tìm thấy phiếu phù hợp</p><p class="mt-1 text-sm text-slate-500">Thử thay đổi từ khóa hoặc điều kiện lọc.</p><a asp-action="Index" class="mt-4 inline-flex text-sm font-bold text-rose-700 hover:underline">Xóa toàn bộ bộ lọc</a></td></tr> }
+            </tbody></table></div>
+            <div class="flex items-center justify-between border-t border-slate-100 bg-slate-50/50 px-6 py-3 text-xs text-slate-500"><span>Hiển thị <strong class="text-slate-700">@Model.Phieu.Count</strong> phiếu theo điều kiện hiện tại</span><span class="hidden items-center gap-1 sm:inline-flex"><span class="material-symbols-outlined text-base">shield</span> Thông tin dành cho nhân viên y tế</span></div>
+        </section>
+    </div>
+</div>

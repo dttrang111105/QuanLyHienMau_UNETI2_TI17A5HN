@@ -2,6 +2,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddSingleton<QuanLyHienMau_UNETI2_TI17A5HN.Models.KhoPhieuDangKy>();
 
 var app = builder.Build();
 
