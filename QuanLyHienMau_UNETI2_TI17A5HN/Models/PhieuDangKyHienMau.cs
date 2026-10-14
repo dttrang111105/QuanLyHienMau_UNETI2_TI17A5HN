@@ -1,3 +1,9 @@
+// ============================================================================
+// DỰ ÁN QUẢN LÝ HIẾN MÁU NHÂN ĐẠO VITALIS - UNETI (TI17A5HN)
+// MODULE 3: QUẢN LÝ NGƯỜI HIẾN MÁU & PHIẾU ĐĂNG KÝ HIẾN MÁU
+// Phụ trách: Nhóm thực hiện Module 3 - Lớp DHTI17A5HN
+// ============================================================================
+
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 

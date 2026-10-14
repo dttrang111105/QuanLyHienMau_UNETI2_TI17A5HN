@@ -620,9 +620,190 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
             return View();
         }
 
-        public IActionResult NguoiHienMau()
+        // GET: /Admin/NguoiHienMau
+        // Module 3: Quản lý người hiến máu & phân loại nhóm máu hiếm (Admin)
+        public async Task<IActionResult> NguoiHienMau(
+            string? search, 
+            string? nhomMau, 
+            string? rhGroup, 
+            string? status, 
+            string? tier, 
+            int page = 1, 
+            int pageSize = 10)
         {
-            return View();
+            // 1. Tính toán các KPI Macro tổng quan từ database (bao quát mọi định dạng lưu trữ thực tế)
+            var tongNguoiHien = await _context.NguoiHienMaus.CountAsync();
+            var tongMauHiem = await _context.NguoiHienMaus.CountAsync(n => n.NhomMau != null && (n.NhomMau.Contains("-") || n.NhomMau.Contains("Rh(-)") || n.NhomMau.Contains("Rh-") || n.NhomMau.ToLower().Contains("âm")));
+            var oAm = await _context.NguoiHienMaus.CountAsync(n => n.NhomMau != null && n.NhomMau.ToUpper().Contains("O") && (n.NhomMau.Contains("-") || n.NhomMau.Contains("Rh(-)") || n.NhomMau.Contains("Rh-") || n.NhomMau.ToLower().Contains("âm")));
+            var aAm = await _context.NguoiHienMaus.CountAsync(n => n.NhomMau != null && n.NhomMau.ToUpper().Contains("A") && !n.NhomMau.ToUpper().Contains("AB") && (n.NhomMau.Contains("-") || n.NhomMau.Contains("Rh(-)") || n.NhomMau.Contains("Rh-") || n.NhomMau.ToLower().Contains("âm")));
+            var bAm = await _context.NguoiHienMaus.CountAsync(n => n.NhomMau != null && n.NhomMau.ToUpper().Contains("B") && !n.NhomMau.ToUpper().Contains("AB") && (n.NhomMau.Contains("-") || n.NhomMau.Contains("Rh(-)") || n.NhomMau.Contains("Rh-") || n.NhomMau.ToLower().Contains("âm")));
+            var abAm = await _context.NguoiHienMaus.CountAsync(n => n.NhomMau != null && n.NhomMau.ToUpper().Contains("AB") && (n.NhomMau.Contains("-") || n.NhomMau.Contains("Rh(-)") || n.NhomMau.Contains("Rh-") || n.NhomMau.ToLower().Contains("âm")));
+
+            // 2. Query cơ sở với đầy đủ Navigation Properties
+            var allDonorsQuery = _context.NguoiHienMaus
+                .Include(n => n.TaiKhoan)
+                .Include(n => n.PhieuDangKyHienMaus)
+                    .ThenInclude(p => p.KetQuaHienMau)
+                .AsQueryable();
+
+            // Tính toán KPI người đủ điều kiện và tích cực từ dữ liệu đã nạp
+            // Người đủ điều kiện: Hoạt động và (chưa từng hiến hoặc lần hiến thành công gần nhất >= 84 ngày)
+            // Người hiến tích cực: Số lần hiến thành công >= 5
+            var allDonorsForKpi = await allDonorsQuery.Select(n => new
+            {
+                n.MaNguoiHien,
+                n.TrangThai,
+                SoLanHien = n.PhieuDangKyHienMaus.Count(p => p.TrangThai == "Hiến máu thành công" || p.KetQuaHienMau != null),
+                LanHienCuoi = n.PhieuDangKyHienMaus
+                    .Where(p => p.TrangThai == "Hiến máu thành công" || p.KetQuaHienMau != null)
+                    .OrderByDescending(p => p.NgayXuLy ?? p.NgayNop)
+                    .Select(p => p.NgayXuLy ?? p.NgayNop)
+                    .FirstOrDefault()
+            }).ToListAsync();
+
+            var now = DateTime.Now;
+            var duDieuKienCount = allDonorsForKpi.Count(d => (d.TrangThai == "Hoạt động" || string.IsNullOrEmpty(d.TrangThai)) && (d.LanHienCuoi == default || (now - d.LanHienCuoi).TotalDays >= 84));
+            var hienTichCucCount = allDonorsForKpi.Count(d => d.SoLanHien >= 5);
+
+            // 3. Áp dụng các bộ lọc
+            var query = allDonorsQuery;
+
+            // Lọc từ khóa tìm kiếm
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                var searchLower = search.Trim().ToLower();
+                query = query.Where(n => n.HoTen.ToLower().Contains(searchLower) ||
+                                         (n.Email != null && n.Email.ToLower().Contains(searchLower)) ||
+                                         (n.SoDienThoai != null && n.SoDienThoai.Contains(searchLower)) ||
+                                         (n.DiaChi != null && n.DiaChi.ToLower().Contains(searchLower)) ||
+                                         (n.TaiKhoan != null && n.TaiKhoan.TenDangNhap.ToLower().Contains(searchLower)) ||
+                                         n.MaNguoiHien.ToString().Contains(searchLower));
+            }
+
+            // Lọc theo nhóm máu ABO (bao quát cả tiền tố "Nhóm ...")
+            if (!string.IsNullOrWhiteSpace(nhomMau) && nhomMau != "all")
+            {
+                var upperNm = nhomMau.Trim().ToUpper();
+                if (upperNm == "AB")
+                {
+                    query = query.Where(n => n.NhomMau != null && n.NhomMau.ToUpper().Contains("AB"));
+                }
+                else if (upperNm == "A")
+                {
+                    query = query.Where(n => n.NhomMau != null && n.NhomMau.ToUpper().Contains("A") && !n.NhomMau.ToUpper().Contains("AB"));
+                }
+                else if (upperNm == "B")
+                {
+                    query = query.Where(n => n.NhomMau != null && n.NhomMau.ToUpper().Contains("B") && !n.NhomMau.ToUpper().Contains("AB"));
+                }
+                else if (upperNm == "O")
+                {
+                    query = query.Where(n => n.NhomMau != null && n.NhomMau.ToUpper().Contains("O"));
+                }
+            }
+
+            // Lọc theo Rh và loại đặc biệt
+            if (!string.IsNullOrWhiteSpace(rhGroup) && rhGroup != "all")
+            {
+                if (rhGroup == "rh_am")
+                {
+                    query = query.Where(n => n.NhomMau != null && (n.NhomMau.Contains("-") || n.NhomMau.Contains("Rh(-)") || n.NhomMau.Contains("Rh-") || n.NhomMau.ToLower().Contains("âm")));
+                }
+                else if (rhGroup == "rh_duong")
+                {
+                    query = query.Where(n => n.NhomMau != null && (n.NhomMau.Contains("+") || n.NhomMau.Contains("Rh(+)") || n.NhomMau.Contains("Rh+") || n.NhomMau.ToLower().Contains("dương")));
+                }
+            }
+
+            // Lọc theo trạng thái
+            if (!string.IsNullOrWhiteSpace(status) && status != "all")
+            {
+                if (status == "hoatdong")
+                {
+                    query = query.Where(n => n.TrangThai == "Hoạt động" || n.TrangThai == null);
+                }
+                else if (status == "tamhoan")
+                {
+                    query = query.Where(n => n.TrangThai != null && n.TrangThai != "Hoạt động");
+                }
+            }
+
+            // Lấy toàn bộ danh sách phù hợp để xử lý tier hoặc phân trang
+            var donorList = await query.OrderByDescending(n => n.MaNguoiHien).ToListAsync();
+
+            // Lọc theo phân hạng cống hiến nếu có
+            if (!string.IsNullOrWhiteSpace(tier) && tier != "all")
+            {
+                if (tier == "diamond")
+                {
+                    donorList = donorList.Where(d => d.PhieuDangKyHienMaus.Count(p => p.TrangThai == "Hiến máu thành công" || p.KetQuaHienMau != null) >= 20).ToList();
+                }
+                else if (tier == "gold")
+                {
+                    donorList = donorList.Where(d => {
+                        var c = d.PhieuDangKyHienMaus.Count(p => p.TrangThai == "Hiến máu thành công" || p.KetQuaHienMau != null);
+                        return c >= 10 && c < 20;
+                    }).ToList();
+                }
+                else if (tier == "silver")
+                {
+                    donorList = donorList.Where(d => {
+                        var c = d.PhieuDangKyHienMaus.Count(p => p.TrangThai == "Hiến máu thành công" || p.KetQuaHienMau != null);
+                        return c >= 5 && c < 10;
+                    }).ToList();
+                }
+                else if (tier == "bronze")
+                {
+                    donorList = donorList.Where(d => {
+                        var c = d.PhieuDangKyHienMaus.Count(p => p.TrangThai == "Hiến máu thành công" || p.KetQuaHienMau != null);
+                        return c >= 1 && c < 5;
+                    }).ToList();
+                }
+            }
+
+            // Lọc theo điều kiện sẵn sàng hiến ngay nếu status == "dudieukien"
+            if (status == "dudieukien")
+            {
+                donorList = donorList.Where(d => {
+                    var lastSuccess = d.PhieuDangKyHienMaus
+                        .Where(p => p.TrangThai == "Hiến máu thành công" || p.KetQuaHienMau != null)
+                        .OrderByDescending(p => p.NgayXuLy ?? p.NgayNop)
+                        .Select(p => p.NgayXuLy ?? p.NgayNop)
+                        .FirstOrDefault();
+                    return (d.TrangThai == "Hoạt động" || string.IsNullOrEmpty(d.TrangThai)) &&
+                           (lastSuccess == default || (now - lastSuccess).TotalDays >= 84);
+                }).ToList();
+            }
+
+            // 4. Phân trang
+            pageSize = pageSize <= 0 ? 10 : pageSize;
+            var totalItems = donorList.Count;
+            var totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
+            page = Math.Clamp(page, 1, Math.Max(1, totalPages));
+
+            var pagedDonors = donorList.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+
+            // 5. Gán dữ liệu cho View
+            ViewBag.TongNguoiHien = tongNguoiHien;
+            ViewBag.TongMauHiem = tongMauHiem;
+            ViewBag.OAm = oAm;
+            ViewBag.AAm = aAm;
+            ViewBag.BAm = bAm;
+            ViewBag.ABAm = abAm;
+            ViewBag.DuDieuKienCount = duDieuKienCount;
+            ViewBag.HienTichCucCount = hienTichCucCount;
+
+            ViewBag.TotalItems = totalItems;
+            ViewBag.CurrentPage = page;
+            ViewBag.PageSize = pageSize;
+            ViewBag.TotalPages = totalPages;
+            ViewBag.CurrentSearch = search;
+            ViewBag.CurrentNhomMau = nhomMau;
+            ViewBag.CurrentRhGroup = rhGroup;
+            ViewBag.CurrentStatus = status;
+            ViewBag.CurrentTier = tier;
+
+            return View(pagedDonors);
         }
 
         // GET: /Admin/DonViToChuc

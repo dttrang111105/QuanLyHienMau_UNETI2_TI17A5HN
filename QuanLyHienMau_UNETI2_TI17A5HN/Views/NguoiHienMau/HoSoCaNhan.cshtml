@@ -1,3 +1,10 @@
+@*
+    ============================================================================
+    DỰ ÁN QUẢN LÝ HIẾN MÁU NHÂN ĐẠO VITALIS - UNETI (TI17A5HN)
+    MODULE 3: QUẢN LÝ NGƯỜI HIẾN MÁU & PHIẾU ĐĂNG KÝ HIẾN MÁU
+    Màn hình: Hồ sơ cá nhân người hiến máu & Chứng nhận điện tử
+    ============================================================================
+*@
 @model QuanLyHienMau_UNETI2_TI17A5HN.Models.NguoiHienMau
 
 @{
@@ -602,72 +609,82 @@
         </div>
 
         <form asp-controller="NguoiHienMau" asp-action="HoSoCaNhan" method="post" class="space-y-4">
-            <input type="hidden" name="MaNguoiHien" value="@Model?.MaNguoiHien" />
-            <input type="hidden" name="MaTaiKhoan" value="@Model?.MaTaiKhoan" />
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="ModelOnly" class="p-3 mb-2 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-semibold"></div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div class="space-y-1 sm:col-span-2">
-                    <label class="font-label-md text-xs text-on-surface font-semibold">Họ và tên <span class="text-primary">*</span></label>
-                    <input type="text" name="HoTen" value="@Model?.HoTen" required class="w-full h-11 bg-surface-container-lowest text-on-surface px-4 rounded-xl text-sm border border-outline-variant/40 focus:ring-2 focus:ring-primary focus:outline-none" />
+                    <label asp-for="HoTen" class="font-label-md text-xs text-on-surface font-semibold">Họ và tên <span class="text-primary">*</span></label>
+                    <input asp-for="HoTen" class="w-full h-11 bg-surface-container-lowest text-on-surface px-4 rounded-xl text-sm border border-outline-variant/40 focus:ring-2 focus:ring-primary focus:outline-none" placeholder="VD: Nguyễn Văn An" />
+                    <span asp-validation-for="HoTen" class="text-rose-600 text-xs font-semibold block mt-1"></span>
                 </div>
 
                 <div class="space-y-1">
-                    <label class="font-label-md text-xs text-on-surface font-semibold">Ngày sinh</label>
-                    <input type="date" name="NgaySinh" value="@(Model?.NgaySinh?.ToString("yyyy-MM-dd"))" class="w-full h-11 bg-surface-container-lowest text-on-surface px-3 rounded-xl text-sm border border-outline-variant/40 focus:ring-2 focus:ring-primary focus:outline-none" />
+                    <label asp-for="NgaySinh" class="font-label-md text-xs text-on-surface font-semibold">Ngày sinh (18 – 60 tuổi)</label>
+                    <input asp-for="NgaySinh" type="date" value="@(Model?.NgaySinh?.ToString("yyyy-MM-dd"))" class="w-full h-11 bg-surface-container-lowest text-on-surface px-3 rounded-xl text-sm border border-outline-variant/40 focus:ring-2 focus:ring-primary focus:outline-none" />
+                    <span asp-validation-for="NgaySinh" class="text-rose-600 text-xs font-semibold block mt-1"></span>
                 </div>
 
                 <div class="space-y-1">
-                    <label class="font-label-md text-xs text-on-surface font-semibold">Giới tính</label>
-                    <select name="GioiTinh" class="w-full h-11 bg-surface-container-lowest text-on-surface px-3 rounded-xl text-sm border border-outline-variant/40 focus:ring-2 focus:ring-primary focus:outline-none">
+                    <label asp-for="GioiTinh" class="font-label-md text-xs text-on-surface font-semibold">Giới tính</label>
+                    <select asp-for="GioiTinh" class="w-full h-11 bg-surface-container-lowest text-on-surface px-3 rounded-xl text-sm border border-outline-variant/40 focus:ring-2 focus:ring-primary focus:outline-none">
                         <option value="Nam" selected="@(Model?.GioiTinh == "Nam")">Nam</option>
                         <option value="Nữ" selected="@(Model?.GioiTinh == "Nữ")">Nữ</option>
                         <option value="Khác" selected="@(Model?.GioiTinh == "Khác")">Khác</option>
                     </select>
+                    <span asp-validation-for="GioiTinh" class="text-rose-600 text-xs font-semibold block mt-1"></span>
                 </div>
 
                 <div class="space-y-1">
-                    <label class="font-label-md text-xs text-on-surface font-semibold">Số điện thoại</label>
-                    <input type="tel" name="SoDienThoai" value="@Model?.SoDienThoai" class="w-full h-11 bg-surface-container-lowest text-on-surface px-4 rounded-xl text-sm border border-outline-variant/40 focus:ring-2 focus:ring-primary focus:outline-none" />
+                    <label asp-for="SoDienThoai" class="font-label-md text-xs text-on-surface font-semibold">Số điện thoại</label>
+                    <input asp-for="SoDienThoai" type="tel" placeholder="VD: 0912345678" class="w-full h-11 bg-surface-container-lowest text-on-surface px-4 rounded-xl text-sm border border-outline-variant/40 focus:ring-2 focus:ring-primary focus:outline-none" />
+                    <span asp-validation-for="SoDienThoai" class="text-rose-600 text-xs font-semibold block mt-1"></span>
                 </div>
 
                 <div class="space-y-1">
-                    <label class="font-label-md text-xs text-on-surface font-semibold">Email</label>
-                    <input type="email" name="Email" value="@Model?.Email" class="w-full h-11 bg-surface-container-lowest text-on-surface px-4 rounded-xl text-sm border border-outline-variant/40 focus:ring-2 focus:ring-primary focus:outline-none" />
+                    <label asp-for="Email" class="font-label-md text-xs text-on-surface font-semibold">Email</label>
+                    <input asp-for="Email" type="email" placeholder="VD: donor@uneti.edu.vn" class="w-full h-11 bg-surface-container-lowest text-on-surface px-4 rounded-xl text-sm border border-outline-variant/40 focus:ring-2 focus:ring-primary focus:outline-none" />
+                    <span asp-validation-for="Email" class="text-rose-600 text-xs font-semibold block mt-1"></span>
                 </div>
 
                 <div class="space-y-1">
-                    <label class="font-label-md text-xs text-on-surface font-semibold">Nhóm máu</label>
-                    <select name="NhomMau" class="w-full h-11 bg-surface-container-lowest text-on-surface px-3 rounded-xl text-sm border border-outline-variant/40 focus:ring-2 focus:ring-primary focus:outline-none">
-                        <option value="O Rh(+)" selected="@(Model?.NhomMau == "O Rh(+)")">O Rh(+)</option>
-                        <option value="A Rh(+)" selected="@(Model?.NhomMau == "A Rh(+)")">A Rh(+)</option>
-                        <option value="B Rh(+)" selected="@(Model?.NhomMau == "B Rh(+)")">B Rh(+)</option>
-                        <option value="AB Rh(+)" selected="@(Model?.NhomMau == "AB Rh(+)")">AB Rh(+)</option>
-                        <option value="O Rh(-)" selected="@(Model?.NhomMau == "O Rh(-)")">O Rh(-)</option>
-                        <option value="A Rh(-)" selected="@(Model?.NhomMau == "A Rh(-)")">A Rh(-)</option>
-                        <option value="B Rh(-)" selected="@(Model?.NhomMau == "B Rh(-)")">B Rh(-)</option>
-                        <option value="AB Rh(-)" selected="@(Model?.NhomMau == "AB Rh(-)")">AB Rh(-)</option>
-                        <option value="Chưa rõ" selected="@(Model?.NhomMau == "Chưa rõ")">Chưa rõ (Khám tại chỗ)</option>
+                    <label asp-for="NhomMau" class="font-label-md text-xs text-on-surface font-semibold">Nhóm máu</label>
+                    <select asp-for="NhomMau" class="w-full h-11 bg-surface-container-lowest text-on-surface px-3 rounded-xl text-sm border border-outline-variant/40 focus:ring-2 focus:ring-primary focus:outline-none">
+                        <option value="O+" selected="@(Model?.NhomMau == "O+" || Model?.NhomMau == "O Rh(+)")">O+ (O Rh+)</option>
+                        <option value="A+" selected="@(Model?.NhomMau == "A+" || Model?.NhomMau == "A Rh(+)")">A+ (A Rh+)</option>
+                        <option value="B+" selected="@(Model?.NhomMau == "B+" || Model?.NhomMau == "B Rh(+)")">B+ (B Rh+)</option>
+                        <option value="AB+" selected="@(Model?.NhomMau == "AB+" || Model?.NhomMau == "AB Rh(+)")">AB+ (AB Rh+)</option>
+                        <option value="O-" selected="@(Model?.NhomMau == "O-" || Model?.NhomMau == "O Rh(-)")">O- (O Rh- Máu hiếm)</option>
+                        <option value="A-" selected="@(Model?.NhomMau == "A-" || Model?.NhomMau == "A Rh(-)")">A- (A Rh- Máu hiếm)</option>
+                        <option value="B-" selected="@(Model?.NhomMau == "B-" || Model?.NhomMau == "B Rh(-)")">B- (B Rh- Máu hiếm)</option>
+                        <option value="AB-" selected="@(Model?.NhomMau == "AB-" || Model?.NhomMau == "AB Rh(-)")">AB- (AB Rh- Máu hiếm)</option>
+                        <option value="Chưa rõ" selected="@(string.IsNullOrEmpty(Model?.NhomMau) || Model?.NhomMau == "Chưa rõ")">Chưa rõ (Khám sàng lọc tại chỗ)</option>
                     </select>
+                    <span asp-validation-for="NhomMau" class="text-rose-600 text-xs font-semibold block mt-1"></span>
                 </div>
 
                 <div class="space-y-1">
-                    <label class="font-label-md text-xs text-on-surface font-semibold">Cân nặng (kg)</label>
-                    <input type="number" step="0.5" min="30" max="200" name="CanNang" value="@(Model?.CanNang ?? 60)" class="w-full h-11 bg-surface-container-lowest text-on-surface px-4 rounded-xl text-sm border border-outline-variant/40 focus:ring-2 focus:ring-primary focus:outline-none" />
+                    <label asp-for="CanNang" class="font-label-md text-xs text-on-surface font-semibold">Cân nặng (kg) <span class="text-primary">*</span></label>
+                    <input asp-for="CanNang" type="number" step="0.5" min="30" max="200" class="w-full h-11 bg-surface-container-lowest text-on-surface px-4 rounded-xl text-sm border border-outline-variant/40 focus:ring-2 focus:ring-primary focus:outline-none" />
+                    <span asp-validation-for="CanNang" class="text-rose-600 text-xs font-semibold block mt-1"></span>
                 </div>
 
                 <div class="space-y-1 sm:col-span-2">
-                    <label class="font-label-md text-xs text-on-surface font-semibold">Nghề nghiệp / Lớp / Khoa</label>
-                    <input type="text" name="NgheNghiep" value="@Model?.NgheNghiep" placeholder="VD: Sinh viên DHTI17A5HN - UNETI" class="w-full h-11 bg-surface-container-lowest text-on-surface px-4 rounded-xl text-sm border border-outline-variant/40 focus:ring-2 focus:ring-primary focus:outline-none" />
+                    <label asp-for="NgheNghiep" class="font-label-md text-xs text-on-surface font-semibold">Nghề nghiệp / Lớp / Khoa</label>
+                    <input asp-for="NgheNghiep" placeholder="VD: Sinh viên DHTI17A5HN - UNETI" class="w-full h-11 bg-surface-container-lowest text-on-surface px-4 rounded-xl text-sm border border-outline-variant/40 focus:ring-2 focus:ring-primary focus:outline-none" />
+                    <span asp-validation-for="NgheNghiep" class="text-rose-600 text-xs font-semibold block mt-1"></span>
                 </div>
 
                 <div class="space-y-1 sm:col-span-2">
-                    <label class="font-label-md text-xs text-on-surface font-semibold">Địa chỉ liên hệ</label>
-                    <input type="text" name="DiaChi" value="@Model?.DiaChi" placeholder="VD: 218 Lĩnh Nam, Hoàng Mai, Hà Nội" class="w-full h-11 bg-surface-container-lowest text-on-surface px-4 rounded-xl text-sm border border-outline-variant/40 focus:ring-2 focus:ring-primary focus:outline-none" />
+                    <label asp-for="DiaChi" class="font-label-md text-xs text-on-surface font-semibold">Địa chỉ liên hệ</label>
+                    <input asp-for="DiaChi" placeholder="VD: 218 Lĩnh Nam, Hoàng Mai, Hà Nội" class="w-full h-11 bg-surface-container-lowest text-on-surface px-4 rounded-xl text-sm border border-outline-variant/40 focus:ring-2 focus:ring-primary focus:outline-none" />
+                    <span asp-validation-for="DiaChi" class="text-rose-600 text-xs font-semibold block mt-1"></span>
                 </div>
 
                 <div class="space-y-1 sm:col-span-2">
-                    <label class="font-label-md text-xs text-on-surface font-semibold">Ghi chú sức khỏe (nếu có)</label>
-                    <textarea name="GhiChuSucKhoe" rows="2" placeholder="Ghi chú về tiền sử dị ứng, thuốc đang dùng..." class="w-full bg-surface-container-lowest text-on-surface p-3 rounded-xl text-sm border border-outline-variant/40 focus:ring-2 focus:ring-primary focus:outline-none">@Model?.GhiChuSucKhoe</textarea>
+                    <label asp-for="GhiChuSucKhoe" class="font-label-md text-xs text-on-surface font-semibold">Ghi chú sức khỏe (nếu có)</label>
+                    <textarea asp-for="GhiChuSucKhoe" rows="2" placeholder="Ghi chú về tiền sử dị ứng, thuốc đang dùng..." class="w-full bg-surface-container-lowest text-on-surface p-3 rounded-xl text-sm border border-outline-variant/40 focus:ring-2 focus:ring-primary focus:outline-none"></textarea>
+                    <span asp-validation-for="GhiChuSucKhoe" class="text-rose-600 text-xs font-semibold block mt-1"></span>
                 </div>
             </div>
 
@@ -758,5 +775,15 @@
             alert('Đã sao chép liên kết chia sẻ huy hiệu hiến máu của bạn vào bộ nhớ tạm!');
         }
     }
+
+    @if (ViewBag.OpenEditModal == true || !ViewData.ModelState.IsValid)
+    {
+        <text>
+        document.addEventListener("DOMContentLoaded", function () {
+            openEditProfileModal();
+        });
+        </text>
+    }
 </script>
+<partial name="_ValidationScriptsPartial" />
 }
