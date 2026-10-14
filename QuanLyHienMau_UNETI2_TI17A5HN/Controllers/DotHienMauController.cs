@@ -22,7 +22,7 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
         // GET: /DotHienMau
         public async Task<IActionResult> Index(string? search, string? status, int? donViId, string? nhomMau, double? canNang, string? thoiHan, string? sort,int page = 1)
         {
-            const int pageSize = 6;
+            const int pageSize = 2;
 
             var query = _context.DotHienMaus
                 .Include(d => d.DonViToChuc)
