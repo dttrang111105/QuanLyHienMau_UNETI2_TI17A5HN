@@ -4,11 +4,11 @@ public static class TrangThaiPhieu
 {
     public const string ChoXacNhan = "Chờ xác nhận";
     public const string DaXacNhan = "Đã xác nhận";
-    public const string TuChoi = "Từ chối";
+    public const string TuChoi = "Phiếu bị từ chối";
     public const string ChoKham = "Chờ khám sàng lọc";
     public const string DaKham = "Đã khám sàng lọc";
     public const string HienMauThanhCong = "Hiến máu thành công";
-    public const string KhongDuDieuKien = "Không đủ điều kiện hiến";
+    public const string KhongDuDieuKien = "Không đủ điều kiện";
     public const string DaHuy = "Đã hủy";
 
     public static readonly string[] TatCa = [ChoXacNhan, DaXacNhan, TuChoi, ChoKham, DaKham, HienMauThanhCong, KhongDuDieuKien, DaHuy];

@@ -40,7 +40,7 @@ public class PhieuController(KhoPhieuDangKy kho) : Controller
     [HttpPost, ValidateAntiForgeryToken]
     public IActionResult XuLy(int id, string trangThaiMoi, string? ghiChuXacNhan)
     {
-        if (!TrangThaiPhieu.TatCa.Contains(trangThaiMoi)) return BadRequest("Trạng thái không hợp lệ.");
+        if (!TrangThaiPhieu.TatCa.Contains(trangThaiMoi)) return BadRequest("Trạng thái không hợp lệ!");
         var result = kho.ChuyenTrangThai(id, trangThaiMoi, ghiChuXacNhan);
         TempData[result.ThanhCong ? "ThongBao" : "Loi"] = result.ThongBao;
         return RedirectToAction(nameof(Details), new { id });
