@@ -1,3 +1,8 @@
+@* // Họ và tên: Nguyễn Tiến Nam
+// Mã sinh viên: 23103100275
+// Nội dung thực hiện: Quản lí đơn vị tổ chức hiến máu
+// Thiết kế giao diện *@
+
 @model IEnumerable<QuanLyHienMau_UNETI2_TI17A5HN.Models.DonViToChuc>
 
 @{
@@ -288,17 +293,25 @@
                 <span class="material-symbols-outlined text-primary">add_business</span>
                 Thêm Đơn Vị Tổ Chức Mới
             </h3>
-            <button onclick="closeCreateModal()" class="text-on-surface-variant hover:text-on-surface"><span class="material-symbols-outlined">close</span></button>
+            <button onclick="closeCreateModal()" class="text-on-surface-variant hover:text-on-surface cursor-pointer"><span class="material-symbols-outlined">close</span></button>
         </div>
-        <form method="post" asp-controller="Admin" asp-action="CreateDonViToChuc" class="space-y-4">
+        <form method="post" asp-controller="Admin" asp-action="CreateDonViToChuc" class="space-y-4" onsubmit="return validateCreateForm()">
             @Html.AntiForgeryToken()
             <div>
                 <label class="font-label-md text-label-md text-on-surface block mb-1">Tên Đơn Vị Tổ Chức <span class="text-error">*</span></label>
-                <input name="TenDonViToChuc" required class="w-full h-11 px-3.5 bg-surface-container-low text-on-surface rounded-xl border border-surface-container focus:outline-none focus:ring-2 focus:ring-primary/20" placeholder="VD: Đoàn Thanh Niên UNETI" />
+                <input id="create_ten" name="TenDonViToChuc" required class="w-full h-11 px-3.5 bg-surface-container-low text-on-surface rounded-xl border border-surface-container focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors" placeholder="VD: Đoàn Thanh Niên UNETI" oninput="validateCreateName()" onblur="checkDuplicateCreateName()" />
+                <p id="create_ten_error" class="hidden mt-1.5 text-error text-xs font-medium flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[14px]">error</span>
+                    <span id="create_ten_error_text"></span>
+                </p>
             </div>
             <div>
                 <label class="font-label-md text-label-md text-on-surface block mb-1">Email Liên Hệ</label>
-                <input name="EmailLienHe" type="email" class="w-full h-11 px-3.5 bg-surface-container-low text-on-surface rounded-xl border border-surface-container focus:outline-none focus:ring-2 focus:ring-primary/20" placeholder="VD: doanthanhnien@uneti.edu.vn" />
+                <input id="create_email" name="EmailLienHe" type="email" class="w-full h-11 px-3.5 bg-surface-container-low text-on-surface rounded-xl border border-surface-container focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors" placeholder="VD: doanthanhnien@uneti.edu.vn" oninput="validateCreateEmail()" onblur="validateCreateEmail()" />
+                <p id="create_email_error" class="hidden mt-1.5 text-error text-xs font-medium flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[14px]">error</span>
+                    <span id="create_email_error_text"></span>
+                </p>
             </div>
             <div>
                 <label class="font-label-md text-label-md text-on-surface block mb-1">Trạng Thái</label>
@@ -312,8 +325,8 @@
                 <textarea name="MoTa" rows="3" class="w-full p-3 bg-surface-container-low text-on-surface rounded-xl border border-surface-container focus:outline-none focus:ring-2 focus:ring-primary/20" placeholder="Thông tin chi tiết về đơn vị, địa chỉ tổ chức..."></textarea>
             </div>
             <div class="flex items-center justify-end gap-3 pt-3 border-t border-surface-container">
-                <button type="button" onclick="closeCreateModal()" class="px-4 py-2.5 rounded-xl bg-surface-container text-on-surface font-label-md text-label-md hover:bg-surface-container-high transition-all">Hủy</button>
-                <button type="submit" class="px-5 py-2.5 rounded-xl bg-primary text-on-primary font-label-md text-label-md font-bold hover:bg-primary-container transition-all">Lưu Đơn Vị</button>
+                <button type="button" onclick="closeCreateModal()" class="px-4 py-2.5 rounded-xl bg-surface-container text-on-surface font-label-md text-label-md hover:bg-surface-container-high transition-all cursor-pointer">Hủy</button>
+                <button id="create_submit_btn" type="submit" class="px-5 py-2.5 rounded-xl bg-primary text-on-primary font-label-md text-label-md font-bold hover:bg-primary-container transition-all cursor-pointer">Lưu Đơn Vị</button>
             </div>
         </form>
     </div>
@@ -327,19 +340,27 @@
                 <span class="material-symbols-outlined text-primary">edit_note</span>
                 Chỉnh Sửa Đơn Vị Tổ Chức
             </h3>
-            <button onclick="closeEditModal()" class="text-on-surface-variant hover:text-on-surface"><span class="material-symbols-outlined">close</span></button>
+            <button onclick="closeEditModal()" class="text-on-surface-variant hover:text-on-surface cursor-pointer"><span class="material-symbols-outlined">close</span></button>
         </div>
-        <form method="post" asp-controller="Admin" asp-action="EditDonViToChuc" class="space-y-4">
+        <form method="post" asp-controller="Admin" asp-action="EditDonViToChuc" class="space-y-4" onsubmit="return validateEditForm()">
             @Html.AntiForgeryToken()
             <input type="hidden" id="edit_id" name="MaDonViToChuc" />
             <input type="hidden" id="edit_id_param" name="id" />
             <div>
                 <label class="font-label-md text-label-md text-on-surface block mb-1">Tên Đơn Vị Tổ Chức <span class="text-error">*</span></label>
-                <input id="edit_ten" name="TenDonViToChuc" required class="w-full h-11 px-3.5 bg-surface-container-low text-on-surface rounded-xl border border-surface-container focus:outline-none focus:ring-2 focus:ring-primary/20" />
+                <input id="edit_ten" name="TenDonViToChuc" required class="w-full h-11 px-3.5 bg-surface-container-low text-on-surface rounded-xl border border-surface-container focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors" oninput="validateEditName()" onblur="checkDuplicateEditName()" />
+                <p id="edit_ten_error" class="hidden mt-1.5 text-error text-xs font-medium flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[14px]">error</span>
+                    <span id="edit_ten_error_text"></span>
+                </p>
             </div>
             <div>
                 <label class="font-label-md text-label-md text-on-surface block mb-1">Email Liên Hệ</label>
-                <input id="edit_email" name="EmailLienHe" type="email" class="w-full h-11 px-3.5 bg-surface-container-low text-on-surface rounded-xl border border-surface-container focus:outline-none focus:ring-2 focus:ring-primary/20" />
+                <input id="edit_email" name="EmailLienHe" type="email" class="w-full h-11 px-3.5 bg-surface-container-low text-on-surface rounded-xl border border-surface-container focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors" oninput="validateEditEmail()" onblur="validateEditEmail()" />
+                <p id="edit_email_error" class="hidden mt-1.5 text-error text-xs font-medium flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[14px]">error</span>
+                    <span id="edit_email_error_text"></span>
+                </p>
             </div>
             <div>
                 <label class="font-label-md text-label-md text-on-surface block mb-1">Trạng Thái</label>
@@ -353,8 +374,8 @@
                 <textarea id="edit_mota" name="MoTa" rows="3" class="w-full p-3 bg-surface-container-low text-on-surface rounded-xl border border-surface-container focus:outline-none focus:ring-2 focus:ring-primary/20"></textarea>
             </div>
             <div class="flex items-center justify-end gap-3 pt-3 border-t border-surface-container">
-                <button type="button" onclick="closeEditModal()" class="px-4 py-2.5 rounded-xl bg-surface-container text-on-surface font-label-md text-label-md hover:bg-surface-container-high transition-all">Hủy</button>
-                <button type="submit" class="px-5 py-2.5 rounded-xl bg-primary text-on-primary font-label-md text-label-md font-bold hover:bg-primary-container transition-all">Cập Nhật</button>
+                <button type="button" onclick="closeEditModal()" class="px-4 py-2.5 rounded-xl bg-surface-container text-on-surface font-label-md text-label-md hover:bg-surface-container-high transition-all cursor-pointer">Hủy</button>
+                <button id="edit_submit_btn" type="submit" class="px-5 py-2.5 rounded-xl bg-primary text-on-primary font-label-md text-label-md font-bold hover:bg-primary-container transition-all cursor-pointer">Cập Nhật</button>
             </div>
         </form>
     </div>
@@ -381,7 +402,195 @@
 </div>
 
 <script>
+    // ========== Trạng thái validation ==========
+    let createNameValid = false;
+    let createNameDuplicate = false;
+    let createEmailValid = true;
+    let editNameValid = true;
+    let editNameDuplicate = false;
+    let editEmailValid = true;
+
+    const emailRegex = /^[^\s@@]+@@[^\s@@]+\.[^\s@@]+$/;
+    const errorBorderClass = '!border-error !ring-error/20';
+    const successBorderClass = '!border-emerald-500 !ring-emerald-500/20';
+
+    // ========== Helper: show/hide error ==========
+    function showFieldError(inputId, errorId, errorTextId, message) {
+        const input = document.getElementById(inputId);
+        const errorEl = document.getElementById(errorId);
+        const errorTextEl = document.getElementById(errorTextId);
+        if (input) { input.classList.add(...errorBorderClass.split(' ')); input.classList.remove(...successBorderClass.split(' ')); }
+        if (errorEl) { errorEl.classList.remove('hidden'); }
+        if (errorTextEl) { errorTextEl.textContent = message; }
+    }
+
+    function hideFieldError(inputId, errorId, showSuccess) {
+        const input = document.getElementById(inputId);
+        const errorEl = document.getElementById(errorId);
+        if (input) {
+            input.classList.remove(...errorBorderClass.split(' '));
+            if (showSuccess && input.value.trim()) {
+                input.classList.add(...successBorderClass.split(' '));
+            } else {
+                input.classList.remove(...successBorderClass.split(' '));
+            }
+        }
+        if (errorEl) { errorEl.classList.add('hidden'); }
+    }
+
+    // ========== VALIDATE CREATE FORM ==========
+    function validateCreateName() {
+        const val = document.getElementById('create_ten').value.trim();
+        if (!val) {
+            showFieldError('create_ten', 'create_ten_error', 'create_ten_error_text', 'Tên đơn vị tổ chức không được để trống.');
+            createNameValid = false;
+            createNameDuplicate = false;
+        } else {
+            hideFieldError('create_ten', 'create_ten_error', !createNameDuplicate);
+            createNameValid = true;
+        }
+    }
+
+    let createNameTimer = null;
+    function checkDuplicateCreateName() {
+        const val = document.getElementById('create_ten').value.trim();
+        if (!val) { createNameDuplicate = false; return; }
+        clearTimeout(createNameTimer);
+        createNameTimer = setTimeout(() => {
+            fetch('/Admin/CheckDuplicateDonViToChuc?ten=' + encodeURIComponent(val))
+                .then(r => r.json())
+                .then(data => {
+                    createNameDuplicate = data.isDuplicate;
+                    if (data.isDuplicate) {
+                        showFieldError('create_ten', 'create_ten_error', 'create_ten_error_text', 'Tên đơn vị "' + val + '" đã tồn tại.');
+                    } else if (val) {
+                        hideFieldError('create_ten', 'create_ten_error', true);
+                    }
+                })
+                .catch(() => { createNameDuplicate = false; });
+        }, 300);
+    }
+
+    function validateCreateEmail() {
+        const val = document.getElementById('create_email').value.trim();
+        if (!val) {
+            hideFieldError('create_email', 'create_email_error', false);
+            createEmailValid = true;
+            return;
+        }
+        if (!emailRegex.test(val)) {
+            showFieldError('create_email', 'create_email_error', 'create_email_error_text', 'Địa chỉ email không đúng định dạng. VD: example@domain.com');
+            createEmailValid = false;
+        } else {
+            hideFieldError('create_email', 'create_email_error', true);
+            createEmailValid = true;
+        }
+    }
+
+    function validateCreateForm() {
+        validateCreateName();
+        validateCreateEmail();
+
+        const nameVal = document.getElementById('create_ten').value.trim();
+        if (!nameVal) {
+            showFieldError('create_ten', 'create_ten_error', 'create_ten_error_text', 'Tên đơn vị tổ chức không được để trống.');
+            document.getElementById('create_ten').focus();
+            return false;
+        }
+        if (createNameDuplicate) {
+            showFieldError('create_ten', 'create_ten_error', 'create_ten_error_text', 'Tên đơn vị "' + nameVal + '" đã tồn tại.');
+            document.getElementById('create_ten').focus();
+            return false;
+        }
+        if (!createEmailValid) {
+            document.getElementById('create_email').focus();
+            return false;
+        }
+        return true;
+    }
+
+    // ========== VALIDATE EDIT FORM ==========
+    function validateEditName() {
+        const val = document.getElementById('edit_ten').value.trim();
+        if (!val) {
+            showFieldError('edit_ten', 'edit_ten_error', 'edit_ten_error_text', 'Tên đơn vị tổ chức không được để trống.');
+            editNameValid = false;
+            editNameDuplicate = false;
+        } else {
+            hideFieldError('edit_ten', 'edit_ten_error', !editNameDuplicate);
+            editNameValid = true;
+        }
+    }
+
+    let editNameTimer = null;
+    function checkDuplicateEditName() {
+        const val = document.getElementById('edit_ten').value.trim();
+        const excludeId = document.getElementById('edit_id').value;
+        if (!val) { editNameDuplicate = false; return; }
+        clearTimeout(editNameTimer);
+        editNameTimer = setTimeout(() => {
+            fetch('/Admin/CheckDuplicateDonViToChuc?ten=' + encodeURIComponent(val) + '&excludeId=' + excludeId)
+                .then(r => r.json())
+                .then(data => {
+                    editNameDuplicate = data.isDuplicate;
+                    if (data.isDuplicate) {
+                        showFieldError('edit_ten', 'edit_ten_error', 'edit_ten_error_text', 'Tên đơn vị "' + val + '" đã tồn tại.');
+                    } else if (val) {
+                        hideFieldError('edit_ten', 'edit_ten_error', true);
+                    }
+                })
+                .catch(() => { editNameDuplicate = false; });
+        }, 300);
+    }
+
+    function validateEditEmail() {
+        const val = document.getElementById('edit_email').value.trim();
+        if (!val) {
+            hideFieldError('edit_email', 'edit_email_error', false);
+            editEmailValid = true;
+            return;
+        }
+        if (!emailRegex.test(val)) {
+            showFieldError('edit_email', 'edit_email_error', 'edit_email_error_text', 'Địa chỉ email không đúng định dạng. VD: example@domain.com');
+            editEmailValid = false;
+        } else {
+            hideFieldError('edit_email', 'edit_email_error', true);
+            editEmailValid = true;
+        }
+    }
+
+    function validateEditForm() {
+        validateEditName();
+        validateEditEmail();
+
+        const nameVal = document.getElementById('edit_ten').value.trim();
+        if (!nameVal) {
+            showFieldError('edit_ten', 'edit_ten_error', 'edit_ten_error_text', 'Tên đơn vị tổ chức không được để trống.');
+            document.getElementById('edit_ten').focus();
+            return false;
+        }
+        if (editNameDuplicate) {
+            showFieldError('edit_ten', 'edit_ten_error', 'edit_ten_error_text', 'Tên đơn vị "' + nameVal + '" đã tồn tại.');
+            document.getElementById('edit_ten').focus();
+            return false;
+        }
+        if (!editEmailValid) {
+            document.getElementById('edit_email').focus();
+            return false;
+        }
+        return true;
+    }
+
+    // ========== MODAL FUNCTIONS ==========
     function openCreateModal() {
+        // Reset form và trạng thái validation
+        const form = document.querySelector('#createModal form');
+        if (form) form.reset();
+        createNameValid = false;
+        createNameDuplicate = false;
+        createEmailValid = true;
+        hideFieldError('create_ten', 'create_ten_error', false);
+        hideFieldError('create_email', 'create_email_error', false);
         document.getElementById('createModal').classList.remove('hidden');
     }
     function closeCreateModal() {
@@ -395,6 +604,12 @@
         document.getElementById('edit_mota').value = mota || '';
         document.getElementById('edit_email').value = email || '';
         document.getElementById('edit_trangthai').value = trangthai || 'Hoạt động';
+        // Reset trạng thái validation
+        editNameValid = true;
+        editNameDuplicate = false;
+        editEmailValid = true;
+        hideFieldError('edit_ten', 'edit_ten_error', false);
+        hideFieldError('edit_email', 'edit_email_error', false);
         document.getElementById('editModal').classList.remove('hidden');
     }
     function closeEditModal() {
