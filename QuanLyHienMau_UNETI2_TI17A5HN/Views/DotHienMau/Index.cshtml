@@ -420,6 +420,19 @@ tìm kiếm, lọc, sắp xếp và phân trang.
                             <a asp-controller="DotHienMau" asp-action="Details" asp-route-id="@item.MaDot" class="flex-1 text-center py-2.5 rounded-xl font-label-md text-label-md text-on-surface-variant hover:text-primary hover:bg-surface-container transition-all">
                                 Xem chi tiết
                             </a>
+                            @if (User.IsInRole("Admin") || User.IsInRole("Medical Staff"))
+                            {
+                                <a asp-controller="DotHienMau"
+                                   asp-action="Edit"
+                                   asp-route-id="@item.MaDot"
+                                   class="inline-flex items-center gap-1 px-3 py-2 rounded-xl bg-surface-container text-on-surface hover:text-primary transition">
+                                    <span class="material-symbols-outlined text-[18px]">
+                                        edit
+                                    </span>
+
+                                    Sửa
+                                </a>
+                            }
                             <a asp-controller="DotHienMau" asp-action="Details" asp-route-id="@item.MaDot" class="flex-1 inline-flex items-center justify-center gap-1.5 py-2.5 rounded-xl font-label-md text-label-md bg-gradient-to-r from-primary to-primary-container text-on-primary shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
                                 <span class="material-symbols-outlined text-[16px]">favorite</span>
                                 <span>Đăng ký ngay</span>

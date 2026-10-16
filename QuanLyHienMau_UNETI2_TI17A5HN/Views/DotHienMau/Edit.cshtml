@@ -1,0 +1,257 @@
+﻿@*
+    Họ và tên: NGUYỄN THỊ PHƯƠNG THẢO
+    Mã sinh viên: 23103100272
+    Nội dung thực hiện: Chỉnh sửa đợt hiến máu
+*@
+
+@model QuanLyHienMau_UNETI2_TI17A5HN.Models.DotHienMau
+
+@{
+    ViewData["Title"] = "Chỉnh sửa đợt hiến máu";
+}
+
+<div class="max-w-4xl mx-auto px-4 py-8">
+
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-on-surface">
+            Chỉnh sửa đợt hiến máu
+        </h1>
+
+        <p class="mt-2 text-on-surface-variant">
+            Cập nhật thông tin của đợt hiến máu.
+        </p>
+    </div>
+
+    <div class="bg-surface-container-lowest rounded-2xl shadow-md p-6">
+
+        <form asp-controller="DotHienMau"
+              asp-action="Edit"
+              asp-route-id="@Model.MaDot"
+              method="post">
+
+            @Html.AntiForgeryToken()
+
+            <input type="hidden"
+                   asp-for="MaDot" />
+
+            <div asp-validation-summary="ModelOnly"
+                 class="text-red-600 mb-4">
+            </div>
+
+            <!-- Tên đợt -->
+            <div class="mb-5">
+                <label asp-for="TenDot"
+                       class="block mb-2 font-medium">
+                </label>
+
+                <input asp-for="TenDot"
+                       class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary" />
+
+                <span asp-validation-for="TenDot"
+                      class="text-red-600 text-sm">
+                </span>
+            </div>
+
+            <!-- Đơn vị tổ chức -->
+            <div class="mb-5">
+                <label class="block mb-2 font-medium">
+                    Đơn vị tổ chức
+                </label>
+
+                <select asp-for="MaDonViToChuc"
+                        class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary">
+
+                    <option value="">
+                        -- Chọn đơn vị tổ chức --
+                    </option>
+
+                    @foreach (var item in ViewBag.DonViList)
+                    {
+                        if (Model.MaDonViToChuc == item.MaDonViToChuc)
+                        {
+                            <option value="@item.MaDonViToChuc"
+                                    selected>
+                                @item.TenDonViToChuc
+                            </option>
+                        }
+                        else
+                        {
+                            <option value="@item.MaDonViToChuc">
+                                @item.TenDonViToChuc
+                            </option>
+                        }
+                    }
+
+                </select>
+
+                <span asp-validation-for="MaDonViToChuc"
+                      class="text-red-600 text-sm">
+                </span>
+            </div>
+
+            <!-- Chỉ tiêu đơn vị máu -->
+            <div class="mb-5">
+                <label asp-for="ChiTieuDonViMau"
+                       class="block mb-2 font-medium">
+                </label>
+
+                <input asp-for="ChiTieuDonViMau"
+                       type="number"
+                       min="1"
+                       class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary" />
+
+                <span asp-validation-for="ChiTieuDonViMau"
+                      class="text-red-600 text-sm">
+                </span>
+            </div>
+
+            <!-- Nhóm máu ưu tiên -->
+            <div class="mb-5">
+                <label asp-for="NhomMauUuTien"
+                       class="block mb-2 font-medium">
+                </label>
+
+                <select asp-for="NhomMauUuTien"
+                        class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary">
+
+                    <option value="">
+                        Không ưu tiên
+                    </option>
+
+                    <option value="A">
+                        A
+                    </option>
+
+                    <option value="B">
+                        B
+                    </option>
+
+                    <option value="AB">
+                        AB
+                    </option>
+
+                    <option value="O">
+                        O
+                    </option>
+
+                </select>
+
+                <span asp-validation-for="NhomMauUuTien"
+                      class="text-red-600 text-sm">
+                </span>
+            </div>
+
+            <!-- Cân nặng tối thiểu -->
+            <div class="mb-5">
+                <label asp-for="CanNangToiThieu"
+                       class="block mb-2 font-medium">
+                </label>
+
+                <input asp-for="CanNangToiThieu"
+                       type="number"
+                       min="0"
+                       step="0.1"
+                       class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary" />
+
+                <span asp-validation-for="CanNangToiThieu"
+                      class="text-red-600 text-sm">
+                </span>
+            </div>
+
+            <!-- Ngày bắt đầu đăng ký -->
+            <div class="mb-5">
+                <label asp-for="NgayBatDauDangKy"
+                       class="block mb-2 font-medium">
+                </label>
+
+                <input asp-for="NgayBatDauDangKy"
+                       type="date"
+                       class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary" />
+
+                <span asp-validation-for="NgayBatDauDangKy"
+                      class="text-red-600 text-sm">
+                </span>
+            </div>
+
+            <!-- Hạn đăng ký -->
+            <div class="mb-5">
+                <label asp-for="HanDangKy"
+                       class="block mb-2 font-medium">
+                </label>
+
+                <input asp-for="HanDangKy"
+                       type="date"
+                       class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary" />
+
+                <span asp-validation-for="HanDangKy"
+                      class="text-red-600 text-sm">
+                </span>
+            </div>
+
+            <!-- Mô tả -->
+            <div class="mb-5">
+                <label asp-for="MoTaDot"
+                       class="block mb-2 font-medium">
+                </label>
+
+                <textarea asp-for="MoTaDot"
+                          rows="5"
+                          class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary">
+                </textarea>
+
+                <span asp-validation-for="MoTaDot"
+                      class="text-red-600 text-sm">
+                </span>
+            </div>
+
+            <!-- Điều kiện người hiến -->
+            <div class="mb-6">
+                <label asp-for="DieuKienNguoiHien"
+                       class="block mb-2 font-medium">
+                </label>
+
+                <textarea asp-for="DieuKienNguoiHien"
+                          rows="5"
+                          class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary">
+                </textarea>
+
+                <span asp-validation-for="DieuKienNguoiHien"
+                      class="text-red-600 text-sm">
+                </span>
+            </div>
+
+            <!-- Nút thao tác -->
+            <div class="flex flex-wrap items-center gap-3">
+
+                <button type="submit"
+                        class="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-primary text-on-primary font-medium hover:opacity-90 transition">
+
+                    <span class="material-symbols-outlined text-[20px]">
+                        save
+                    </span>
+
+                    Lưu thay đổi
+                </button>
+
+                <a asp-controller="DotHienMau"
+                   asp-action="Index"
+                   class="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-surface-container text-on-surface hover:bg-surface-container-high transition">
+
+                    <span class="material-symbols-outlined text-[20px]">
+                        arrow_back
+                    </span>
+
+                    Quay lại
+                </a>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -222,5 +222,77 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
 
             return View(dotHienMau);
         }
+        [Authorize(Roles = "Admin,Medical Staff")]
+        [HttpGet]
+        public async Task<IActionResult> Edit(int id)
+        {
+            var dot = await _context.DotHienMaus
+                .FindAsync(id);
+
+            if (dot == null)
+            {
+                return NotFound();
+            }
+
+            ViewBag.DonViList = await _context.DonViToChucs
+                .OrderBy(d => d.TenDonViToChuc)
+                .ToListAsync();
+
+            return View(dot);
+        }
+        [Authorize(Roles = "Admin,Medical Staff")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(
+    int id,
+    DotHienMau model)
+        {
+            if (id != model.MaDot)
+            {
+                return NotFound();
+            }
+
+            if (model.HanDangKy < model.NgayBatDauDangKy)
+            {
+                ModelState.AddModelError(
+                    nameof(model.HanDangKy),
+                    "Hạn đăng ký phải sau hoặc bằng ngày bắt đầu đăng ký."
+                );
+            }
+
+            if (!ModelState.IsValid)
+            {
+                ViewBag.DonViList = await _context.DonViToChucs
+                    .OrderBy(d => d.TenDonViToChuc)
+                    .ToListAsync();
+
+                return View(model);
+            }
+
+            var dot = await _context.DotHienMaus
+                .FindAsync(id);
+
+            if (dot == null)
+            {
+                return NotFound();
+            }
+
+            dot.TenDot = model.TenDot;
+            dot.MaDonViToChuc = model.MaDonViToChuc;
+            dot.ChiTieuDonViMau = model.ChiTieuDonViMau;
+            dot.NhomMauUuTien = model.NhomMauUuTien;
+            dot.CanNangToiThieu = model.CanNangToiThieu;
+            dot.NgayBatDauDangKy = model.NgayBatDauDangKy;
+            dot.HanDangKy = model.HanDangKy;
+            dot.MoTaDot = model.MoTaDot;
+            dot.DieuKienNguoiHien = model.DieuKienNguoiHien;
+
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] =
+                "Cập nhật đợt hiến máu thành công.";
+
+            return RedirectToAction(nameof(Index));
+        }
     }
 }
