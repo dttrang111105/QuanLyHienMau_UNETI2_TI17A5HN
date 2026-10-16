@@ -22,7 +22,7 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
         // GET: /DotHienMau
         public async Task<IActionResult> Index(string? search, string? status, int? donViId, string? nhomMau, double? canNang, string? thoiHan, string? sort,int page = 1)
         {
-            const int pageSize = 2;
+            const int pageSize = 6;
 
             var query = _context.DotHienMaus
                 .Include(d => d.DonViToChuc)
@@ -147,6 +147,60 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
             //    .ToListAsync();
 
             return View(result);
+        }
+
+        // GET: /DotHienMau/Create
+        [Authorize(Roles = "Admin,Medical Staff")]
+        [HttpGet]
+        public async Task<IActionResult> Create()
+        {
+            ViewBag.DonViList = await _context.DonViToChucs
+                .OrderBy(d => d.TenDonViToChuc)
+                .ToListAsync();
+
+            return View();
+        }
+
+
+        // POST: /DotHienMau/Create
+        [Authorize(Roles = "Admin,Medical Staff")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(DotHienMau model)
+        {
+            // Trạng thái do hệ thống tự đặt
+            model.TrangThai = "Chưa mở";
+
+            // Vì TrangThai không nhập từ form nên xóa lỗi binding cũ nếu có
+            ModelState.Remove(nameof(model.TrangThai));
+
+            // Kiểm tra hạn đăng ký
+            if (model.HanDangKy < model.NgayBatDauDangKy)
+            {
+                ModelState.AddModelError(
+                    nameof(model.HanDangKy),
+                    "Hạn đăng ký phải sau hoặc bằng ngày bắt đầu đăng ký."
+                );
+            }
+
+            if (ModelState.IsValid)
+            {
+                _context.DotHienMaus.Add(model);
+
+                await _context.SaveChangesAsync();
+
+                TempData["SuccessMessage"] =
+                    "Thêm đợt hiến máu thành công.";
+
+                return RedirectToAction(nameof(Index));
+            }
+
+            // Nếu lỗi thì nạp lại dropdown
+            ViewBag.DonViList = await _context.DonViToChucs
+                .OrderBy(d => d.TenDonViToChuc)
+                .ToListAsync();
+
+            return View(model);
         }
 
         // GET: /DotHienMau/Details/5

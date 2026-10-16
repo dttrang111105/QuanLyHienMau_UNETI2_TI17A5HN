@@ -9,6 +9,7 @@ tìm kiếm, lọc, sắp xếp và phân trang.
 @{
     ViewData["Title"] = "Danh Sách Đợt Hiến Máu Vì Cộng Đồng";
 
+
     var donViList =
         ViewBag.DonViList
         as List<QuanLyHienMau_UNETI2_TI17A5HN.Models.DonViToChuc>
@@ -55,7 +56,21 @@ tìm kiếm, lọc, sắp xếp và phân trang.
                     Tham gia các chiến dịch hiến máu nhân đạo do các bệnh viện, trường đại học UNETI và hội chữ thập đỏ tổ chức trên toàn quốc.
                 </p>
             </div>
+            @if (User.IsInRole("Admin") || User.IsInRole("Medical Staff"))
+            {
+                <div class="mb-6">
+                    <a asp-controller="DotHienMau"
+                       asp-action="Create"
+                       class="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-primary text-on-primary font-label-lg font-bold shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all">
 
+                        <span class="material-symbols-outlined text-[20px]">
+                            add
+                        </span>
+
+                        <span>Thêm đợt hiến máu</span>
+                    </a>
+                </div>
+            }
             <!-- Large Center Search Bar -->
             <form method="get" asp-controller="DotHienMau" asp-action="Index" class="bg-surface-container-lowest p-2.5 rounded-2xl shadow-[0_12px_32px_-4px_rgba(198,40,61,0.08),0_4px_12px_-2px_rgba(0,0,0,0.03)] flex flex-col md:flex-row items-center gap-2 max-w-4xl">
                 <div class="flex items-center gap-3 px-4 py-2 w-full flex-1">
