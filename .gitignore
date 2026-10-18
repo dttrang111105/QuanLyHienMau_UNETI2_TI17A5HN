@@ -1,0 +1,7 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/.vs/QuanLyHienMau_UNETI2_TI17A5HN.slnx
+/QuanLyHienMau_UNETI2_TI17A5HN/obj
+/QuanLyHienMau_UNETI2_TI17A5HN/QuanLyHienMau_UNETI2_TI17A5HN.csproj.user
