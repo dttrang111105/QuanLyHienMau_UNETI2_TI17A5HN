@@ -1,5 +1,0 @@
-PASS git apply --check on clean original ZIP
-PASS git apply on clean original ZIP
-PASS every resulting file matches full project byte-for-byte
-PASS clean original plus patch builds with 0 warnings and 0 errors
-PASS clean original plus patch runs 62 business tests, 0 failed
