@@ -1,0 +1,73 @@
+@* Họ và tên: ĐIỀN HỌ TÊN CỦA BẠN | Mã sinh viên: ĐIỀN MSSV CỦA BẠN | Nội dung: Module 5. *@
+@using QuanLyHienMau_UNETI2_TI17A5HN.ViewModels
+@model ThongKeVm
+@{Layout="_AdminLayout";ViewData["Title"]="Thống kê & Báo cáo";}
+
+<link rel="stylesheet" href="~/css/module5-integration.css" asp-append-version="true"/><div class="m5-ui p-space-lg max-w-[1600px] mx-auto w-full"><partial name="_Module5Messages"/>
+<div class="page-head">
+<div>
+
+<h1>Thống kê hiến máu</h1>
+
+</div>
+<form method="get" class="filters">
+<label>
+<span>Năm cho hai bảng theo tháng</span>
+<input type="number" name="nam" value="@Model.Nam" min="2000" max="2100"/>
+</label>
+<button>Xem báo cáo</button>
+</form>
+</div>
+<section class="card">
+<h2>Đợt nhận nhiều phiếu nhất</h2>@if(Model.NhieuPhieuNhat.Count==0){<p class="empty">Chưa có phiếu đăng ký.</p>}else{foreach(var d in Model.NhieuPhieuNhat){<p>
+<b>@d.TenDot</b> · @d.Tong phiếu</p>}}</section>
+<section class="card">
+<h2>Phiếu đăng ký và tỷ lệ theo từng đợt</h2>
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+<th>Đợt hiến máu</th>
+<th>Tổng phiếu</th>
+<th>Đã xác nhận hiện tại</th>
+<th>Qua xác nhận</th>
+<th>Đã khám</th>
+<th>Thành công</th>
+<th>Tỷ lệ qua xác nhận</th>
+<th>Tỷ lệ thành công / đã khám</th>
+</tr>
+</thead>
+<tbody>@foreach(var d in Model.TheoDot){<tr>
+<td>@d.TenDot</td>
+<td>@d.Tong</td>
+<td>@d.DaXacNhan</td>
+<td>@d.QuaXacNhan</td>
+<td>@d.DaKham</td>
+<td>@d.ThanhCong</td>
+<td>@d.TyLeXacNhan.ToString("0.0")%</td>
+<td>@d.TyLeThanhCong.ToString("0.0")%</td>
+</tr>}</tbody>
+</table>
+</div>
+
+</section>
+<div class="report-grid">@foreach(var group in new[]{("Số đợt theo đơn vị tổ chức",Model.DotTheoDonVi),("Số phiếu theo trạng thái",Model.PhieuTheoTrangThai),("Hiến máu thành công theo đơn vị",Model.ThanhCongTheoDonVi),("Số phiếu nộp theo tháng",Model.PhieuTheoThang),("Số lịch khám theo tháng",Model.LichTheoThang)}){<section class="card">
+<h2>@group.Item1</h2>
+<table>
+<thead>
+<tr>
+<th>Nhóm</th>
+<th>Số lượng</th>
+</tr>
+</thead>
+<tbody>@foreach(var row in group.Item2){<tr>
+<td>@row.Nhom</td>
+<td class="number">@row.SoLuong</td>
+</tr>}@if(group.Item2.Count==0){<tr>
+<td colspan="2" class="empty">Chưa có dữ liệu.</td>
+</tr>}</tbody>
+</table>
+</section>}</div>
+
+
+</div>

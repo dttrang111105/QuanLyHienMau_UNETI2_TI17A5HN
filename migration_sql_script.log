@@ -1,0 +1,2 @@
+PASS regenerated SQL Server idempotent script matches included script (trailing blank lines ignored)
+PASS SQL Server migration generation completed without database connection

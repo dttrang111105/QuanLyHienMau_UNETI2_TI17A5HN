@@ -1,0 +1,5 @@
+PASS restart signs in and renders saved dashboard
+PASS restart retains browser-created cancelled appointment
+PASS restart retains both published outcomes
+PASS restart does not duplicate seed data
+RESULT: 4 passed, 0 failed

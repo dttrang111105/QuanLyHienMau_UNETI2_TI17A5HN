@@ -1,0 +1,21 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 18
+VisualStudioVersion = 18.0.0.0
+MinimumVisualStudioVersion = 18.0.0.0
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QuanLyHienMau_UNETI2_TI17A5HN", "QuanLyHienMau_UNETI2_TI17A5HN\QuanLyHienMau_UNETI2_TI17A5HN.csproj", "{92C92AA8-712B-5094-8064-2E1004ED9C0C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{92C92AA8-712B-5094-8064-2E1004ED9C0C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{92C92AA8-712B-5094-8064-2E1004ED9C0C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{92C92AA8-712B-5094-8064-2E1004ED9C0C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{92C92AA8-712B-5094-8064-2E1004ED9C0C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

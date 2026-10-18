@@ -1,0 +1,27 @@
+// Họ và tên: ĐIỀN HỌ TÊN CỦA BẠN
+// Mã sinh viên: ĐIỀN MSSV CỦA BẠN
+// Nội dung thực hiện: đăng ký dịch vụ và middleware cần thiết cho Module 5.
+using QuanLyHienMau_UNETI2_TI17A5HN.Infrastructure;
+
+var builder = WebApplication.CreateBuilder(args);
+// Add services to the container.
+builder.Services.AddControllersWithViews();
+builder.Services.AddModule5(builder.Configuration);
+var app = builder.Build();
+// Configure the HTTP request pipeline.
+if (!app.Environment.IsDevelopment())
+{
+    app.UseExceptionHandler("/Home/Error");
+    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+    app.UseHsts();
+}
+
+app.UseHttpsRedirection();
+app.UseRouting();
+app.UseSession();
+app.UseAuthentication();
+app.UseAuthorization();
+app.UseMiddleware<Module5Middleware>();
+app.MapStaticAssets();
+app.MapControllerRoute(name: "default", pattern: "{controller=Home}/{action=Index}/{id?}").WithStaticAssets();
+app.Run();
