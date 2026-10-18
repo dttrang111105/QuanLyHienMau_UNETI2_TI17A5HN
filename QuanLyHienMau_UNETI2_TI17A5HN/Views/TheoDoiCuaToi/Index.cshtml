@@ -1,0 +1,30 @@
+@* Họ và tên: ĐIỀN HỌ TÊN CỦA BẠN | Mã sinh viên: ĐIỀN MSSV CỦA BẠN | Nội dung: Module 5. *@
+@using QuanLyHienMau_UNETI2_TI17A5HN.ViewModels
+@model List<PhieuDangKyHienMau>
+@{Layout="_Layout";ViewData["Title"]="Lịch khám và kết quả của tôi";}
+
+<link rel="stylesheet" href="~/css/module5-integration.css" asp-append-version="true"/><div class="m5-ui p-space-lg max-w-[1600px] mx-auto w-full"><partial name="_Module5Messages"/>
+<div class="page-head">
+<div>
+
+<h1>Lịch khám và kết quả của tôi</h1><form asp-controller="Module5Access" asp-action="Logout" method="post"><button>Đăng xuất</button></form>
+
+</div>
+</div>
+@foreach(var p in Model){<section class="card">
+<h2>Phiếu #@p.MaPhieu · @p.Dot.TenDot</h2>
+<p>
+<span class="badge">@p.TrangThai</span>
+</p>@foreach(var l in p.LichKhams.OrderByDescending(x=>x.ThoiGianBatDau)){<p>
+<b>@l.ThoiGianBatDau.ToString("dd/MM/yyyy HH:mm") – @l.ThoiGianKetThuc.ToString("HH:mm")</b>
+<br/>@l.BacSiSangLoc · @l.DiaDiemHoacLienKet<br/>
+<span class="muted">@l.TrangThai · @l.GhiChu</span>
+</p>}@if(p.LichKhams.Count==0){<p class="muted">Chưa có lịch khám sàng lọc.</p>}@if(p.KetQuaHienMau is { } k){<hr/>
+<p>
+<b>Kết quả: @k.KetQua</b>
+<br/>@k.NhanXet<br/>
+<span class="muted">Điểm: @(k.DiemDanhGia?.ToString()??"Không sử dụng") · Cập nhật @k.NgayCapNhat.ToString("dd/MM/yyyy HH:mm")</span>
+</p>}</section>}
+@if(Model.Count==0){<section class="card empty">Bạn chưa có phiếu đăng ký.</section>}
+
+</div>
