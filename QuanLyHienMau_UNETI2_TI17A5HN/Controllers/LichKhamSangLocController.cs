@@ -1,6 +1,3 @@
-// Họ và tên: ĐIỀN HỌ TÊN CỦA BẠN
-// Mã sinh viên: ĐIỀN MSSV CỦA BẠN
-// Nội dung: Module 5 và phần nền dữ liệu cần thiết để chạy thử.
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -13,48 +10,28 @@ using QuanLyHienMau_UNETI2_TI17A5HN.ViewModels;
 namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers;
 [Authorize(Roles = "Admin,NhanVienYTe")]
 [Microsoft.AspNetCore.Mvc.ServiceFilter(typeof(QuanLyHienMau_UNETI2_TI17A5HN.Infrastructure.Module5DatabaseExceptionFilter))]
-public class LichKhamSangLocController(ApplicationDbContext db, Module5Service service) : Controller
+public class LichKhamSangLocController(ApplicationDbContext db, Module5Service service, Module5Pages pages) : Controller
 {
     public IActionResult Index(string? q, string? trangThai, DateTime? tuNgay, int page = 1, string view = "calendar", DateTime? ngay = null) => RedirectToAction("LichKhamSangLoc", "Admin", new { q, trangThai, tuNgay, page, view, ngay });
-    async Task Options(LichFormVm vm)
-    {
-        var ps = await db.PhieuDangKyHienMaus.AsNoTracking().Include(x => x.NguoiHien).Include(x => x.Dot).Where(x => (x.TrangThai == TrangThaiPhieu.DaXacNhan && !x.LichKhams.Any(l => l.TrangThai != TrangThaiLich.DaHuy)) || (vm.Id != 0 && x.MaPhieu == vm.MaPhieu)).OrderBy(x => x.MaPhieu).ToListAsync();
-        vm.Phieus = ps.Select(x => new SelectListItem($"#{x.MaPhieu} • {x.NguoiHien.HoTen} • {x.Dot.TenDot}", x.MaPhieu.ToString())).ToList();
-    }
+    [HttpGet]
+    public IActionResult Create() => RedirectToAction("LichKhamSangLoc", "Admin", new { newSlot = true });
 
     [HttpGet]
-    public async Task<IActionResult> Create()
-    {
-        var vm = new LichFormVm
-        {
-            ThoiGianBatDau = service.Now.Date.AddDays(1).AddHours(9),
-            ThoiGianKetThuc = service.Now.Date.AddDays(1).AddHours(10)
-        };
-        await Options(vm);
-        return View("Form", vm);
-    }
+    public IActionResult Edit(int id) => RedirectToAction("LichKhamSangLoc", "Admin", new { editId = id });
 
     [HttpGet]
-    public async Task<IActionResult> Edit(int id)
+    public async Task<IActionResult> Export(string? q, string? trangThai, int? maDot, string? bacSi, DateTime? ngay)
     {
-        var l = await db.LichKhamSangLocs.AsNoTracking().SingleOrDefaultAsync(x => x.MaLichKhamSangLoc == id);
-        if (l == null)
-            return NotFound();
-        if (l.TrangThai != TrangThaiLich.DaLenLich)
-            return BadRequest("Lịch không được phép sửa.");
-        var vm = new LichFormVm
-        {
-            Id = id,
-            MaPhieu = l.MaPhieu,
-            ThoiGianBatDau = l.ThoiGianBatDau,
-            ThoiGianKetThuc = l.ThoiGianKetThuc,
-            BacSiSangLoc = l.BacSiSangLoc,
-            DiaDiemHoacLienKet = l.DiaDiemHoacLienKet,
-            HinhThucTiepNhan = l.HinhThucTiepNhan,
-            GhiChu = l.GhiChu
-        };
-        await Options(vm);
-        return View("Form", vm);
+        var query = db.LichKhamSangLocs.AsNoTracking().Include(x => x.Phieu).ThenInclude(x => x.NguoiHien).Include(x => x.Phieu).ThenInclude(x => x.Dot).AsQueryable();
+        if (!string.IsNullOrWhiteSpace(q)) query = query.Where(x => x.BacSiSangLoc.Contains(q) || x.Phieu.NguoiHien.HoTen.Contains(q) || x.Phieu.Dot.TenDot.Contains(q));
+        if (!string.IsNullOrWhiteSpace(trangThai)) query = query.Where(x => x.TrangThai == trangThai);
+        if (maDot.HasValue) query = query.Where(x => x.Phieu.MaDot == maDot);
+        if (!string.IsNullOrWhiteSpace(bacSi)) { var key = bacSi.Trim().Normalize(System.Text.NormalizationForm.FormC).ToUpperInvariant(); query = query.Where(x => x.BacSiChuanHoa == key); }
+        if (ngay.HasValue) { var date = ngay.Value.Date; var end = date.AddDays(1); query = query.Where(x => x.ThoiGianBatDau < end && x.ThoiGianKetThuc > date); }
+        var data = await query.OrderBy(x => x.ThoiGianBatDau).ToListAsync();
+        var rows = new List<string[]> { new[] { "Mã lịch", "Mã phiếu", "Người hiến", "Đợt", "Bắt đầu", "Kết thúc", "Bác sĩ", "Địa điểm", "Trạng thái" } };
+        rows.AddRange(data.Select(x => new[] { x.MaLichKhamSangLoc.ToString(), x.MaPhieu.ToString(), x.Phieu.NguoiHien.HoTen, x.Phieu.Dot.TenDot, x.ThoiGianBatDau.ToString("dd/MM/yyyy HH:mm"), x.ThoiGianKetThuc.ToString("dd/MM/yyyy HH:mm"), x.BacSiSangLoc, x.DiaDiemHoacLienKet, x.TrangThai }));
+        return File(QuanLyHienMau_UNETI2_TI17A5HN.Infrastructure.Module5Csv.Encode(rows), "text/csv; charset=utf-8", "LichKhamSangLoc.csv");
     }
 
     [HttpPost, ValidateAntiForgeryToken]
@@ -75,12 +52,12 @@ public class LichKhamSangLocController(ApplicationDbContext db, Module5Service s
             }
             catch (Exception ex)when (ex is DbUpdateException || ex is System.Data.Common.DbException)
             {
+                db.ChangeTracker.Clear();
                 ModelState.AddModelError("", "Dữ liệu vừa thay đổi hoặc lịch bị trùng. Hãy tải lại và kiểm tra.");
             }
         }
 
-        await Options(vm);
-        return View("Form", vm);
+        return await pages.Lich(this, ngay: vm.ThoiGianBatDau, newSlot: true, form: vm);
     }
 
     [HttpPost, ValidateAntiForgeryToken]

@@ -1,6 +1,3 @@
-// Họ và tên: ĐIỀN HỌ TÊN CỦA BẠN
-// Mã sinh viên: ĐIỀN MSSV CỦA BẠN
-// Nội dung: hoàn thiện Module 5 trên project gốc.
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 
@@ -18,7 +15,7 @@ public class Module5Middleware(RequestDelegate next)
             context.User = new ClaimsPrincipal(new ClaimsIdentity());
         }
 
-        if (Module5Setup.IsModule5(context.Request.Path) || (context.Request.Path.Equals("/Module5Access/Login", StringComparison.OrdinalIgnoreCase) && HttpMethods.IsPost(context.Request.Method)))
+        if (Module5Setup.IsModule5(context.Request.Path) || ((context.Request.Path.Equals("/Module5Access/Login", StringComparison.OrdinalIgnoreCase) || context.Request.Path.Equals("/Account/Login", StringComparison.OrdinalIgnoreCase)) && HttpMethods.IsPost(context.Request.Method)))
         {
             try
             {

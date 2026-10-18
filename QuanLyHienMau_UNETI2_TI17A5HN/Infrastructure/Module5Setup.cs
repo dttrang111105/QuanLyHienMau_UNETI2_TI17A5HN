@@ -1,6 +1,3 @@
-// Họ và tên: ĐIỀN HỌ TÊN CỦA BẠN
-// Mã sinh viên: ĐIỀN MSSV CỦA BẠN
-// Nội dung: hoàn thiện Module 5 trên project gốc.
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using QuanLyHienMau_UNETI2_TI17A5HN.Data;
@@ -23,7 +20,7 @@ public static class Module5Setup
         services.AddAuthentication(Scheme).AddCookie(Scheme, o =>
         {
             o.Cookie.Name = ".Vitalis.Module5.Auth";
-            o.LoginPath = "/Module5Access/Login";
+            o.LoginPath = "/Account/Login";
             o.AccessDeniedPath = "/Module5Access/AccessDenied";
             o.ExpireTimeSpan = TimeSpan.FromHours(2);
         });

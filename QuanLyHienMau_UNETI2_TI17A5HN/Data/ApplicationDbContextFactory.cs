@@ -1,6 +1,3 @@
-// Họ và tên: ĐIỀN HỌ TÊN CỦA BẠN
-// Mã sinh viên: ĐIỀN MSSV CỦA BẠN
-// Nội dung: tạo DbContext lúc chạy Migration SQL Server cho Module 5.
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 

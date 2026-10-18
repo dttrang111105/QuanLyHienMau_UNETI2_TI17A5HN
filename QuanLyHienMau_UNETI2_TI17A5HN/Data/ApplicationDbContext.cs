@@ -1,6 +1,3 @@
-// Họ và tên: ĐIỀN HỌ TÊN CỦA BẠN
-// Mã sinh viên: ĐIỀN MSSV CỦA BẠN
-// Nội dung: Module 5 và phần nền dữ liệu cần thiết để chạy thử.
 using Microsoft.EntityFrameworkCore;
 using QuanLyHienMau_UNETI2_TI17A5HN.Models;
 

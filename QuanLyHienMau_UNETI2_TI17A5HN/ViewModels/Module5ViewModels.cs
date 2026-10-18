@@ -1,6 +1,3 @@
-// Họ và tên: ĐIỀN HỌ TÊN CỦA BẠN
-// Mã sinh viên: ĐIỀN MSSV CỦA BẠN
-// Nội dung: Module 5 và phần nền dữ liệu cần thiết để chạy thử.
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using QuanLyHienMau_UNETI2_TI17A5HN.Models;
@@ -14,6 +11,7 @@ public class LoginVm
     [Required(ErrorMessage = "Nhập mật khẩu.")]
     public string MatKhau { get; set; } = "";
     public string? ReturnUrl { get; set; }
+    public bool RememberMe { get; set; }
 }
 
 public class LichFormVm
@@ -83,6 +81,8 @@ public class DashboardVm
 public class ThongKeVm
 {
     public int Nam { get; set; }
+    public int? MaDonVi { get; set; }
+    public List<SelectListItem> DonVis { get; set; } = [];
     public List<ThongKeDong> DotTheoDonVi { get; set; } = [];
     public List<ThongKeDong> PhieuTheoTrangThai { get; set; } = [];
     public List<ThongKeDong> ThanhCongTheoDonVi { get; set; } = [];

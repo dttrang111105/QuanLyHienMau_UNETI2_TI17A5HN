@@ -1,6 +1,3 @@
-// Họ và tên: ĐIỀN HỌ TÊN CỦA BẠN
-// Mã sinh viên: ĐIỀN MSSV CỦA BẠN
-// Nội dung: Module 5 và phần nền dữ liệu cần thiết để chạy thử.
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -12,7 +9,7 @@ using QuanLyHienMau_UNETI2_TI17A5HN.ViewModels;
 namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers;
 [Authorize(Roles = "Admin,NhanVienYTe")]
 [Microsoft.AspNetCore.Mvc.ServiceFilter(typeof(QuanLyHienMau_UNETI2_TI17A5HN.Infrastructure.Module5DatabaseExceptionFilter))]
-public class KetQuaHienMauController(ApplicationDbContext db, Module5Service service) : Controller
+public class KetQuaHienMauController(ApplicationDbContext db, Module5Service service, Module5Pages pages) : Controller
 {
     public IActionResult Index() => RedirectToAction("KetQuaXetNghiem", "Admin");
     [HttpGet]
@@ -23,7 +20,7 @@ public class KetQuaHienMauController(ApplicationDbContext db, Module5Service ser
             return NotFound();
         if (p.TrangThai != TrangThaiPhieu.DaKham)
             return BadRequest("Chỉ nhập kết quả cho phiếu Đã khám sàng lọc.");
-        return View(new KetQuaFormVm { MaPhieu = id, ThongTinPhieu = $"#{id} • {p.NguoiHien.HoTen} • {p.Dot.TenDot}" });
+        return RedirectToAction("KetQuaXetNghiem", "Admin", new { id });
     }
 
     [HttpPost, ValidateAntiForgeryToken]
@@ -39,14 +36,12 @@ public class KetQuaHienMauController(ApplicationDbContext db, Module5Service ser
                 TempData["Ok"] = "Đã ghi nhận kết quả hiến máu.";
                 if (n >= p.Dot.ChiTieuDonViMau)
                     TempData["Warning"] = $"Đợt {p.Dot.TenDot} đã đạt chỉ tiêu ({n}/{p.Dot.ChiTieuDonViMau}). Trao đổi với người phụ trách đợt để đóng đăng ký nếu cần.";
-                return RedirectToAction(nameof(Index));
+                return RedirectToAction("KetQuaXetNghiem", "Admin", new { id = vm.MaPhieu });
             }
 
             ModelState.AddModelError("", e);
         }
 
-        var info = await db.PhieuDangKyHienMaus.Include(x => x.NguoiHien).SingleOrDefaultAsync(x => x.MaPhieu == vm.MaPhieu);
-        vm.ThongTinPhieu = info == null ? "Phiếu không tồn tại" : $"#{info.MaPhieu} • {info.NguoiHien.HoTen}";
-        return View(vm);
+        return await pages.KetQua(this, id: vm.MaPhieu, form: vm);
     }
 }

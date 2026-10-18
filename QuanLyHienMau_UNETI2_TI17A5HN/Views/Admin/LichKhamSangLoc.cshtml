@@ -1,14 +1,266 @@
-@* Họ và tên: ĐIỀN HỌ TÊN CỦA BẠN | Mã sinh viên: ĐIỀN MSSV CỦA BẠN | Nội dung: Module 5. *@
-@model List<LichKhamSangLoc>
 @using QuanLyHienMau_UNETI2_TI17A5HN.ViewModels
-@{Layout="_AdminLayout";ViewData["Title"]="Quản Lý Lịch Khám Sàng Lọc";}
-<link rel="stylesheet" href="~/css/module5-integration.css" asp-append-version="true"/>
-<div class="m5-ui p-space-lg max-w-[1600px] mx-auto w-full"><partial name="_Module5Messages"/>
-@{DateTime week=(DateTime)ViewBag.Week;bool calendar=(bool)ViewBag.Calendar;}
-<div class="page-head"><div><div class="text-on-surface-variant text-xs mb-2">Hệ thống Quản trị Y tế / Quản lý Y tế</div><h1 class="font-headline-lg">Quản Lý Lịch Khám Sàng Lọc</h1></div><a class="button" asp-controller="LichKhamSangLoc" asp-action="Create"><span class="material-symbols-outlined">add_circle</span>Lập lịch khám</a></div>
-<div class="metrics">@foreach(var m in new[]{("Tổng lịch khám",(int)ViewBag.Total,"event_note"),("Lịch khám sắp tới",(int)ViewBag.Upcoming,"schedule"),("Đã hoàn thành",(int)ViewBag.Completed,"task_alt"),("Đã hủy",(int)ViewBag.Cancelled,"event_busy")}){<article class="metric"><span>@m.Item1</span><strong>@m.Item2</strong><i class="material-symbols-outlined">@m.Item3</i></article>}</div>
-<section class="card"><form method="get" asp-controller="Admin" asp-action="LichKhamSangLoc" class="filters"><input type="hidden" name="view" value="@(calendar?"calendar":"list")"/><input type="hidden" name="ngay" value="@week.ToString("yyyy-MM-dd")"/><label><span>Tìm người hiến, bác sĩ, đợt</span><input name="q" value="@ViewBag.Q"/></label><label><span>Trạng thái</span><select name="trangThai"><option value="">Tất cả</option>@foreach(var s in new[]{TrangThaiLich.DaLenLich,TrangThaiLich.HoanThanh,TrangThaiLich.DaHuy}){<option selected="@(s==(string?)ViewBag.TrangThai)" value="@s">@s</option>}</select></label><label><span>Từ ngày</span><input type="date" name="tuNgay" value="@ViewBag.TuNgay"/></label><button>Lọc</button><a class="button quiet" asp-action="LichKhamSangLoc">Đặt lại</a></form></section>
-<section class="card"><div class="flex items-center justify-between flex-wrap gap-3 mb-5"><div class="flex gap-2"><a class="button @(calendar?"":"quiet")" asp-action="LichKhamSangLoc" asp-route-view="calendar" asp-route-q="@ViewBag.Q" asp-route-trangThai="@ViewBag.TrangThai" asp-route-tuNgay="@ViewBag.TuNgay" asp-route-ngay="@week.ToString("yyyy-MM-dd")"><span class="material-symbols-outlined">calendar_view_week</span>Lịch biểu</a><a class="button @(!calendar?"":"quiet")" asp-action="LichKhamSangLoc" asp-route-view="list" asp-route-q="@ViewBag.Q" asp-route-trangThai="@ViewBag.TrangThai" asp-route-tuNgay="@ViewBag.TuNgay"><span class="material-symbols-outlined">table_rows</span>Danh sách</a></div>@if(calendar){<div class="flex gap-3 items-center"><a class="button quiet small" aria-label="Tuần trước" asp-action="LichKhamSangLoc" asp-route-ngay="@week.AddDays(-7).ToString("yyyy-MM-dd")" asp-route-q="@ViewBag.Q" asp-route-trangThai="@ViewBag.TrangThai">‹</a><strong>@week.ToString("dd/MM") – @week.AddDays(6).ToString("dd/MM/yyyy")</strong><a class="button quiet small" aria-label="Tuần sau" asp-action="LichKhamSangLoc" asp-route-ngay="@week.AddDays(7).ToString("yyyy-MM-dd")" asp-route-q="@ViewBag.Q" asp-route-trangThai="@ViewBag.TrangThai">›</a></div>}</div>
-@if(calendar){<div class="table-wrap"><div class="week">@for(int i=0;i<7;i++){var day=week.AddDays(i);var rows=Model.Where(x=>x.ThoiGianBatDau.Date==day).ToList();<div class="day"><h3>@(i==6?"Chủ nhật":"Thứ "+(i+2)) · @day.ToString("dd/MM")</h3>@foreach(var l in rows){<article class="appointment"><strong>@l.ThoiGianBatDau.ToString("HH:mm")–@l.ThoiGianKetThuc.ToString("HH:mm")</strong><b>@l.Phieu.NguoiHien.HoTen</b><small>Phiếu #@l.MaPhieu · @l.Phieu.Dot.TenDot</small><small>@l.BacSiSangLoc</small><small>@l.DiaDiemHoacLienKet</small><span class="badge">@l.TrangThai</span><partial name="_Module5LichActions" model="l"/></article>}@if(rows.Count==0){<div class="muted mt-5">Không có lịch khám</div>}</div>}</div></div>}
-else{<div class="table-wrap"><table><thead><tr><th>Lịch / Phiếu</th><th>Người hiến / Đợt</th><th>Thời gian</th><th>Bác sĩ / Địa điểm</th><th>Trạng thái</th><th>Thao tác</th></tr></thead><tbody>@foreach(var l in Model){<tr><td>#@l.MaLichKhamSangLoc<small>Phiếu #@l.MaPhieu</small></td><td><b>@l.Phieu.NguoiHien.HoTen</b><small>@l.Phieu.Dot.TenDot</small></td><td>@l.ThoiGianBatDau.ToString("dd/MM/yyyy HH:mm")<small>đến @l.ThoiGianKetThuc.ToString("dd/MM/yyyy HH:mm")</small></td><td>@l.BacSiSangLoc<small>@l.HinhThucTiepNhan · @l.DiaDiemHoacLienKet</small><small>@l.GhiChu</small></td><td><span class="badge">@l.TrangThai</span></td><td><partial name="_Module5LichActions" model="l"/></td></tr>}@if(Model.Count==0){<tr><td colspan="6" class="empty">Không có lịch khám phù hợp.</td></tr>}</tbody></table></div><div class="pager"><span class="muted">@ViewBag.Count lịch · Trang @ViewBag.Page / @ViewBag.Pages</span>@for(int n=1;n<=(int)ViewBag.Pages;n++){if(n==(int)ViewBag.Page){<strong>@n</strong>}else{<a asp-action="LichKhamSangLoc" asp-route-page="@n" asp-route-view="list" asp-route-q="@ViewBag.Q" asp-route-trangThai="@ViewBag.TrangThai" asp-route-tuNgay="@ViewBag.TuNgay">@n</a>}}</div>}</section>
+@model LichPageVm
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Quản Lý Lịch Khám Sàng Lọc";
+}
+
+<partial name="_Module5Feedback"/>
+<!-- Dynamic Styles & Keyframe Overrides for Medical Calendar Pulsing & Glow -->
+<style>
+    @@keyframes pulse-subtle {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.85; transform: scale(0.995); }
+    }
+    .conflict-glow {
+        box-shadow: 0 0 0 2px #ba1a1a, 0 4px 14px -1px rgba(186, 26, 26, 0.25);
+        animation: pulse-subtle 2s infinite ease-in-out;
+    }
+</style>
+
+<div class="flex flex-col w-full">
+    <!-- Top Hero & Breadcrumbs Section -->
+    <div class="px-space-lg py-space-md bg-surface-container-lowest shadow-sm flex flex-col gap-space-md">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md">
+            <!-- Breadcrumb and Title Group -->
+            <div class="space-y-1">
+                <nav class="flex items-center gap-1.5 text-on-surface-variant font-label-sm text-label-sm">
+                    <span>Hệ thống Quản trị Y tế</span>
+                    <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+                    <span>Quản lý Y tế</span>
+                    <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+                    <span class="text-primary font-bold">Lịch khám sàng lọc</span>
+                </nav>
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-primary-fixed flex items-center justify-center text-primary shrink-0 shadow-sm">
+                        <span class="material-symbols-outlined text-[24px]">medical_services</span>
+                    </div>
+                    <div>
+                        <h1 class="font-headline-md text-headline-md text-on-surface font-bold tracking-tight">
+                            Quản Lý &amp; Điều Phối Lịch Khám Sàng Lọc
+                        </h1>
+                        <p class="font-body-sm text-body-sm text-on-surface-variant">
+                            Điều phối phân bổ ca tiếp nhận, phát hiện &amp; giải quyết xung đột trùng lịch, tối ưu luồng khám thực địa theo thời gian thực.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <!-- Action Cluster -->
+            <div class="flex flex-wrap items-center gap-space-sm shrink-0">
+                <!-- View Mode Switcher -->
+                <div class="inline-flex p-1 bg-surface-container rounded-xl shadow-inner text-on-surface-variant font-label-md text-label-md" id="viewModeToggle">
+                    <button class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-lowest text-primary font-bold shadow-sm transition-all duration-150" id="btnCalendarView" onclick="switchView('calendar')">
+                        <span class="material-symbols-outlined text-[18px]">calendar_view_week</span>
+                        <span>Chế độ Lịch biểu</span>
+                    </button>
+                    <button class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-on-surface-variant hover:text-on-surface transition-all duration-150" id="btnTableView" onclick="switchView('table')">
+                        <span class="material-symbols-outlined text-[18px]">table_rows</span>
+                        <span>Chế độ Danh sách</span>
+                    </button>
+                </div>
+                <button class="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-surface-container-low text-on-surface hover:bg-surface-container font-label-md text-label-md transition-all shadow-sm" onclick="location.href='@Url.Action("Export", "LichKhamSangLoc", new { q = Model.Q, trangThai = Model.TrangThai, maDot = Model.MaDot, bacSi = Model.BacSi, ngay = Context.Request.Query.ContainsKey("ngay") ? Model.Ngay : (DateTime?)null })'">
+                    <span class="material-symbols-outlined text-[18px]">file_download</span>
+                    <span>Xuất báo cáo</span>
+                </button>
+                <button class="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-on-primary hover:bg-primary-container font-label-md text-label-md shadow-md transition-all transform active:scale-95" onclick="toggleNewSlotModal(true)">
+                    <span class="material-symbols-outlined text-[18px]">add_circle</span>
+                    <span>+ Thiết lập Ca mới</span>
+                </button>
+            </div>
+        </div>
+        <!-- Date, Shift & Campaign Filter Bar -->
+        <div class="flex flex-wrap items-center justify-between gap-space-md pt-space-xs">
+            <div class="flex flex-wrap items-center gap-space-sm">
+                <!-- Navigation Buttons -->
+                <div class="flex items-center bg-surface-container-low rounded-xl p-1 shadow-sm">
+                    <button onclick="calendarNavigate('@Model.Now.ToString("yyyy-MM-dd")')" type="button" class="px-3 py-1.5 rounded-lg bg-surface-container-lowest text-on-surface hover:bg-surface-bright font-label-md text-label-md font-semibold transition-colors">
+                        Hôm nay
+                    </button>
+                    <button aria-label="Lùi ngày" onclick="calendarNavigate('@Model.Ngay.AddDays(-1).ToString("yyyy-MM-dd")')" class="w-8 h-8 flex items-center justify-center text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-lg transition-colors">
+                        <span class="material-symbols-outlined text-[18px]">chevron_left</span>
+                    </button>
+                    <button aria-label="Tiến ngày" onclick="calendarNavigate('@Model.Ngay.AddDays(1).ToString("yyyy-MM-dd")')" class="w-8 h-8 flex items-center justify-center text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-lg transition-colors">
+                        <span class="material-symbols-outlined text-[18px]">chevron_right</span>
+                    </button>
+                </div>
+                <!-- Current Date Pill -->
+                <div class="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-surface-container text-on-surface font-label-md text-label-md">
+                    <span class="material-symbols-outlined text-primary text-[18px]">calendar_month</span>
+                    <input type="date" aria-label="Ngày khám" value="@Model.Ngay.ToString("yyyy-MM-dd")" class="font-bold bg-transparent border-0 p-0 w-32" onchange="calendarNavigate(this.value)"/>
+                    <span class="text-on-surface-variant text-label-sm">(Tuần @System.Globalization.ISOWeek.GetWeekOfYear(Model.Ngay))</span>
+                </div>
+                <!-- Venue / Campaign Selector -->
+                <div class="relative min-w-[340px]">
+                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-primary text-[20px]">location_on</span>
+                    <select name="maDot" aria-label="Chọn điểm khám và chiến dịch hiến máu" onchange="calendarFilter('maDot',this.value)" class="w-full h-10 pl-9 pr-8 bg-surface-container-lowest rounded-xl font-label-md text-label-md text-on-surface appearance-none focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-sm cursor-pointer">
+                        <option value="">Tất cả đợt hiến máu</option>
+                        @foreach(var d in Model.Dots){<option value="@d.Value" selected="@(d.Value==Model.MaDot?.ToString())">@d.Text</option>}
+                    </select>
+                    <span class="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none text-[18px]">arrow_drop_down</span>
+                </div>
+            </div>
+            <div class="flex items-center gap-space-xs">
+                <span class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-800 font-label-sm text-label-sm font-semibold">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+                    Dữ liệu lịch khám đã cập nhật
+                </span>
+                <button class="p-2 rounded-xl bg-surface-container-low text-on-surface-variant hover:text-on-surface hover:bg-surface-container transition-colors" title="Làm mới dữ liệu" onclick="location.reload()">
+                    <span class="material-symbols-outlined text-[20px]">refresh</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+
+@{
+    var doctors=Model.BacSis.ToList();while(doctors.Count<5){doctors.Add("");}
+    var slots=Model.TrongNgay.GroupBy(x=>x.ThoiGianBatDau.ToString("HH:mm")+" - "+x.ThoiGianKetThuc.ToString("HH:mm")).ToList();
+    ViewData["CalendarReturnUrl"]=Url.Action("LichKhamSangLoc","Admin",new {q=Model.Q,trangThai=Model.TrangThai,view=Model.View,page=Model.Page,maDot=Model.MaDot,bacSi=Model.BacSi,ngay=Context.Request.Query.ContainsKey("ngay")||Model.View=="calendar"?Model.Ngay:(DateTime?)null});
+}
+    <div class="px-space-lg py-space-md space-y-space-md">
+        <!-- Key Metrics & Conflict Alert Ribbon -->
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-space-md">
+            <!-- Card 1: Today Appointments -->
+            <div class="bg-surface-container-lowest rounded-2xl p-space-md shadow-sm flex flex-col justify-between">
+                <div class="flex items-center justify-between">
+                    <span class="font-label-md text-label-md text-on-surface-variant font-medium">Tổng ca hẹn hôm nay</span>
+                    <span class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+                        <span class="material-symbols-outlined text-[18px]">event_note</span>
+                    </span>
+                </div>
+                <div class="mt-2 flex items-baseline gap-2">
+                    <span class="font-display-hero text-headline-lg font-bold text-on-surface leading-none">@Model.TrongNgay.Count</span>
+                    <span class="font-label-sm text-label-sm text-emerald-600 font-semibold bg-emerald-50 px-2 py-0.5 rounded-full">@Model.Upcoming lịch sắp tới</span>
+                </div>
+                <div class="mt-3 pt-2.5 flex items-center justify-between text-on-surface-variant font-label-sm text-label-sm bg-surface-container-low px-2.5 py-1 rounded-xl">
+                    <span>Đã khám: <strong class="text-on-surface">@Model.TrongNgay.Count(x=>x.TrangThai==TrangThaiLich.HoanThanh)</strong></span>
+                    <span>Đã lên lịch: <strong class="text-primary font-bold">@Model.TrongNgay.Count(x=>x.TrangThai==TrangThaiLich.DaLenLich)</strong></span>
+                    <span>Đã hủy: <strong class="text-on-surface">@Model.TrongNgay.Count(x=>x.TrangThai==TrangThaiLich.DaHuy)</strong></span>
+                </div>
+            </div>
+            <!-- Card 2: Clinical Team Capacity -->
+            <div class="bg-surface-container-lowest rounded-2xl p-space-md shadow-sm flex flex-col justify-between">
+                <div class="flex items-center justify-between">
+                    <span class="font-label-md text-label-md text-on-surface-variant font-medium">Bác sĩ phụ trách</span>
+                    <span class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-secondary">
+                        <span class="material-symbols-outlined text-[18px]">group_work</span>
+                    </span>
+                </div>
+                <div class="mt-2 flex items-center justify-between">
+                    <span class="font-display-hero text-headline-lg font-bold text-on-surface leading-none">@Model.BacSis.Count</span>
+                    <span class="font-label-sm text-label-sm text-on-surface-variant">@Model.TrongNgay.Count(x=>x.TrangThai==TrangThaiLich.HoanThanh) / @Model.TrongNgay.Count ca đã hoàn thành</span>
+                </div>
+                <div class="mt-3 w-full bg-surface-container rounded-full h-2 overflow-hidden">
+                    <div class="bg-primary h-2 rounded-full transition-all duration-500" style="width: @(Model.TrongNgay.Count==0?0:100*Model.TrongNgay.Count(x=>x.TrangThai==TrangThaiLich.HoanThanh)/Model.TrongNgay.Count)%;"></div>
+                </div>
+            </div>
+            <!-- Card 3: Average Wait Time -->
+            <div class="bg-surface-container-lowest rounded-2xl p-space-md shadow-sm flex flex-col justify-between">
+                <div class="flex items-center justify-between">
+                    <span class="font-label-md text-label-md text-on-surface-variant font-medium">Thời lượng hẹn trung bình</span>
+                    <span class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-emerald-700">
+                        <span class="material-symbols-outlined text-[18px]">timer</span>
+                    </span>
+                </div>
+                <div class="mt-2 flex items-baseline gap-2">
+                    <span class="font-display-hero text-headline-lg font-bold text-emerald-800 leading-none">@(Model.TrongNgay.Count==0?"0":Model.TrongNgay.Average(x=>(x.ThoiGianKetThuc-x.ThoiGianBatDau).TotalMinutes).ToString("0.#"))</span>
+                    <span class="font-title-md text-title-md text-emerald-800 font-semibold">phút/ca</span>
+                </div>
+                <div class="mt-3 flex items-center gap-1.5 text-emerald-700 font-label-sm text-label-sm">
+                    <span class="material-symbols-outlined text-[16px]">check_circle</span>
+                    <span>@Model.Total lịch · @Model.Cancelled lịch đã hủy</span>
+                </div>
+            </div>
+            <!-- Card 4: Urgent Conflict Alert Badge -->
+            <div class="bg-gradient-to-br from-error-container/60 via-error-container/30 to-surface-container-lowest rounded-2xl p-space-md shadow-sm flex flex-col justify-between">
+                <div class="flex items-center justify-between">
+                    <span class="font-label-md text-label-md text-error font-bold flex items-center gap-1.5">
+                        <span class="material-symbols-outlined text-[18px] text-error">warning</span>
+                        Cảnh Báo Xung Đột Ca
+                    </span>
+                    <span class="px-2 py-0.5 rounded-full bg-error text-on-error font-label-sm text-label-sm font-bold animate-pulse">
+                        ĐÃ KIỂM TRA
+                    </span>
+                </div>
+                <div class="mt-2 flex items-baseline gap-1.5">
+                    <span class="font-display-hero text-headline-lg font-bold text-on-error-container leading-none">@Model.TrungLich.Count</span>
+                    <span class="font-body-md text-body-md text-on-error-container font-semibold">trường hợp vi phạm</span>
+                </div>
+                <div class="mt-2 flex items-center justify-between">
+                    <span class="font-label-sm text-label-sm text-on-error-container/80">Kiểm tra người hiến và bác sĩ</span>
+                    <button class="px-2.5 py-1 rounded-lg bg-error text-on-error font-label-sm text-label-sm font-bold shadow-sm hover:opacity-90 transition-opacity" onclick="scrollToConflictSection()">
+                        Xử lý ngay →
+                    </button>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="bg-error-container/20 rounded-2xl p-space-md shadow-sm flex flex-col gap-space-sm transition-all" id="conflictBannerSection">
+            <div class="flex items-start md:items-center justify-between gap-space-md">
+                <div class="flex items-center gap-3"><div class="w-9 h-9 rounded-xl bg-error text-on-error flex items-center justify-center shrink-0"><span class="material-symbols-outlined text-[20px]">notification_important</span></div><div>
+                    <h2 class="font-title-md text-title-md text-on-error-container font-bold">@(Model.TrungLich.Count==0?"Không phát hiện xung đột lịch khám trong ngày":$"Phát hiện {Model.TrungLich.Count} lịch khám trùng khoảng thời gian")</h2>
+                    <p class="font-body-sm text-body-sm text-on-surface-variant">Kiểm tra khoảng thời gian khám của người hiến máu và bác sĩ sàng lọc trên các lịch chưa hủy.</p>
+                </div></div>
+                <button class="px-3 py-1.5 rounded-xl bg-surface-container-lowest text-on-surface hover:bg-surface-container font-label-sm text-label-sm font-semibold transition-colors flex items-center gap-1 shadow-sm" id="toggleConflictDetailsBtn" onclick="toggleConflictDetails()"><span>Chi tiết &amp; Đề xuất</span><span class="material-symbols-outlined text-[16px]" id="conflictToggleIcon">expand_more</span></button>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-space-md pt-2" id="conflictDetailsContent">
+                <div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col justify-between">
+                    <div class="space-y-2"><span class="px-2 py-0.5 rounded-full bg-error text-on-error font-label-sm text-label-sm font-bold">Kiểm tra trùng lịch</span>
+                    @if(Model.TrungLich.Count==0){<p class="font-label-lg text-label-lg font-bold text-on-surface pt-1">Các lịch khám trong ngày không trùng nhau</p><p class="font-body-sm text-body-sm text-on-surface-variant">@Model.TrongNgay.Count lịch trong ngày · @Model.TrongNgay.Count(x=>x.TrangThai==TrangThaiLich.HoanThanh) lịch đã hoàn thành.</p>}
+                    @foreach(var l in Model.TrungLich.Take(2)){<p class="font-body-sm text-body-sm">Phiếu #@l.MaPhieu · @l.Phieu.NguoiHien.HoTen · @l.ThoiGianBatDau.ToString("HH:mm")–@l.ThoiGianKetThuc.ToString("HH:mm") · @l.BacSiSangLoc</p><partial name="_Module5CalendarActions" model="l"/>}
+                    </div><div class="mt-4 pt-3 flex flex-wrap items-center justify-between gap-2 bg-surface-container-low px-3 py-2 rounded-xl"><span class="font-label-sm text-label-sm text-tertiary font-medium">@Model.Form.Phieus.Count phiếu đã xác nhận có thể lập lịch</span><button class="px-3 py-1 rounded-lg bg-primary text-on-primary font-label-sm text-label-sm font-semibold" onclick="toggleNewSlotModal(true)">Thiết lập ca mới</button></div>
+                </div>
+                <div class="bg-surface-container-lowest rounded-xl p-space-md shadow-sm flex flex-col justify-between"><div class="space-y-2"><span class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 font-label-sm text-label-sm font-bold">Lịch khám sắp tới</span>
+                    @foreach(var l in Model.SapToi){<div><p class="font-label-md text-label-md font-bold text-on-surface">@l.Phieu.NguoiHien.HoTen · Phiếu #@l.MaPhieu</p><p class="font-body-sm text-body-sm text-on-surface-variant">@l.ThoiGianBatDau.ToString("dd/MM/yyyy HH:mm") · @l.BacSiSangLoc</p></div>}
+                    @if(Model.SapToi.Count==0){<p class="font-body-sm text-body-sm text-on-surface-variant">Chưa có lịch khám sắp tới.</p>}
+                    </div><div class="mt-4 pt-3 flex justify-between items-center gap-2 bg-surface-container-low px-3 py-2 rounded-xl"><span class="font-label-sm text-label-sm">@Model.Upcoming ca hẹn sắp tới</span><button class="px-3 py-1 rounded-lg bg-primary text-on-primary font-label-sm text-label-sm font-semibold" onclick="switchView('table')">Danh sách ca khám</button></div>
+                </div>
+            </div>
+        </div>
+        <div class="bg-surface-container-lowest rounded-2xl p-space-md shadow-sm flex flex-col gap-space-sm">
+            <div class="flex flex-wrap items-center justify-between gap-2"><div><h2 class="font-title-md text-title-md text-on-surface font-bold">Trạng Thái @doctors.Count Bàn Khám Sàng Lọc Lâm Sàng</h2><p class="font-body-sm text-body-sm text-on-surface-variant">Nhấp vào từng bàn để lọc nhanh danh sách hoặc đổi bác sĩ phụ trách</p></div><div class="flex gap-2 flex-wrap"><button class="px-3 py-1.5 rounded-full bg-primary text-on-primary font-label-sm text-label-sm" onclick="calendarFilter('bacSi','')">Tất cả</button>@for(var i=0;i<doctors.Count;i++){if(doctors[i]!=""){<button class="px-3 py-1.5 rounded-full bg-surface-container-low text-on-surface font-label-sm text-label-sm" data-doctor="@doctors[i]" onclick="calendarFilter('bacSi',this.dataset.doctor)">Bàn @(i+1)</button>}}</div></div>
+            <div class="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-5 gap-space-sm">
+                @for(var i=0;i<doctors.Count;i++){var doctor=doctors[i];var rows=Model.TrongNgay.Where(x=>string.Equals(x.BacSiSangLoc,doctor,StringComparison.OrdinalIgnoreCase)).ToList();<div class="bg-surface-container-low rounded-xl p-3.5 flex flex-col justify-between cursor-pointer" data-doctor="@doctor" onclick="calendarFilter('bacSi',this.dataset.doctor)"><div class="flex items-center justify-between"><span class="px-2 py-0.5 rounded bg-primary-fixed text-primary text-[11px] font-bold">BÀN @((i+1).ToString("00"))</span><span class="font-label-sm text-[11px] text-emerald-700">@(doctor==""?"Chưa phân công":"Hoạt động")</span></div><div class="mt-3 flex gap-2 items-center"><div class="w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center shrink-0"><span class="material-symbols-outlined text-[18px]">stethoscope</span></div><div class="min-w-0"><p class="font-label-md text-label-md font-bold text-on-surface truncate">@(doctor==""?"Bàn dự phòng":doctor)</p><p class="font-body-sm text-body-sm text-on-surface-variant">Khám sàng lọc</p></div></div><div class="mt-3 pt-2 flex justify-between font-label-sm text-label-sm"><span>Đã khám: <b>@rows.Count(x=>x.TrangThai==TrangThaiLich.HoanThanh)/@rows.Count</b></span><span class="text-primary">@rows.Count(x=>x.TrangThai==TrangThaiLich.DaLenLich) chờ</span></div></div>}
+            </div>
+        </div>
+        <div class="bg-surface-container-lowest rounded-2xl shadow-sm overflow-hidden flex flex-col @(Model.View=="table"?"hidden":"")" id="calendarViewContainer">
+            <div class="p-space-md bg-surface-container-low flex flex-col md:flex-row md:items-center justify-between gap-space-sm"><div class="flex items-center gap-3"><span class="w-3 h-3 rounded-full bg-primary animate-pulse"></span><h2 class="font-title-md text-title-md font-bold text-on-surface">Bảng Lịch Biểu Trực Tiếp Theo Khung Giờ &amp; Bàn Khám</h2><span class="px-2.5 py-0.5 rounded-full bg-primary/10 text-primary font-label-sm text-label-sm font-bold">Cập nhật: @Model.Now.ToString("HH:mm")</span></div><div class="flex gap-3 font-label-sm text-label-sm"><span class="text-emerald-700">● Đã hoàn thành</span><span class="text-primary">● Đã lên lịch</span><span class="text-on-surface-variant">● Đã hủy</span></div></div>
+            <div class="overflow-x-auto relative"><table class="w-full min-w-[1100px] border-collapse text-left"><thead><tr class="bg-surface-container font-label-md text-label-md text-on-surface-variant"><th class="p-3 w-28 text-center sticky left-0 bg-surface-container z-20 font-bold">Khung Giờ</th>@for(var i=0;i<doctors.Count;i++){<th class="p-3 w-1/5 min-w-[200px]"><div class="font-bold text-on-surface">Bàn @((i+1).ToString("00")) • Khám sàng lọc</div><div class="text-label-sm text-on-surface-variant font-normal">@(doctors[i]==""?"Chưa phân công":doctors[i])</div></th>}</tr></thead>
+            <tbody class="font-body-sm text-body-sm divide-y divide-surface-container">
+                @foreach(var slot in slots){<tr class="hover:bg-surface-container-low/40 transition-colors"><td class="p-3 font-label-md text-label-md text-on-surface-variant text-center sticky left-0 bg-surface-container-lowest font-semibold">@slot.Key</td>@foreach(var doctor in doctors){<td class="p-2 align-top">@foreach(var l in slot.Where(x=>string.Equals(x.BacSiSangLoc,doctor,StringComparison.OrdinalIgnoreCase))){<div class="p-2.5 rounded-xl @(l.TrangThai==TrangThaiLich.HoanThanh?"bg-emerald-50 text-emerald-950":l.TrangThai==TrangThaiLich.DaHuy?"bg-surface-container text-on-surface-variant":"bg-sky-50 text-sky-950") shadow-sm flex flex-col gap-1 mb-2" data-appointment="@l.MaLichKhamSangLoc"><div class="flex justify-between gap-2"><span class="font-label-sm text-label-sm font-bold">Phiếu #@l.MaPhieu</span><span class="font-label-sm text-[10px] font-bold">@l.TrangThai</span></div><p class="font-label-md text-label-md font-semibold">@l.Phieu.NguoiHien.HoTen</p><p class="text-[12px]">@l.Phieu.NguoiHien.NhomMau · @l.DiaDiemHoacLienKet</p><p class="text-[11px]">@l.Phieu.Dot.TenDot</p><partial name="_Module5CalendarActions" model="l"/></div>}</td>}</tr>}
+                @if(slots.Count==0){@foreach(var time in new[]{"08:30 - 09:00","09:00 - 09:30","09:30 - 10:00","10:00 - 10:30"}){<tr><td class="p-3 text-center font-semibold text-on-surface-variant">@time</td>@foreach(var doctor in doctors){<td class="p-3 h-24 text-[12px] text-on-surface-variant">Chưa có ca khám</td>}</tr>}}
+            </tbody></table></div>
+        </div>
+        <div class="bg-surface-container-lowest rounded-2xl shadow-sm overflow-hidden flex flex-col @(Model.View=="table"?"":"hidden")" id="tableViewContainer">
+            <div class="p-space-md flex items-center justify-between flex-wrap gap-3"><h2 class="font-title-md text-title-md font-bold text-on-surface">Danh Sách Chi Tiết Ca Khám &amp; Hồ Sơ Tiếp Nhận</h2><form method="get" action="/Admin/LichKhamSangLoc" class="flex items-center flex-wrap gap-2"><input type="hidden" name="view" value="table"/>@if(Context.Request.Query.ContainsKey("ngay")){<input type="hidden" name="ngay" value="@Model.Ngay.ToString("yyyy-MM-dd")"/>}<input type="hidden" name="maDot" value="@Model.MaDot"/><input type="hidden" name="bacSi" value="@Model.BacSi"/><input name="q" value="@Model.Q" class="h-10 px-3 bg-surface-container-low rounded-xl font-body-sm text-body-sm w-72" placeholder="Tìm theo Mã phiếu, Họ tên, Bác sĩ..."/><select name="trangThai" aria-label="Trạng thái lịch" class="h-10 px-3 bg-surface-container-low rounded-xl font-body-sm text-body-sm"><option value="">Tất cả trạng thái</option>@foreach(var state in new[]{TrangThaiLich.DaLenLich,TrangThaiLich.HoanThanh,TrangThaiLich.DaHuy}){<option value="@state" selected="@(Model.TrangThai==state)">@state</option>}</select><button class="h-10 px-4 rounded-xl bg-primary text-on-primary font-bold">Tìm kiếm</button></form></div>
+            <div class="overflow-x-auto"><table class="w-full min-w-[1100px] text-left"><thead><tr class="bg-surface-container-low text-on-surface-variant text-label-sm"><th class="p-3">Thời gian / Phiếu</th><th class="p-3">Người hiến máu</th><th class="p-3">Bác sĩ / Địa điểm</th><th class="p-3">Nhóm máu / Thông tin</th><th class="p-3">Trạng thái</th><th class="p-3 text-center">Thao tác</th></tr></thead><tbody class="divide-y divide-surface-container font-body-sm text-body-sm">@foreach(var l in Model.Rows){<tr class="hover:bg-surface-container-low transition-colors" data-appointment="@l.MaLichKhamSangLoc"><td class="p-3"><b class="block">@l.ThoiGianBatDau.ToString("dd/MM/yyyy HH:mm")–@l.ThoiGianKetThuc.ToString("HH:mm")</b><span class="text-label-sm text-on-surface-variant">Phiếu #@l.MaPhieu</span></td><td class="p-3"><b>@l.Phieu.NguoiHien.HoTen</b><span class="block text-label-sm text-on-surface-variant">@l.Phieu.Dot.TenDot</span></td><td class="p-3"><b>@l.BacSiSangLoc</b><span class="block text-label-sm text-on-surface-variant">@l.DiaDiemHoacLienKet · @l.HinhThucTiepNhan</span></td><td class="p-3">@l.Phieu.NguoiHien.NhomMau · @l.Phieu.NguoiHien.CanNang kg<span class="block text-label-sm text-on-surface-variant">@l.GhiChu</span></td><td class="p-3"><span class="px-2.5 py-1 rounded-full bg-surface-container font-semibold text-label-sm">@l.TrangThai</span></td><td class="p-3"><partial name="_Module5CalendarActions" model="l"/></td></tr>}@if(Model.Rows.Count==0){<tr><td colspan="6" class="p-8 text-center text-on-surface-variant">Không có lịch khám phù hợp.</td></tr>}</tbody></table></div>
+            <div class="p-space-md flex justify-between items-center gap-3 border-t border-surface-container"><span class="font-body-sm text-body-sm text-on-surface-variant">@Model.Count lịch · Trang @Model.Page / @Model.Pages</span><div class="flex gap-1">@if(Model.Page>1){<button type="button" onclick="calendarPage(@(Model.Page-1))" class="px-3 py-1.5 rounded-lg bg-surface-container-low">Trước</button>}@for(var n=1;n<=Model.Pages;n++){<button type="button" onclick="calendarPage(@n)" class="px-3 py-1.5 rounded-lg @(n==Model.Page?"bg-primary text-on-primary":"bg-surface-container-low")">@n</button>}@if(Model.Page<Model.Pages){<button type="button" onclick="calendarPage(@(Model.Page+1))" class="px-3 py-1.5 rounded-lg bg-surface-container-low">Sau</button>}</div></div>
+        </div>
+    </div>
+    <div class="fixed inset-0 z-50 bg-inverse-surface/40 backdrop-blur-sm @(Model.ShowForm?"":"hidden") flex items-center justify-center p-4" id="newSlotModal">
+        <form action="/LichKhamSangLoc/Save" method="post" class="bg-surface-container-lowest rounded-2xl max-w-xl w-full shadow-2xl overflow-hidden flex flex-col max-h-[94vh]">
+            @Html.AntiForgeryToken()<input type="hidden" name="Id" value="@Model.Form.Id"/>
+            <div class="p-space-md bg-surface-container flex items-center justify-between"><div class="flex items-center gap-2"><span class="material-symbols-outlined text-primary text-[22px]">add_circle</span><h3 class="font-title-md text-title-md font-bold text-on-surface">@(Model.Form.Id==0?"Thiết Lập Ca Khám / Điều Phối Bác Sĩ Mới":"Điều Chỉnh Lịch Khám Sàng Lọc")</h3></div><button type="button" class="w-8 h-8 rounded-lg bg-surface-container-low flex items-center justify-center" onclick="toggleNewSlotModal(false)"><span class="material-symbols-outlined">close</span></button></div>
+            <div class="p-space-lg space-y-space-md overflow-y-auto"><div asp-validation-summary="All" class="text-error font-body-sm text-body-sm" role="alert"></div>
+                <div><label for="MaPhieu" class="block font-label-md text-label-md font-bold text-on-surface mb-1">Phiếu đăng ký đã xác nhận <span class="text-primary">*</span></label>@if(Model.Form.Id==0){<select name="MaPhieu" id="MaPhieu" class="w-full h-11 px-3 bg-surface-container-low rounded-xl font-body-sm text-body-sm" required><option value="0">Chọn phiếu đăng ký</option>@foreach(var p in Model.Form.Phieus){<option value="@p.Value" selected="@(p.Value==Model.Form.MaPhieu.ToString())">@p.Text</option>}</select>}else{<input type="hidden" name="MaPhieu" value="@Model.Form.MaPhieu"/><input readonly value="@Model.Form.Phieus.FirstOrDefault(p=>p.Value==Model.Form.MaPhieu.ToString())?.Text" class="w-full h-11 px-3 bg-surface-container-low rounded-xl font-body-sm text-body-sm"/>}</div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-space-sm"><div><label for="BacSiSangLoc" class="block font-label-md text-label-md font-bold text-on-surface mb-1">Bác sĩ phụ trách *</label><input name="BacSiSangLoc" id="BacSiSangLoc" list="calendarDoctors" value="@Model.Form.BacSiSangLoc" class="w-full h-11 px-3 bg-surface-container-low rounded-xl font-body-sm text-body-sm" required maxlength="120"/><datalist id="calendarDoctors">@foreach(var d in Model.BacSis){<option value="@d"></option>}</datalist></div><div><label for="HinhThucTiepNhan" class="block font-label-md text-label-md font-bold text-on-surface mb-1">Hình thức tiếp nhận *</label><select name="HinhThucTiepNhan" id="HinhThucTiepNhan" class="w-full h-11 px-3 bg-surface-container-low rounded-xl font-body-sm text-body-sm">@foreach(var x in new[]{"Trực tiếp","Trực tuyến"}){<option selected="@(x==Model.Form.HinhThucTiepNhan)">@x</option>}</select></div></div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-space-sm"><div><label for="ThoiGianBatDau" class="block font-label-md text-label-md font-bold text-on-surface mb-1">Thời gian bắt đầu *</label><input type="datetime-local" id="ThoiGianBatDau" name="ThoiGianBatDau" value="@Model.Form.ThoiGianBatDau?.ToString("yyyy-MM-ddTHH:mm")" class="w-full h-11 px-3 bg-surface-container-low rounded-xl font-body-sm text-body-sm" required/></div><div><label for="ThoiGianKetThuc" class="block font-label-md text-label-md font-bold text-on-surface mb-1">Thời gian kết thúc *</label><input type="datetime-local" id="ThoiGianKetThuc" name="ThoiGianKetThuc" value="@Model.Form.ThoiGianKetThuc?.ToString("yyyy-MM-ddTHH:mm")" class="w-full h-11 px-3 bg-surface-container-low rounded-xl font-body-sm text-body-sm" required/></div></div>
+                <div><label for="DiaDiemHoacLienKet" class="block font-label-md text-label-md font-bold text-on-surface mb-1">Địa điểm hoặc liên kết *</label><input name="DiaDiemHoacLienKet" id="DiaDiemHoacLienKet" value="@Model.Form.DiaDiemHoacLienKet" class="w-full h-11 px-3 bg-surface-container-low rounded-xl font-body-sm text-body-sm" required maxlength="250"/></div>
+                <div><label for="GhiChu" class="block font-label-md text-label-md font-bold text-on-surface mb-1">Ghi chú</label><textarea id="GhiChu" name="GhiChu" maxlength="1000" rows="2" class="w-full p-3 bg-surface-container-low rounded-xl font-body-sm text-body-sm">@Model.Form.GhiChu</textarea></div>
+            </div><div class="p-space-md bg-surface-container-low flex justify-end gap-space-sm"><button type="button" class="px-4 py-2 rounded-xl bg-surface-container font-label-md text-label-md" onclick="toggleNewSlotModal(false)">Hủy</button><button type="submit" class="px-5 py-2 rounded-xl bg-primary text-on-primary font-label-md text-label-md font-bold shadow-md">Lưu lịch khám</button></div>
+        </form>
+    </div>
 </div>
+@section Scripts{
+<script>
+function calendarFilter(key,value){const u=new URL(location.href);if(value)u.searchParams.set(key,value);else u.searchParams.delete(key);if(key!=='page')u.searchParams.delete('page');u.pathname='/Admin/LichKhamSangLoc';u.searchParams.delete('editId');u.searchParams.delete('newSlot');location.href=u.pathname+u.search;}
+function calendarNavigate(day){calendarFilter('ngay',day)}
+function calendarPage(page){calendarFilter('page',String(page))}
+function switchView(mode){calendarFilter('view',mode==='calendar'?'calendar':'table')}
+function toggleConflictDetails(){const e=document.getElementById('conflictDetailsContent');e.classList.toggle('hidden');document.getElementById('conflictToggleIcon').textContent=e.classList.contains('hidden')?'expand_more':'expand_less'}
+function scrollToConflictSection(){document.getElementById('conflictDetailsContent').classList.remove('hidden');document.getElementById('conflictBannerSection').scrollIntoView({behavior:'smooth',block:'center'})}
+function toggleNewSlotModal(show){if(show && @Model.Form.Id!==0){const u=new URL(location.href);u.pathname='/Admin/LichKhamSangLoc';u.searchParams.delete('editId');u.searchParams.set('newSlot','true');location.href=u.pathname+u.search;return;}document.getElementById('newSlotModal').classList.toggle('hidden',!show);if(!show){const u=new URL(location.href);u.pathname='/Admin/LichKhamSangLoc';u.searchParams.delete('editId');u.searchParams.delete('newSlot');history.replaceState(null,'',u.pathname+u.search)}}
+if(@Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.View))==='table'){const a=document.getElementById('btnCalendarView'),b=document.getElementById('btnTableView');a.classList.remove('bg-surface-container-lowest','text-primary','font-bold','shadow-sm');b.classList.add('bg-surface-container-lowest','text-primary','font-bold','shadow-sm')}
+</script>
+}

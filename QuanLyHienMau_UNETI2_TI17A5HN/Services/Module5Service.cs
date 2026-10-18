@@ -1,6 +1,3 @@
-// Họ và tên: ĐIỀN HỌ TÊN CỦA BẠN
-// Mã sinh viên: ĐIỀN MSSV CỦA BẠN
-// Nội dung: Module 5 và phần nền dữ liệu cần thiết để chạy thử.
 using System.Data;
 using Microsoft.EntityFrameworkCore;
 using QuanLyHienMau_UNETI2_TI17A5HN.Data;
@@ -109,7 +106,7 @@ public class Module5Service(ApplicationDbContext db, TimeProvider clock)
         return null;
     }
 
-    public Task<List<TheoDotDong>> TheoDot() => db.DotHienMaus.AsNoTracking().Select(d => new TheoDotDong(d.MaDot, d.TenDot, db.PhieuDangKyHienMaus.Count(p => p.MaDot == d.MaDot), db.PhieuDangKyHienMaus.Count(p => p.MaDot == d.MaDot && p.TrangThai == TrangThaiPhieu.DaXacNhan), db.PhieuDangKyHienMaus.Count(p => p.MaDot == d.MaDot && TrangThaiPhieu.DaQuaXacNhan.Contains(p.TrangThai)), db.PhieuDangKyHienMaus.Count(p => p.MaDot == d.MaDot && p.LichKhams.Any(l => l.TrangThai == TrangThaiLich.HoanThanh)), db.PhieuDangKyHienMaus.Count(p => p.MaDot == d.MaDot && p.TrangThai == TrangThaiPhieu.ThanhCong), d.ChiTieuDonViMau)).ToListAsync();
+    public Task<List<TheoDotDong>> TheoDot(int? maDonVi = null) => db.DotHienMaus.AsNoTracking().Where(d => !maDonVi.HasValue || d.MaDonViToChuc == maDonVi.Value).Select(d => new TheoDotDong(d.MaDot, d.TenDot, db.PhieuDangKyHienMaus.Count(p => p.MaDot == d.MaDot), db.PhieuDangKyHienMaus.Count(p => p.MaDot == d.MaDot && p.TrangThai == TrangThaiPhieu.DaXacNhan), db.PhieuDangKyHienMaus.Count(p => p.MaDot == d.MaDot && TrangThaiPhieu.DaQuaXacNhan.Contains(p.TrangThai)), db.PhieuDangKyHienMaus.Count(p => p.MaDot == d.MaDot && p.LichKhams.Any(l => l.TrangThai == TrangThaiLich.HoanThanh)), db.PhieuDangKyHienMaus.Count(p => p.MaDot == d.MaDot && p.TrangThai == TrangThaiPhieu.ThanhCong), d.ChiTieuDonViMau)).ToListAsync();
     public async Task<DashboardVm> Dashboard()
     {
         var now = Now;
@@ -129,20 +126,22 @@ public class Module5Service(ApplicationDbContext db, TimeProvider clock)
         };
     }
 
-    public async Task<ThongKeVm> ThongKe(int nam)
+    public async Task<ThongKeVm> ThongKe(int nam, int? maDonVi = null)
     {
-        var dots = await TheoDot();
+        var dots = await TheoDot(maDonVi);
         var max = dots.Count == 0 ? 0 : dots.Max(x => x.Tong);
-        var pm = await db.PhieuDangKyHienMaus.Where(x => x.NgayNop.Year == nam).GroupBy(x => x.NgayNop.Month).Select(g => new { Thang = g.Key, So = g.Count() }).ToListAsync();
-        var lm = await db.LichKhamSangLocs.Where(x => x.ThoiGianBatDau.Year == nam).GroupBy(x => x.ThoiGianBatDau.Month).Select(g => new { Thang = g.Key, So = g.Count() }).ToListAsync();
+        var pm = await db.PhieuDangKyHienMaus.Where(x => x.NgayNop.Year == nam && (!maDonVi.HasValue || x.Dot.MaDonViToChuc == maDonVi.Value)).GroupBy(x => x.NgayNop.Month).Select(g => new { Thang = g.Key, So = g.Count() }).ToListAsync();
+        var lm = await db.LichKhamSangLocs.Where(x => x.ThoiGianBatDau.Year == nam && (!maDonVi.HasValue || x.Phieu.Dot.MaDonViToChuc == maDonVi.Value)).GroupBy(x => x.ThoiGianBatDau.Month).Select(g => new { Thang = g.Key, So = g.Count() }).ToListAsync();
         return new ThongKeVm
         {
             Nam = nam,
+            MaDonVi = maDonVi,
+            DonVis = await db.DonViToChucs.Select(x => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem(x.TenDonViToChuc, x.MaDonViToChuc.ToString())).ToListAsync(),
             TheoDot = dots,
             NhieuPhieuNhat = max == 0 ? [] : dots.Where(x => x.Tong == max).ToList(),
-            DotTheoDonVi = await db.DonViToChucs.Select(d => new ThongKeDong(d.TenDonViToChuc, db.DotHienMaus.Count(x => x.MaDonViToChuc == d.MaDonViToChuc))).ToListAsync(),
-            PhieuTheoTrangThai = await db.PhieuDangKyHienMaus.GroupBy(x => x.TrangThai).OrderByDescending(g => g.Count()).Select(g => new ThongKeDong(g.Key, g.Count())).ToListAsync(),
-            ThanhCongTheoDonVi = await db.DonViToChucs.Select(d => new ThongKeDong(d.TenDonViToChuc, db.PhieuDangKyHienMaus.Count(p => p.Dot.MaDonViToChuc == d.MaDonViToChuc && p.TrangThai == TrangThaiPhieu.ThanhCong))).ToListAsync(),
+            DotTheoDonVi = await db.DonViToChucs.Where(d => !maDonVi.HasValue || d.MaDonViToChuc == maDonVi.Value).Select(d => new ThongKeDong(d.TenDonViToChuc, db.DotHienMaus.Count(x => x.MaDonViToChuc == d.MaDonViToChuc))).ToListAsync(),
+            PhieuTheoTrangThai = await db.PhieuDangKyHienMaus.Where(x => !maDonVi.HasValue || x.Dot.MaDonViToChuc == maDonVi.Value).GroupBy(x => x.TrangThai).OrderByDescending(g => g.Count()).Select(g => new ThongKeDong(g.Key, g.Count())).ToListAsync(),
+            ThanhCongTheoDonVi = await db.DonViToChucs.Where(d => !maDonVi.HasValue || d.MaDonViToChuc == maDonVi.Value).Select(d => new ThongKeDong(d.TenDonViToChuc, db.PhieuDangKyHienMaus.Count(p => p.Dot.MaDonViToChuc == d.MaDonViToChuc && p.TrangThai == TrangThaiPhieu.ThanhCong))).ToListAsync(),
             PhieuTheoThang = Enumerable.Range(1, 12).Select(m => new ThongKeDong($"Tháng {m}", pm.FirstOrDefault(x => x.Thang == m)?.So ?? 0)).ToList(),
             LichTheoThang = Enumerable.Range(1, 12).Select(m => new ThongKeDong($"Tháng {m}", lm.FirstOrDefault(x => x.Thang == m)?.So ?? 0)).ToList()
         };

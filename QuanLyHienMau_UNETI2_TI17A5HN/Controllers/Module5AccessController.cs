@@ -1,6 +1,3 @@
-// Họ và tên: ĐIỀN HỌ TÊN CỦA BẠN
-// Mã sinh viên: ĐIỀN MSSV CỦA BẠN
-// Nội dung: Module 5 và phần nền dữ liệu cần thiết để chạy thử.
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using QuanLyHienMau_UNETI2_TI17A5HN.Infrastructure;
@@ -15,18 +12,20 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers;
 public class Module5AccessController(ApplicationDbContext db) : Controller
 {
     public IActionResult Index() => RedirectToAction(nameof(Login));
-    [HttpGet]
-    public IActionResult Login(string? returnUrl = null) => View(new LoginVm { ReturnUrl = returnUrl });
-    [HttpPost, ValidateAntiForgeryToken]
+    [HttpGet("/Account/Login"), HttpGet("/Module5Access/Login")]
+    public IActionResult Login(string? returnUrl = null) => View("~/Views/Account/Login.cshtml", new LoginVm { ReturnUrl = returnUrl });
+    [HttpPost("/Account/Login"), HttpPost("/Module5Access/Login"), ValidateAntiForgeryToken]
     public async Task<IActionResult> Login(LoginVm vm)
     {
         if (!ModelState.IsValid)
-            return View(vm);
-        var a = await db.TaiKhoans.SingleOrDefaultAsync(x => x.TenDangNhap == vm.TenDangNhap.Trim());
+            return View("~/Views/Account/Login.cshtml", vm);
+        var identifier = vm.TenDangNhap.Trim();
+        var a = await db.TaiKhoans.SingleOrDefaultAsync(x => x.TenDangNhap == identifier)
+            ?? await db.TaiKhoans.FirstOrDefaultAsync(x => x.Email == identifier);
         if (a == null || !a.TrangThai || new PasswordHasher<TaiKhoan>().VerifyHashedPassword(a, a.MatKhau, vm.MatKhau) == PasswordVerificationResult.Failed)
         {
             ModelState.AddModelError("", "Tên đăng nhập, mật khẩu không đúng hoặc tài khoản bị khóa.");
-            return View(vm);
+            return View("~/Views/Account/Login.cshtml", vm);
         }
 
         var claims = new[]
@@ -35,7 +34,7 @@ public class Module5AccessController(ApplicationDbContext db) : Controller
             new Claim(ClaimTypes.Name, a.HoTen),
             new Claim(ClaimTypes.Role, a.VaiTro)
         };
-        await HttpContext.SignInAsync(Module5Setup.Scheme, new ClaimsPrincipal(new ClaimsIdentity(claims, Module5Setup.Scheme)));
+        await HttpContext.SignInAsync(Module5Setup.Scheme, new ClaimsPrincipal(new ClaimsIdentity(claims, Module5Setup.Scheme)), new AuthenticationProperties { IsPersistent = vm.RememberMe });
         HttpContext.Session.SetInt32("Module5.MaTaiKhoan", a.MaTaiKhoan);
         HttpContext.Session.SetString("Module5.HoTen", a.HoTen);
         HttpContext.Session.SetString("Module5.VaiTro", a.VaiTro);

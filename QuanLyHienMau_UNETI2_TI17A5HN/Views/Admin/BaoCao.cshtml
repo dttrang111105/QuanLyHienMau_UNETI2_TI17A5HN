@@ -1,73 +1,224 @@
-@* Họ và tên: ĐIỀN HỌ TÊN CỦA BẠN | Mã sinh viên: ĐIỀN MSSV CỦA BẠN | Nội dung: Module 5. *@
 @using QuanLyHienMau_UNETI2_TI17A5HN.ViewModels
+@using System.Globalization
 @model ThongKeVm
-@{Layout="_AdminLayout";ViewData["Title"]="Thống kê & Báo cáo";}
+@{
+    var total=Model.TheoDot.Sum(x=>x.Tong);var passed=Model.TheoDot.Sum(x=>x.QuaXacNhan);var screened=Model.TheoDot.Sum(x=>x.DaKham);var success=Model.TheoDot.Sum(x=>x.ThanhCong);
+    var ratio=screened==0?0:100d*success/screened;
+    var maxMonth=Math.Max(1,Math.Max(Model.PhieuTheoThang.Max(x=>x.SoLuong),Model.LichTheoThang.Max(x=>x.SoLuong)));
+    var colors=new[]{"#a8002a","#26383f","#714f52","#c3788a","#738c96","#dc9a63","#9ab6ab","#afbdcb"};
+    var stops=new List<string>();double cursor=0;for(var i=0;i<Model.PhieuTheoTrangThai.Count;i++){var row=Model.PhieuTheoTrangThai[i];var next=cursor+(total==0?0:100d*row.SoLuong/total);stops.Add($"{colors[i%colors.Length]} {cursor.ToString(CultureInfo.InvariantCulture)}% {next.ToString(CultureInfo.InvariantCulture)}%");cursor=next;}
+    var gradient=stops.Count==0?"#e7edf0":"conic-gradient("+string.Join(",",stops)+")";
+}
+@{
+    ViewData["Title"] = "Thống kê & Báo cáo lưu lượng máu chuyên sâu";
+    Layout = "_AdminLayout";
+}
 
-<link rel="stylesheet" href="~/css/module5-integration.css" asp-append-version="true"/><div class="m5-ui p-space-lg max-w-[1600px] mx-auto w-full"><partial name="_Module5Messages"/>
-<div class="page-head">
-<div>
+<partial name="_Module5Feedback"/>
+<!-- Container with responsive fluid bounds & generous spatial breathing -->
+<div class="w-full max-w-[1360px] mx-auto px-space-md sm:px-space-lg lg:px-margin py-space-lg space-y-space-lg">
+    <!-- Section 1: Page Header & Real-time Control Bar -->
+    <header class="flex flex-col gap-space-md bg-surface-container-lowest rounded-xl p-space-lg shadow-sm">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md">
+            <!-- Breadcrumb & Title Hierarchy -->
+            <div class="space-y-space-xs lg:max-w-[700px]">
+                <nav aria-label="Đường dẫn hệ thống" class="flex items-center gap-2 font-label-sm text-label-sm text-secondary">
+                    <a asp-controller="Admin" asp-action="Dashboard" class="hover:text-primary transition-colors">Hệ thống Quản trị Y tế</a>
+                    <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+                    <span class="text-secondary">Tổng Quan</span>
+                    <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+                    <span class="text-primary font-semibold">Thống kê &amp; Báo cáo</span>
+                </nav>
+                <div class="flex flex-wrap items-center gap-space-sm pt-1">
+                    <h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">
+                        Thống Kê &amp; Báo Cáo Lưu Lượng Máu Chuyên Sâu
+                    </h1>
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-secondary-fixed text-tertiary font-label-sm text-label-sm">
+                        <span class="h-2 w-2 rounded-full bg-primary animate-ping"></span>
+                        Dữ liệu đã cập nhật
+                    </span>
+                </div>
+                <p class="font-body-sm text-body-sm text-on-surface-variant max-w-4xl">
+                    Tổng hợp phiếu đăng ký, lịch khám sàng lọc, xác nhận và kết quả hiến máu theo đợt, đơn vị tổ chức và thời gian.
+                </p>
+            </div>
+            <!-- Action Control Group -->
+            <div class="flex flex-wrap items-center gap-space-sm shrink-0">
+                <button class="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-surface-container-low text-on-surface font-label-md text-label-md hover:bg-surface-container transition-all" type="button" onclick="exportReport()">
+                    <span class="material-symbols-outlined text-[18px] text-secondary">table_view</span>
+                    <span>Xuất dữ liệu (CSV)</span>
+                </button>
+                <button class="inline-flex items-center gap-2 h-10 px-4 rounded-xl bg-primary text-on-primary font-label-md text-label-md shadow-sm hover:bg-tertiary-container transition-all" type="button" onclick="window.print()">
+                    <span class="material-symbols-outlined text-[18px]">verified_user</span>
+                    <span>In báo cáo (PDF)</span>
+                </button>
+                <button class="inline-flex items-center gap-2 h-10 px-3.5 rounded-xl bg-secondary-container text-on-secondary-container font-label-md text-label-md hover:bg-outline-variant/40 transition-all" title="Xem số liệu chi tiết" type="button" onclick="document.getElementById('reportTable').scrollIntoView({behavior:'smooth'})">
+                    <span class="material-symbols-outlined text-[18px]">schedule_send</span>
+                    <span class="hidden sm:inline">Chi tiết</span>
+                </button>
+            </div>
+        </div>
 
-<h1>Thống kê hiến máu</h1>
+        <!-- Filter Controls Strip -->
+        <div class="pt-space-sm flex flex-col md:flex-row items-stretch md:items-center justify-between gap-space-md">
+            <!-- Date Selector & Presets -->
+            <div class="flex flex-wrap items-center gap-space-xs sm:gap-space-sm">
+                <div class="relative">
+                    <button class="flex items-center gap-2 h-10 px-3.5 rounded-xl bg-surface-container font-label-md text-label-md text-on-surface" type="button">
+                        <span class="material-symbols-outlined text-[18px] text-primary">calendar_month</span>
+                        <span>Biểu đồ tháng năm @Model.Nam</span>
+                        <span class="material-symbols-outlined text-[16px] text-secondary">expand_more</span>
+                    </button>
+                </div>
+                <div class="flex items-center bg-surface-container-low p-1 rounded-xl">
+                    <button class="px-2.5 py-1 rounded-lg font-label-sm text-label-sm text-secondary hover:text-on-surface transition-colors" type="button" onclick="location.reload()">Cập nhật</button>
+                    <button class="px-2.5 py-1 rounded-lg font-label-sm text-label-sm text-secondary hover:text-on-surface transition-colors" type="button" onclick="reportFilter('nam',String(@Model.Nam-1))">Năm trước</button>
+                    <button class="px-2.5 py-1 rounded-lg font-label-sm text-label-sm text-secondary hover:text-on-surface transition-colors" type="button" onclick="reportFilter('nam',String(new Date().getFullYear()))">Năm nay</button>
+                    <button class="px-2.5 py-1 rounded-lg bg-surface-container-lowest text-primary font-semibold shadow-sm" type="button"><input type="number" name="nam" id="reportYear" value="@Model.Nam" min="2000" max="2100" aria-label="Năm thống kê" class="w-20 bg-transparent border-0 p-0" onchange="reportFilter('nam',this.value)"/></button>
+                </div>
+            </div>
+            <!-- Facility Location Filter -->
+            <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-[20px] text-secondary">local_hospital</span>
+                <select aria-label="Chọn cơ sở tiếp nhận" name="maDonVi" onchange="reportFilter('maDonVi',this.value)" class="h-10 pl-3 pr-8 rounded-xl bg-surface-container font-body-sm text-body-sm text-on-surface focus:outline-none focus:bg-surface-container-lowest transition-all">
+                    <option value="">Tất cả đơn vị tổ chức</option>@foreach(var unit in Model.DonVis){<option value="@unit.Value" selected="@(unit.Value==Model.MaDonVi?.ToString())">@unit.Text</option>}
+                </select>
+            </div>
+        </div>
+    </header>
 
+    <!-- Section 2: Top 4 High-Impact KPI Cards -->
+    <section aria-label="Chỉ số hoạt động tổng thể" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-space-md">
+        <!-- Card 1: Tổng thu nhận -->
+        <article class="p-space-lg bg-surface-container-lowest rounded-xl shadow-sm flex flex-col justify-between relative overflow-hidden group">
+            <div class="absolute -right-6 -bottom-6 w-28 h-28 rounded-full bg-primary/5 pointer-events-none transition-transform group-hover:scale-125"></div>
+            <div class="flex items-start justify-between">
+                <div>
+                    <span class="font-label-sm text-label-sm text-secondary uppercase tracking-wider">Tổng Phiếu Đăng Ký</span>
+                    <div class="mt-1 flex items-baseline gap-2">
+                        <span class="font-headline-lg text-headline-lg text-on-surface" data-m5-stat="total">@total</span>
+                        <span class="font-label-md text-label-md text-secondary">Phiếu</span>
+                    </div>
+                    <span class="font-body-sm text-body-sm text-on-surface-variant font-medium">@Model.TheoDot.Count đợt hiến máu</span>
+                </div>
+                <div class="w-12 h-12 rounded-xl bg-secondary-fixed flex items-center justify-center text-primary shrink-0">
+                    <span class="material-symbols-outlined text-[26px]">water_drop</span>
+                </div>
+            </div>
+            <div class="pt-space-md mt-space-md space-y-2">
+                <div class="flex items-center justify-between">
+                    <span class="inline-flex items-center gap-1 font-label-sm text-label-sm text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full font-bold">
+                        <span class="material-symbols-outlined text-[14px]">trending_up</span>
+                        @passed phiếu đã qua xác nhận
+                    </span>
+                    <span class="font-label-sm text-label-sm text-secondary">@success phiếu thành công</span>
+                </div>
+                <div class="h-1.5 w-full bg-surface-container rounded-full overflow-hidden flex"><div class="bg-primary" style="width: @(total==0?0:100*passed/total)%"></div></div><div class="flex justify-between font-label-sm text-[11px] text-secondary pt-0.5"><span>Qua xác nhận: @passed</span><span>Tổng: @total</span></div>
+            </div>
+        </article>
+
+        <!-- Card 2: Cấp phát lâm sàng -->
+        <article class="p-space-lg bg-surface-container-lowest rounded-xl shadow-sm flex flex-col justify-between relative overflow-hidden group">
+            <div class="absolute -right-6 -bottom-6 w-28 h-28 rounded-full bg-surface-container pointer-events-none transition-transform group-hover:scale-125"></div>
+            <div class="flex items-start justify-between">
+                <div>
+                    <span class="font-label-sm text-label-sm text-secondary uppercase tracking-wider">Phiếu Đã Qua Xác Nhận</span>
+                    <div class="mt-1 flex items-baseline gap-2">
+                        <span class="font-headline-lg text-headline-lg text-on-surface" data-m5-stat="confirmed">@passed</span>
+                        <span class="font-label-md text-label-md text-secondary">Phiếu</span>
+                    </div>
+                    <span class="font-body-sm text-body-sm text-on-surface-variant font-medium">@Model.TheoDot.Sum(x=>x.DaXacNhan) phiếu Đã xác nhận hiện tại</span>
+                </div>
+                <div class="w-12 h-12 rounded-xl bg-surface-container flex items-center justify-center text-secondary shrink-0">
+                    <span class="material-symbols-outlined text-[26px]">medical_services</span>
+                </div>
+            </div>
+            <div class="pt-space-md mt-space-md space-y-1.5">
+                <div class="flex items-center justify-between">
+                    <span class="inline-flex items-center gap-1 font-label-sm text-label-sm text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full font-bold">
+                        <span class="material-symbols-outlined text-[14px]">verified</span>
+                        Tỷ lệ: @(total==0?"0":(100d*passed/total).ToString("0.#"))%
+                    </span>
+                </div>
+                <p class="font-body-sm text-body-sm text-secondary line-clamp-1 pt-0.5">
+                    Đã xác nhận, chờ khám, đã khám hoặc đã có kết quả
+                </p>
+            </div>
+        </article>
+
+        <!-- Card 3: Cân bằng Cung - Cầu -->
+        <article class="p-space-lg bg-surface-container-lowest rounded-xl shadow-sm flex flex-col justify-between relative overflow-hidden group">
+            <div class="absolute -right-6 -bottom-6 w-28 h-28 rounded-full bg-secondary-fixed pointer-events-none transition-transform group-hover:scale-125"></div>
+            <div class="flex items-start justify-between">
+                <div>
+                    <span class="font-label-sm text-label-sm text-secondary uppercase tracking-wider">Hiến Máu Thành Công</span>
+                    <div class="mt-1 flex items-baseline gap-2">
+                        <span class="font-headline-lg text-headline-lg text-on-surface" data-m5-stat="success">@success</span>
+                        <span class="font-label-md text-label-md text-emerald-700 font-semibold">Phiếu</span>
+                    </div>
+                    <span class="font-body-sm text-body-sm text-on-surface-variant">@screened phiếu đã khám sàng lọc</span>
+                </div>
+                <div class="w-12 h-12 rounded-xl bg-surface-container flex items-center justify-center text-on-surface shrink-0">
+                    <span class="material-symbols-outlined text-[26px]">balance</span>
+                </div>
+            </div>
+            <div class="pt-space-md mt-space-md">
+                <div class="p-2 rounded-lg bg-error-container/40 flex items-start gap-2">
+                    <span class="material-symbols-outlined text-error text-[18px] shrink-0 mt-0.5">warning</span>
+                    <p class="font-label-sm text-label-sm text-on-surface leading-tight">
+                        <strong class="text-error font-bold">Đợt nhận nhiều phiếu nhất:</strong> @(Model.NhieuPhieuNhat.Count==0?"Chưa có dữ liệu":$"{Model.NhieuPhieuNhat.Count} đợt cùng nhận {Model.NhieuPhieuNhat[0].Tong} phiếu. Xem bảng chi tiết.")
+                    </p>
+                </div>
+            </div>
+        </article>
+
+        <!-- Card 4: Tỷ lệ hủy an toàn sinh học -->
+        <article class="p-space-lg bg-surface-container-lowest rounded-xl shadow-sm flex flex-col justify-between relative overflow-hidden group">
+            <div class="absolute -right-6 -bottom-6 w-28 h-28 rounded-full bg-surface-container-high pointer-events-none transition-transform group-hover:scale-125"></div>
+            <div class="flex items-start justify-between">
+                <div>
+                    <span class="font-label-sm text-label-sm text-secondary uppercase tracking-wider">Tỷ Lệ Thành Công / Đã Khám</span>
+                    <div class="mt-1 flex items-baseline gap-2">
+                        <span class="font-headline-lg text-headline-lg text-on-surface" data-m5-stat="ratio">@ratio.ToString("0.#")%</span>
+                        <span class="font-label-sm text-label-sm text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded-full">Đã xác nhận</span>
+                    </div>
+                    <span class="font-body-sm text-body-sm text-on-surface-variant">@success thành công trên @screened phiếu đã khám</span>
+                </div>
+                <div class="w-12 h-12 rounded-xl bg-surface-container flex items-center justify-center text-primary shrink-0">
+                    <span class="material-symbols-outlined text-[26px]">health_and_safety</span>
+                </div>
+            </div>
+            <div class="pt-space-md mt-space-md space-y-1">
+                <div class="flex justify-between font-label-sm text-label-sm text-secondary">
+                    <span>Thành công: @success</span>
+                    <span>Đã khám: @screened</span>
+                </div>
+                <div class="w-full bg-surface-container h-1.5 rounded-full overflow-hidden">
+                    <div class="bg-primary h-full rounded-full" style="width: @ratio.ToString("0.##",CultureInfo.InvariantCulture)%"></div>
+                </div>
+            </div>
+        </article>
+    </section>
+
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-stretch">
+        <article class="lg:col-span-8 bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between" data-report-panel="monthly"><div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm mb-space-md"><div><h2 class="font-headline-sm text-headline-sm text-on-surface">Biểu Đồ Phiếu Đăng Ký &amp; Lịch Khám Theo Tháng</h2><p class="font-body-sm text-body-sm text-on-surface-variant">Số phiếu nộp và số lịch khám từng tháng năm @Model.Nam</p></div><div class="flex items-center p-1 bg-surface-container-low rounded-xl self-start"><button class="px-3 py-1 rounded-lg bg-surface-container-lowest text-primary font-semibold font-label-sm text-label-sm shadow-sm" onclick="monthlySeries('all')">Tất cả</button><button class="px-3 py-1 rounded-lg text-secondary font-label-sm text-label-sm" onclick="monthlySeries('ticket')">Phiếu</button><button class="px-3 py-1 rounded-lg text-secondary font-label-sm text-label-sm" onclick="monthlySeries('schedule')">Lịch khám</button></div></div>
+        <div class="flex flex-wrap items-center gap-space-md text-label-sm font-label-sm mb-space-md"><span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm bg-primary"></span>Phiếu đăng ký</span><span class="inline-flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm bg-inverse-surface"></span>Lịch khám sàng lọc</span><span class="text-secondary">Tổng @Model.Nam: @Model.PhieuTheoThang.Sum(x=>x.SoLuong) phiếu · @Model.LichTheoThang.Sum(x=>x.SoLuong) lịch</span></div>
+        <div class="relative w-full h-72 sm:h-80 flex flex-col justify-end pt-6"><div class="w-full h-full flex items-end justify-between gap-1 sm:gap-3 px-2">@for(var i=0;i<12;i++){var phieu=Model.PhieuTheoThang[i].SoLuong;var lich=Model.LichTheoThang[i].SoLuong;<div class="flex-1 flex flex-col items-center gap-1 h-full justify-end group min-w-0" data-month="@(i+1)" data-tickets="@phieu" data-schedules="@lich"><div class="flex items-end justify-center gap-1 h-full w-full"><div class="series-ticket bg-primary rounded-t-md w-1/2 relative" style="height: @((100d*phieu/maxMonth).ToString("0.##",CultureInfo.InvariantCulture))%" title="Tháng @(i+1): @phieu phiếu"><span class="absolute -top-5 left-1/2 -translate-x-1/2 text-[10px] text-primary font-bold">@phieu</span></div><div class="series-schedule bg-inverse-surface rounded-t-md w-1/2 relative" style="height: @((100d*lich/maxMonth).ToString("0.##",CultureInfo.InvariantCulture))%" title="Tháng @(i+1): @lich lịch"><span class="absolute -top-5 left-1/2 -translate-x-1/2 text-[10px] font-bold">@lich</span></div></div><span class="font-label-sm text-[11px] text-secondary">T@(i+1)</span></div>}</div></div></article>
+        <article class="lg:col-span-4 bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col gap-space-md" data-report-panel="states"><h2 class="font-headline-sm text-headline-sm text-on-surface">Cơ Cấu Phiếu Theo Trạng Thái</h2><div class="flex justify-center py-2"><div class="w-40 h-40 rounded-full p-5" style="background: @gradient"><div class="h-full w-full rounded-full bg-surface-container-lowest flex flex-col items-center justify-center"><span class="font-headline-lg text-headline-lg font-bold">@total</span><span class="font-label-sm text-label-sm text-secondary">Phiếu</span></div></div></div><div class="space-y-2">@for(var i=0;i<Model.PhieuTheoTrangThai.Count;i++){var row=Model.PhieuTheoTrangThai[i];<div class="flex justify-between gap-2 text-[12px]" data-state="@row.Nhom" data-count="@row.SoLuong"><span class="inline-flex gap-2 items-center"><i class="w-2 h-2 rounded-full" style="background:@colors[i%colors.Length]"></i>@row.Nhom</span><strong>@row.SoLuong</strong></div>}@if(Model.PhieuTheoTrangThai.Count==0){<p class="text-secondary text-body-sm">Chưa có phiếu đăng ký.</p>}</div></article>
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-space-lg items-stretch">
+        <article class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm space-y-space-md"><div class="flex justify-between items-center gap-2"><h2 class="font-headline-sm text-headline-sm text-on-surface">Số Phiếu Theo Từng Đợt Hiến Máu</h2><span class="px-2 py-1 rounded-lg bg-surface-container font-label-sm text-label-sm">@Model.TheoDot.Count đợt</span></div><div class="space-y-4 max-h-80 overflow-y-auto pr-1">@foreach(var d in Model.TheoDot.OrderByDescending(x=>x.Tong)){var max=Math.Max(1,Model.TheoDot.Max(x=>x.Tong));<div class="space-y-1.5"><div class="flex justify-between items-center font-label-md text-label-md gap-2"><b>@d.TenDot</b><strong class="text-primary whitespace-nowrap">@d.Tong Phiếu</strong></div><div class="h-3 w-full rounded-full bg-surface-container overflow-hidden"><div class="h-full bg-primary rounded-full" style="width: @(100*d.Tong/max)%"></div></div><div class="font-label-sm text-label-sm text-secondary">Đã xác nhận hiện tại: @d.DaXacNhan · Qua xác nhận: @d.QuaXacNhan</div></div>}</div></article>
+        <article class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm space-y-space-md"><h2 class="font-headline-sm text-headline-sm text-on-surface">Đợt Hiến Máu &amp; Thành Công Theo Đơn Vị</h2><div class="space-y-4 max-h-80 overflow-y-auto pr-1">@foreach(var unit in Model.DotTheoDonVi){var count=Model.ThanhCongTheoDonVi.FirstOrDefault(x=>x.Nhom==unit.Nhom)?.SoLuong??0;<div class="flex items-center justify-between gap-3 p-3 rounded-xl bg-surface-container-low"><div class="flex gap-3 items-center"><span class="material-symbols-outlined text-primary">apartment</span><div><h4 class="font-label-md text-label-md font-semibold text-on-surface">@unit.Nhom</h4><p class="text-[12px] text-secondary">@unit.SoLuong đợt hiến máu</p></div></div><div class="text-right"><strong class="text-primary">@count</strong><span class="block text-[11px] text-secondary">Thành công</span></div></div>}</div></article>
+    </div>
+    <section aria-label="Số liệu thống kê theo đợt" class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm space-y-space-md" id="reportTable"><div class="flex flex-col md:flex-row md:items-center justify-between gap-space-md"><div><h2 class="font-headline-sm text-headline-sm text-on-surface">Sổ Báo Cáo Xác Nhận &amp; Kết Quả Hiến Máu</h2><p class="font-body-sm text-body-sm text-on-surface-variant">Đợt nhận nhiều phiếu nhất: @(Model.NhieuPhieuNhat.Count==0?"Chưa có dữ liệu":string.Join(" · ",Model.NhieuPhieuNhat.Select(x=>$"{x.TenDot} ({x.Tong} phiếu)")))</p></div><button onclick="exportReport()" class="px-3 py-2 rounded-xl bg-surface-container-low font-label-sm text-label-sm font-semibold">Tải bảng dữ liệu</button></div>
+    <div class="overflow-x-auto"><table class="w-full text-left min-w-[1000px]"><thead><tr class="bg-surface-container-low text-secondary font-label-sm text-label-sm uppercase tracking-wide"><th class="py-3 px-4">Đợt hiến máu</th><th class="py-3 px-3">Tổng phiếu</th><th class="py-3 px-3">Đã xác nhận hiện tại</th><th class="py-3 px-3">Qua xác nhận</th><th class="py-3 px-3">Đã khám</th><th class="py-3 px-3">Thành công</th><th class="py-3 px-3">Tỷ lệ xác nhận</th><th class="py-3 px-3">Thành công / đã khám</th></tr></thead><tbody class="divide-y divide-surface-container font-body-sm text-body-sm">@foreach(var d in Model.TheoDot){<tr class="hover:bg-surface-container-low/60 transition-colors" data-campaign="@d.MaDot"><td class="py-3.5 px-4 font-label-md text-label-md font-bold">@d.TenDot</td><td class="py-3.5 px-3">@d.Tong</td><td class="py-3.5 px-3">@d.DaXacNhan</td><td class="py-3.5 px-3">@d.QuaXacNhan</td><td class="py-3.5 px-3">@d.DaKham</td><td class="py-3.5 px-3 text-primary font-bold">@d.ThanhCong</td><td class="py-3.5 px-3">@d.TyLeXacNhan.ToString("0.#")%</td><td class="py-3.5 px-3">@d.TyLeThanhCong.ToString("0.#")%</td></tr>}@if(Model.TheoDot.Count==0){<tr><td colspan="8" class="p-8 text-center text-secondary">Không có đợt hiến máu phù hợp.</td></tr>}</tbody></table></div></section>
+    <footer class="bg-surface-container-low rounded-xl p-space-lg flex flex-col md:flex-row items-center justify-between gap-space-md shadow-sm"><div class="flex items-center gap-space-md"><div class="w-12 h-12 rounded-xl bg-surface-container-lowest flex items-center justify-center text-primary shrink-0 shadow-sm"><span class="material-symbols-outlined text-[24px]">forward_to_inbox</span></div><div><h3 class="font-headline-sm text-headline-sm text-on-surface">Trích Xuất &amp; Lưu Trữ Báo Cáo Định Kỳ</h3><p class="font-body-sm text-body-sm text-on-surface-variant">Biểu đồ tháng năm @Model.Nam · Tổng hợp xác nhận và kết quả theo từng đợt hiến máu.</p></div></div><div class="flex gap-space-sm shrink-0"><button onclick="exportReport()" class="px-4 py-2 rounded-xl bg-primary text-on-primary font-label-md text-label-md font-semibold shadow-sm">Tải báo cáo</button><button onclick="window.print()" class="px-4 py-2 rounded-xl bg-surface-container-lowest font-label-md text-label-md">In báo cáo</button></div></footer>
 </div>
-<form method="get" class="filters">
-<label>
-<span>Năm cho hai bảng theo tháng</span>
-<input type="number" name="nam" value="@Model.Nam" min="2000" max="2100"/>
-</label>
-<button>Xem báo cáo</button>
-</form>
-</div>
-<section class="card">
-<h2>Đợt nhận nhiều phiếu nhất</h2>@if(Model.NhieuPhieuNhat.Count==0){<p class="empty">Chưa có phiếu đăng ký.</p>}else{foreach(var d in Model.NhieuPhieuNhat){<p>
-<b>@d.TenDot</b> · @d.Tong phiếu</p>}}</section>
-<section class="card">
-<h2>Phiếu đăng ký và tỷ lệ theo từng đợt</h2>
-<div class="table-wrap">
-<table>
-<thead>
-<tr>
-<th>Đợt hiến máu</th>
-<th>Tổng phiếu</th>
-<th>Đã xác nhận hiện tại</th>
-<th>Qua xác nhận</th>
-<th>Đã khám</th>
-<th>Thành công</th>
-<th>Tỷ lệ qua xác nhận</th>
-<th>Tỷ lệ thành công / đã khám</th>
-</tr>
-</thead>
-<tbody>@foreach(var d in Model.TheoDot){<tr>
-<td>@d.TenDot</td>
-<td>@d.Tong</td>
-<td>@d.DaXacNhan</td>
-<td>@d.QuaXacNhan</td>
-<td>@d.DaKham</td>
-<td>@d.ThanhCong</td>
-<td>@d.TyLeXacNhan.ToString("0.0")%</td>
-<td>@d.TyLeThanhCong.ToString("0.0")%</td>
-</tr>}</tbody>
-</table>
-</div>
-
-</section>
-<div class="report-grid">@foreach(var group in new[]{("Số đợt theo đơn vị tổ chức",Model.DotTheoDonVi),("Số phiếu theo trạng thái",Model.PhieuTheoTrangThai),("Hiến máu thành công theo đơn vị",Model.ThanhCongTheoDonVi),("Số phiếu nộp theo tháng",Model.PhieuTheoThang),("Số lịch khám theo tháng",Model.LichTheoThang)}){<section class="card">
-<h2>@group.Item1</h2>
-<table>
-<thead>
-<tr>
-<th>Nhóm</th>
-<th>Số lượng</th>
-</tr>
-</thead>
-<tbody>@foreach(var row in group.Item2){<tr>
-<td>@row.Nhom</td>
-<td class="number">@row.SoLuong</td>
-</tr>}@if(group.Item2.Count==0){<tr>
-<td colspan="2" class="empty">Chưa có dữ liệu.</td>
-</tr>}</tbody>
-</table>
-</section>}</div>
-
-
-</div>
+@section Scripts{
+<script>
+function reportFilter(key,value){const u=new URL(location.href);if(value)u.searchParams.set(key,value);else u.searchParams.delete(key);location.href=u.pathname+u.search}
+function exportReport(){const u=new URL(location.href);location.href='/ThongKe/Export'+u.search}
+function monthlySeries(which){document.querySelectorAll('.series-ticket').forEach(e=>e.style.display=which==='schedule'?'none':'');document.querySelectorAll('.series-schedule').forEach(e=>e.style.display=which==='ticket'?'none':'')}
+</script>
+}

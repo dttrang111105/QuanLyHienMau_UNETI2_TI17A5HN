@@ -25,6 +25,15 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
+    "Module5_SQLServer": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "applicationUrl": "https://localhost:7217;http://localhost:5117",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "Module5__DatabaseProvider": "SqlServer"
+      }
+    },
     "Module5_SQLite": {
       "commandName": "Project",
       "launchBrowser": true,

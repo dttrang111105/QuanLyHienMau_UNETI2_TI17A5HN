@@ -1,6 +1,3 @@
-// Họ và tên: ĐIỀN HỌ TÊN CỦA BẠN
-// Mã sinh viên: ĐIỀN MSSV CỦA BẠN
-// Nội dung: Migration sinh tự động cho mô hình Module 5.
 using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 

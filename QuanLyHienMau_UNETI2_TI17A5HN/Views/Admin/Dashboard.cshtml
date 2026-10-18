@@ -1,13 +1,14 @@
-@* Họ và tên: ĐIỀN HỌ TÊN CỦA BẠN | Mã sinh viên: ĐIỀN MSSV CỦA BẠN | Nội dung: Module 5. *@
-@model QuanLyHienMau_UNETI2_TI17A5HN.ViewModels.DashboardVm
+@using QuanLyHienMau_UNETI2_TI17A5HN.ViewModels
+@model DashboardVm
 @{
     Layout = "_AdminLayout";
     ViewData["Title"] = "Bảng Điều Hành & Quản Lý Hiến Máu";
 }
 
-<div class="flex flex-col w-full m5-dashboard-root">
+<partial name="_Module5Feedback"/>
+<div class="flex flex-col w-full">
     <!-- TOAST ALERT NOTIFICATION (Top Floating) -->
-    <div class="fixed top-20 right-8 z-50 flex items-center gap-space-sm bg-surface-container-lowest px-space-md py-3 rounded-xl shadow-xl transition-all duration-300 transform translate-y-0 opacity-100" id="toastNotification">
+    <div class="hidden fixed top-20 right-8 z-50 flex items-center gap-space-sm bg-surface-container-lowest px-space-md py-3 rounded-xl shadow-xl transition-all duration-300 transform translate-y-0 opacity-100" id="toastNotification">
         <div class="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center shrink-0">
             <span class="material-symbols-outlined text-emerald-600 text-[18px]">verified</span>
         </div>
@@ -24,10 +25,365 @@
     </div>
 
     <div class="p-space-lg max-w-[1600px] mx-auto w-full space-y-space-lg">
-<link rel="stylesheet" href="~/css/module5-integration.css" asp-append-version="true"/><div class="m5-ui"><partial name="_Module5Messages"/><div class="page-head"><h1 class="font-headline-lg">Bảng Điều Hành &amp; Quản Lý Hiến Máu</h1><a class="button" asp-controller="LichKhamSangLoc" asp-action="Create"><span class="material-symbols-outlined">add_circle</span>Lập lịch khám</a></div>
-<div class="metrics">@foreach(var m in new[]{("Tổng đơn vị tổ chức",Model.DonVi,"apartment"),("Tổng đợt hiến máu",Model.Dot,"event_repeat"),("Người hiến máu",Model.Nguoi,"how_to_reg"),("Hiến máu thành công",Model.ThanhCong,"water_drop")}){<article class="metric" data-m5-metric><span>@m.Item1</span><strong>@m.Item2</strong><i class="material-symbols-outlined">@m.Item3</i></article>}</div>
-<div class="metrics mini">@foreach(var m in new[]{("Đợt đang mở đăng ký",Model.DotMo),("Tổng phiếu đăng ký",Model.Phieu),("Phiếu chờ xác nhận",Model.ChoXacNhan),("Phiếu đã xác nhận",Model.DaXacNhan),("Lịch khám sắp tới",Model.LichSapToi)}){<article class="metric" data-m5-metric><span>@m.Item1</span><strong>@m.Item2</strong></article>}</div>
-<div class="report-grid"><section class="card"><h2>Lịch khám sắp tới</h2>@foreach(var l in Model.SapToi){<div class="flex gap-3 py-3 border-b border-surface-container"><span class="material-symbols-outlined text-primary">stethoscope</span><div><b>@l.Phieu.NguoiHien.HoTen</b><p class="muted">@l.ThoiGianBatDau.ToString("dd/MM/yyyy HH:mm") · @l.BacSiSangLoc<br/>@l.DiaDiemHoacLienKet</p></div></div>}@if(Model.SapToi.Count==0){<div class="empty">Chưa có lịch khám sắp tới.</div>}<a asp-action="LichKhamSangLoc" class="text-primary inline-flex mt-4 font-semibold">Xem toàn bộ lịch →</a></section><section class="card"><h2>Tiến độ chỉ tiêu hiến máu</h2>@foreach(var d in Model.TienDo.OrderByDescending(x=>x.ThanhCong).Take(5)){<div class="mb-5"><b>@d.TenDot</b><span class="muted"> · @d.ThanhCong / @d.ChiTieu</span>@if(d.ThanhCong>=d.ChiTieu){<span class="badge">Đã đạt chỉ tiêu</span>}<span class="bar"><span style="width:@Math.Min(100,100*d.ThanhCong/Math.Max(1,d.ChiTieu))%"></span></span></div>}<a asp-action="BaoCao" class="text-primary font-semibold">Xem thống kê →</a></section></div></div>
+        <!-- 1. HEADER & KHU VỰC ĐIỀU HÀNH TỔNG QUAN -->
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md bg-surface-container-lowest p-space-lg rounded-2xl shadow-sm">
+            <div class="space-y-1">
+                <div class="flex items-center gap-2 text-on-surface-variant font-label-sm text-label-sm">
+                    <span>Hệ thống Quản trị Y tế</span>
+                    <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+                    <span class="text-primary font-semibold">Điều Hành Chiến Dịch &amp; Duyệt Phiếu Trực Ban</span>
+                </div>
+                <div class="flex flex-wrap items-center gap-3">
+                    <h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">Bảng Điều Hành &amp; Quản Lý Hiến Máu</h1>
+                    <div class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary font-label-sm text-label-sm font-bold">
+                        <span class="w-2 h-2 rounded-full bg-primary animate-ping"></span>
+                        <span>Trực Ban Lâm Sàng Live</span>
+                    </div>
+                </div>
+                <p class="font-body-md text-body-md text-on-surface-variant">Đồng bộ dữ liệu thời gian thực giữa Kíp khám sàng lọc, Ngân hàng Máu TW và Cổng VNeID.</p>
+            </div>
+            <div class="flex flex-wrap items-center gap-space-sm">
+                <!-- Campaign Selector Filter -->
+                <div class="flex items-center gap-2 bg-surface-container-low px-3 py-2 rounded-xl">
+                    <span class="material-symbols-outlined text-primary text-[20px]">campaign</span>
+                    <div class="flex flex-col text-left">
+                        <span class="font-label-sm text-[10px] text-on-surface-variant uppercase tracking-wider font-semibold">Đợt đang trực ban</span>
+                        <select class="bg-transparent font-label-md text-label-md text-on-surface font-semibold focus:outline-none cursor-pointer pr-4">
+                            <option>Giọt Hồng Thanh Niên - 15/11/2025</option>
+                            <option>Trái Tim Đỏ Chợ Rẫy - 18/11/2025</option>
+                            <option>Sắc Đỏ Tình Người Bệnh Nhi - 20/11/2025</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md transition-all shadow-sm" type="button" onclick="location.href='/ThongKe/Export'">
+                    <span class="material-symbols-outlined text-[18px]">download</span>
+                    <span>Xuất Báo Cáo (Excel/PDF)</span>
+                </button>
+                <button class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md shadow-md hover:shadow-lg transition-all" onclick="document.getElementById('newCampaignModal').classList.remove('hidden')" type="button">
+                    <span class="material-symbols-outlined text-[20px]">add_circle</span>
+                    <span>Thêm Đợt Hiến Máu Mới</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- 2. HÀNG THẺ KPI CHỈ SỐ VĨ MÔ (4 STATISTIC CARDS) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-space-md">
+            <!-- Card 1 -->
+            <div class="bg-surface-container-lowest p-space-lg rounded-2xl shadow-sm flex flex-col justify-between">
+                <div class="flex items-start justify-between">
+                    <div class="space-y-1">
+                        <span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant font-semibold">Tổng Đơn Vị Tổ Chức</span>
+                        <div class="font-headline-lg text-headline-lg text-on-surface font-bold"><span data-m5-metric="donvi">@Model.DonVi</span> <span class="font-title-md text-title-md font-normal text-on-surface-variant">Đơn vị</span></div>
+                    </div>
+                    <div class="w-12 h-12 rounded-2xl bg-surface-container-low flex items-center justify-center text-primary">
+                        <span class="material-symbols-outlined text-[26px]">apartment</span>
+                    </div>
+                </div>
+                <div class="mt-4 pt-3 flex items-center justify-between font-body-sm text-body-sm bg-surface-container-low/50 px-3 py-1.5 rounded-xl">
+                    <span class="text-emerald-700 font-semibold flex items-center gap-1">
+                        <span class="material-symbols-outlined text-[16px]">trending_up</span> @Model.DonVi đơn vị tổ chức
+                    </span>
+                    <span class="text-on-surface-variant">Trong hệ thống</span>
+                </div>
+            </div>
+            <!-- Card 2 -->
+            <div class="bg-surface-container-lowest p-space-lg rounded-2xl shadow-sm flex flex-col justify-between">
+                <div class="flex items-start justify-between">
+                    <div class="space-y-1">
+                        <span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant font-semibold">Chiến Dịch &amp; Đợt Tiếp Nhận</span>
+                        <div class="font-headline-lg text-headline-lg text-on-surface font-bold"><span data-m5-metric="dot">@Model.Dot</span> <span class="font-title-md text-title-md font-normal text-on-surface-variant">Đợt hiến máu</span></div>
+                    </div>
+                    <div class="w-12 h-12 rounded-2xl bg-surface-container-low flex items-center justify-center text-primary">
+                        <span class="material-symbols-outlined text-[26px]">event_repeat</span>
+                    </div>
+                </div>
+                <div class="mt-4 pt-3 flex items-center justify-between font-body-sm text-body-sm bg-surface-container-low/50 px-3 py-1.5 rounded-xl">
+                    <span class="text-amber-700 font-semibold flex items-center gap-1">
+                        <span class="material-symbols-outlined text-[16px]">schedule</span> <span data-m5-metric="dotmo">@Model.DotMo</span> đợt đang mở
+                    </span>
+                    <span class="text-on-surface-variant">Đang nhận đăng ký</span>
+                </div>
+            </div>
+            <!-- Card 3 -->
+            <div class="bg-surface-container-lowest p-space-lg rounded-2xl shadow-sm flex flex-col justify-between">
+                <div class="flex items-start justify-between">
+                    <div class="space-y-1">
+                        <span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant font-semibold">Tổng Người Hiến Máu</span>
+                        <div class="font-headline-lg text-headline-lg text-on-surface font-bold"><span data-m5-metric="nguoi">@Model.Nguoi</span> <span class="font-title-md text-title-md font-normal text-on-surface-variant">Người</span></div>
+                    </div>
+                    <div class="w-12 h-12 rounded-2xl bg-surface-container-low flex items-center justify-center text-primary">
+                        <span class="material-symbols-outlined text-[26px]">how_to_reg</span>
+                    </div>
+                </div>
+                <div class="mt-4 pt-3 flex items-center justify-between font-body-sm text-body-sm bg-surface-container-low/50 px-3 py-1.5 rounded-xl">
+                    <span class="text-primary font-semibold flex items-center gap-1">
+                        <span class="material-symbols-outlined text-[16px]">person_add</span> @Model.Nguoi người hiến máu
+                    </span>
+                    <span class="text-on-surface-variant">Dữ liệu hồ sơ</span>
+                </div>
+            </div>
+            <!-- Card 4 -->
+            <div class="bg-surface-container-lowest p-space-lg rounded-2xl shadow-sm flex flex-col justify-between">
+                <div class="flex items-start justify-between">
+                    <div class="space-y-1">
+                        <span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant font-semibold">Tổng Phiếu Đăng Ký</span>
+                        <div class="font-headline-lg text-headline-lg text-on-surface font-bold"><span data-m5-metric="phieu">@Model.Phieu</span> <span class="font-title-md text-title-md font-normal text-on-surface-variant">Phiếu</span></div>
+                    </div>
+                    <div class="w-12 h-12 rounded-2xl bg-surface-container-low flex items-center justify-center text-primary">
+                        <span class="material-symbols-outlined text-[26px]">water_drop</span>
+                    </div>
+                </div>
+                <div class="mt-4 space-y-1.5">
+                    <div class="flex justify-between font-label-sm text-label-sm font-semibold">
+                        <span class="text-emerald-700">@Model.TienDo.Sum(x=>x.QuaXacNhan) phiếu đã qua xác nhận</span>
+                        <span class="text-on-surface-variant">@Model.ChoXacNhan phiếu chờ xử lý</span>
+                    </div>
+                    <div class="w-full bg-surface-container h-2 rounded-full overflow-hidden">
+                        <div class="bg-primary h-full rounded-full transition-all duration-500" style="width: @(Model.Phieu==0?0:100*Model.TienDo.Sum(x=>x.QuaXacNhan)/Model.Phieu)%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. HÀNG CHỈ SỐ TRỰC BAN & TIẾP NHẬN Y TẾ TRONG NGÀY (4 METRIC MINI CARDS) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-md">
+            <!-- Mini 1: Cần duyệt gấp -->
+            <div class="bg-surface-container-lowest p-space-md rounded-2xl shadow-sm flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-700 flex items-center justify-center shrink-0">
+                        <span class="material-symbols-outlined text-[22px]">pending_actions</span>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-1.5">
+                            <span class="font-headline-sm text-headline-sm text-on-surface font-bold" data-m5-metric="cho">@Model.ChoXacNhan</span>
+                            <span class="font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-bold animate-pulse">Cần duyệt gấp</span>
+                        </div>
+                        <p class="font-body-sm text-body-sm text-on-surface-variant">Phiếu chờ bác sĩ xác nhận</p>
+                    </div>
+                </div>
+                <button class="px-3 py-1.5 rounded-lg bg-primary hover:bg-primary-container text-on-primary font-label-sm text-label-sm font-bold shadow-sm transition-all shrink-0" onclick="scrollToApprovalTable()">
+                    Duyệt ngay
+                </button>
+            </div>
+            <!-- Mini 2: Hợp lệ -->
+            <div class="bg-surface-container-lowest p-space-md rounded-2xl shadow-sm flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-700 flex items-center justify-center shrink-0">
+                        <span class="material-symbols-outlined text-[22px]">check_circle</span>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-1.5">
+                            <span class="font-headline-sm text-headline-sm text-on-surface font-bold" data-m5-metric="xacnhan">@Model.DaXacNhan</span>
+                            <span class="font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-semibold">Hợp lệ</span>
+                        </div>
+                        <p class="font-body-sm text-body-sm text-on-surface-variant">Phiếu đã xác nhận</p>
+                    </div>
+                </div>
+                <span class="material-symbols-outlined text-surface-variant text-[24px]">verified</span>
+            </div>
+            <!-- Mini 3: Ca tiếp nhận -->
+            <div class="bg-surface-container-lowest p-space-md rounded-2xl shadow-sm flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-surface-container text-primary flex items-center justify-center shrink-0">
+                        <span class="material-symbols-outlined text-[22px]">stethoscope</span>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-1.5">
+                            <span class="font-headline-sm text-headline-sm text-on-surface font-bold" data-m5-metric="lich">@Model.LichSapToi Ca</span>
+                            <span class="font-label-sm text-label-sm text-on-surface-variant font-medium">Lịch sắp tới</span>
+                        </div>
+                        <p class="font-body-sm text-body-sm text-on-surface-variant">Ca hẹn chưa hủy, chưa hoàn thành</p>
+                    </div>
+                </div>
+                <div class="w-3 h-3 rounded-full bg-emerald-500 animate-ping"></div>
+            </div>
+            <!-- Mini 4: Đã vào kho -->
+            <div class="bg-surface-container-lowest p-space-md rounded-2xl shadow-sm flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                        <span class="material-symbols-outlined text-[22px]">bloodtype</span>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-1.5">
+                            <span class="font-headline-sm text-headline-sm text-on-surface font-bold" data-m5-metric="thanhcong">@Model.ThanhCong Phiếu</span>
+                            <span class="font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant font-bold">Hiến máu thành công</span>
+                        </div>
+                        <p class="font-body-sm text-body-sm text-on-surface-variant">Kết quả đã được xác nhận</p>
+                    </div>
+                </div>
+                <span class="material-symbols-outlined text-emerald-600 text-[24px]">inventory_2</span>
+            </div>
+        </div>
+
+        <!-- 4. KHU VỰC BIỂU ĐỒ & PHÂN TÍCH NHANH (BENTO 7:5 RATIO) -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-space-md">
+            <!-- Cột Trái (7 cols): Tiến độ thu nạp & Dự báo thiếu hụt nhóm máu -->
+            <div class="lg:col-span-7 bg-surface-container-lowest p-space-lg rounded-2xl shadow-sm flex flex-col justify-between space-y-space-md">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-2.5 h-2.5 rounded-full bg-primary"></span>
+                            <h2 class="font-title-md text-title-md text-on-surface font-bold">Dự Báo Tồn Kho &amp; Nhu Cầu Nhóm Máu</h2>
+                        </div>
+                        <p class="font-body-sm text-body-sm text-on-surface-variant">Lưu lượng dữ trữ hiện tại so với nhu cầu cấp cứu của 14 bệnh viện liên kết</p>
+                    </div>
+                    <span class="font-label-sm text-label-sm px-2.5 py-1 rounded-full bg-surface-container text-on-surface-variant font-semibold">Cập nhật 15 phút trước</span>
+                </div>
+                <!-- Group Blood Bars -->
+                <div class="space-y-4">
+                    <!-- Nhóm O (Thiếu hụt khẩn cấp) -->
+                    <div class="space-y-1.5">
+                        <div class="flex justify-between items-center font-label-md text-label-md">
+                            <div class="flex items-center gap-2">
+                                <span class="px-2 py-0.5 rounded font-bold bg-primary text-on-primary text-xs">Nhóm O</span>
+                                <span class="font-semibold text-on-surface">Máu toàn phần &amp; Khối hồng cầu</span>
+                                <span class="font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 font-bold flex items-center gap-1">
+                                    <span class="material-symbols-outlined text-[13px]">warning</span> Thiếu khẩn cấp (45%)
+                                </span>
+                            </div>
+                            <span class="text-primary font-bold">450 / 1,000 ĐV</span>
+                        </div>
+                        <div class="w-full bg-surface-container h-3.5 rounded-full overflow-hidden flex">
+                            <div class="bg-primary h-full rounded-full transition-all duration-700" style="width: 45%"></div>
+                        </div>
+                    </div>
+                    <!-- Nhóm A -->
+                    <div class="space-y-1.5">
+                        <div class="flex justify-between items-center font-label-md text-label-md">
+                            <div class="flex items-center gap-2">
+                                <span class="px-2 py-0.5 rounded font-bold bg-surface-container-high text-on-surface text-xs">Nhóm A</span>
+                                <span class="font-semibold text-on-surface">Nhu cầu điều trị ngoại trú</span>
+                                <span class="font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-semibold">Đủ ngưỡng an toàn (85%)</span>
+                            </div>
+                            <span class="text-on-surface font-bold">680 / 800 ĐV</span>
+                        </div>
+                        <div class="w-full bg-surface-container h-3.5 rounded-full overflow-hidden flex">
+                            <div class="bg-emerald-600 h-full rounded-full transition-all duration-700" style="width: 85%"></div>
+                        </div>
+                    </div>
+                    <!-- Nhóm B -->
+                    <div class="space-y-1.5">
+                        <div class="flex justify-between items-center font-label-md text-label-md">
+                            <div class="flex items-center gap-2">
+                                <span class="px-2 py-0.5 rounded font-bold bg-surface-container-high text-on-surface text-xs">Nhóm B</span>
+                                <span class="font-semibold text-on-surface">Lưu trữ duy trì thường quy</span>
+                                <span class="font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-semibold">Bình thường (92%)</span>
+                            </div>
+                            <span class="text-on-surface font-bold">828 / 900 ĐV</span>
+                        </div>
+                        <div class="w-full bg-surface-container h-3.5 rounded-full overflow-hidden flex">
+                            <div class="bg-emerald-600 h-full rounded-full transition-all duration-700" style="width: 92%"></div>
+                        </div>
+                    </div>
+                    <!-- Nhóm AB -->
+                    <div class="space-y-1.5">
+                        <div class="flex justify-between items-center font-label-md text-label-md">
+                            <div class="flex items-center gap-2">
+                                <span class="px-2 py-0.5 rounded font-bold bg-surface-container-high text-on-surface text-xs">Nhóm AB</span>
+                                <span class="font-semibold text-on-surface">Dung lượng kho đạt mức tối ưu</span>
+                                <span class="font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-sky-100 text-sky-800 font-semibold">Đạt chuẩn 110%</span>
+                            </div>
+                            <span class="text-on-surface font-bold">330 / 300 ĐV</span>
+                        </div>
+                        <div class="w-full bg-surface-container h-3.5 rounded-full overflow-hidden flex">
+                            <div class="bg-sky-600 h-full rounded-full transition-all duration-700" style="width: 100%"></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- Live Camp Progress Box -->
+                <div class="mt-4 p-space-md rounded-xl bg-primary/5 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold font-label-lg">71%</div>
+                        <div>
+                            <p class="font-label-md text-label-md text-on-surface font-bold">Tiến độ đợt "Giọt Hồng Thanh Niên Hôm Nay"</p>
+                            <p class="font-body-sm text-body-sm text-on-surface-variant">Đã tiếp nhận 142/200 đơn vị mục tiêu dự kiến</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="font-label-sm text-label-sm px-3 py-1.5 rounded-lg bg-surface-container-lowest font-semibold text-on-surface">Còn thiếu: 58 ĐV</span>
+                        <span class="font-label-sm text-label-sm px-3 py-1.5 rounded-lg bg-primary text-on-primary font-semibold">Dự kiến kết thúc: 16:30</span>
+                    </div>
+                </div>
+            </div>
+            <!-- Cột Phải (5 cols): Cảnh báo lâm sàng & Phân bổ 4 ca khám -->
+            <div class="lg:col-span-5 bg-surface-container-lowest p-space-lg rounded-2xl shadow-sm flex flex-col justify-between space-y-space-md">
+                <div>
+                    <div class="flex items-center justify-between mb-1">
+                        <h2 class="font-title-md text-title-md text-on-surface font-bold">Phân Bổ Ca Khám Hôm Nay</h2>
+                        <span class="font-label-sm text-label-sm font-bold text-primary">15/11/2025</span>
+                    </div>
+                    <p class="font-body-sm text-body-sm text-on-surface-variant">Kiểm soát dòng người tránh ùn tắc tại sảnh đo sinh hiệu</p>
+                </div>
+                <!-- 4 Time Slots List -->
+                <div class="space-y-2.5">
+                    <!-- Ca 1 -->
+                    <div class="flex items-center justify-between p-3 rounded-xl bg-surface-container-low">
+                        <div class="flex items-center gap-2.5">
+                            <span class="w-2.5 h-2.5 rounded-full bg-surface-variant"></span>
+                            <div>
+                                <p class="font-label-md text-label-md text-on-surface font-bold">Ca 1: 07:30 - 09:00</p>
+                                <span class="font-body-sm text-body-sm text-on-surface-variant">Đã hoàn thành tiếp nhận</span>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <span class="font-label-md text-label-md text-on-surface font-bold">24 / 24</span>
+                            <span class="block font-label-sm text-label-sm text-surface-variant">100% Đầy</span>
+                        </div>
+                    </div>
+                    <!-- Ca 2: Đang diễn ra -->
+                    <div class="flex items-center justify-between p-3 rounded-xl bg-primary/10">
+                        <div class="flex items-center gap-2.5">
+                            <span class="w-2.5 h-2.5 rounded-full bg-primary animate-pulse"></span>
+                            <div>
+                                <p class="font-label-md text-label-md text-primary font-bold">Ca 2: 09:00 - 10:30 (Đang diễn ra)</p>
+                                <span class="font-body-sm text-body-sm text-on-surface-variant">5 bác sĩ trực khám sàng lọc</span>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <span class="font-label-md text-label-md text-primary font-bold">28 / 30</span>
+                            <span class="block font-label-sm text-label-sm text-primary font-semibold">93.3% Đã tới</span>
+                        </div>
+                    </div>
+                    <!-- Ca 3 -->
+                    <div class="flex items-center justify-between p-3 rounded-xl bg-surface-container-low">
+                        <div class="flex items-center gap-2.5">
+                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                            <div>
+                                <p class="font-label-md text-label-md text-on-surface font-bold">Ca 3: 13:30 - 15:00</p>
+                                <span class="font-body-sm text-body-sm text-on-surface-variant">Chờ làm thủ tục buổi chiều</span>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <span class="font-label-md text-label-md text-on-surface font-bold">16 / 30</span>
+                            <span class="block font-label-sm text-label-sm text-emerald-700 font-semibold">Còn trống 14</span>
+                        </div>
+                    </div>
+                    <!-- Ca 4 -->
+                    <div class="flex items-center justify-between p-3 rounded-xl bg-surface-container-low">
+                        <div class="flex items-center gap-2.5">
+                            <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                            <div>
+                                <p class="font-label-md text-label-md text-on-surface font-bold">Ca 4: 15:00 - 16:30</p>
+                                <span class="font-body-sm text-body-sm text-on-surface-variant">Khung giờ cuối ngày</span>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <span class="font-label-md text-label-md text-on-surface font-bold">12 / 30</span>
+                            <span class="block font-label-sm text-label-sm text-emerald-700 font-semibold">Còn trống 18</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Clinical Pass/Reject Stats -->
+                <div class="p-3 bg-surface-container rounded-xl flex items-center justify-between font-label-sm text-label-sm">
+                    <div class="flex items-center gap-2">
+                        <span class="material-symbols-outlined text-emerald-600 text-[18px]">health_and_safety</span>
+                        <span class="text-on-surface font-semibold">Tỷ lệ đủ chuẩn lâm sàng: <strong class="text-emerald-700">94.2%</strong></span>
+                    </div>
+                    <span class="text-rose-700 font-semibold">5.8% Từ chối (Huyết áp/Chưa đủ ngày)</span>
+                </div>
+            </div>
+        </div>
+
         <!-- 5. PHẦN 1: BẢNG QUẢN LÝ ĐỢT HIẾN MÁU (CAMPAIGN MANAGEMENT TABLE) -->
         <div class="bg-surface-container-lowest p-space-lg rounded-2xl shadow-sm space-y-space-md">
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-space-md">

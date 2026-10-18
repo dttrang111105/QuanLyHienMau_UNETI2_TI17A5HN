@@ -1,6 +1,3 @@
-// Họ và tên: ĐIỀN HỌ TÊN CỦA BẠN
-// Mã sinh viên: ĐIỀN MSSV CỦA BẠN
-// Nội dung thực hiện: đăng ký dịch vụ và middleware cần thiết cho Module 5.
 using QuanLyHienMau_UNETI2_TI17A5HN.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
