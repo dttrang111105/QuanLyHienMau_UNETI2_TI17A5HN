@@ -294,5 +294,56 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
 
             return RedirectToAction(nameof(Index));
         }
+        [Authorize(Roles = "Admin,Medical Staff")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ChangeStatus(
+    int id,
+    string trangThai)
+        {
+            var dot = await _context.DotHienMaus
+                .FindAsync(id);
+
+            if (dot == null)
+            {
+                return NotFound();
+            }
+
+            var validStates = new[]
+            {
+        "Chưa mở",
+        "Đang mở đăng ký",
+        "Tạm dừng",
+        "Đã đóng"
+    };
+
+            if (!validStates.Contains(trangThai))
+            {
+                return BadRequest();
+            }
+
+            if (trangThai == "Đang mở đăng ký")
+            {
+                if (string.IsNullOrWhiteSpace(dot.TenDot) ||
+                    dot.ChiTieuDonViMau <= 0 ||
+                    dot.CanNangToiThieu < 0 ||
+                    dot.HanDangKy < dot.NgayBatDauDangKy)
+                {
+                    TempData["ErrorMessage"] =
+                        "Dữ liệu chưa hợp lệ nên không thể mở đăng ký.";
+
+                    return RedirectToAction(nameof(Index));
+                }
+            }
+
+            dot.TrangThai = trangThai;
+
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] =
+                "Cập nhật trạng thái thành công.";
+
+            return RedirectToAction(nameof(Index));
+        }
     }
 }

@@ -432,6 +432,64 @@ tìm kiếm, lọc, sắp xếp và phân trang.
 
                                     Sửa
                                 </a>
+                                    <form asp-controller="DotHienMau"
+                                          asp-action="ChangeStatus"
+                                          method="post"
+                                          class="flex items-center gap-2 mt-2">
+
+                                        @Html.AntiForgeryToken()
+
+                                        <input type="hidden"
+                                               name="id"
+                                               value="@item.MaDot" />
+
+                                        <select name="trangThai"
+                                                class="rounded-lg px-2 py-1 border">
+
+                                            @if (item.TrangThai == "Chưa mở")
+                                            {
+                                                <option value="Chưa mở" selected>Chưa mở</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="Chưa mở">Chưa mở</option>
+                                            }
+
+                                            @if (item.TrangThai == "Đang mở đăng ký")
+                                            {
+                                                <option value="Đang mở đăng ký" selected>Đang mở đăng ký</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="Đang mở đăng ký">Đang mở đăng ký</option>
+                                            }
+
+                                            @if (item.TrangThai == "Tạm dừng")
+                                            {
+                                                <option value="Tạm dừng" selected>Tạm dừng</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="Tạm dừng">Tạm dừng</option>
+                                            }
+
+                                            @if (item.TrangThai == "Đã đóng")
+                                            {
+                                                <option value="Đã đóng" selected>Đã đóng</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="Đã đóng">Đã đóng</option>
+                                            }
+
+                                        </select>
+
+                                        <button type="submit"
+                                                class="px-3 py-1 rounded-lg bg-primary text-on-primary">
+                                            Cập nhật
+                                        </button>
+                                    </form>
+                                
                             }
                             <a asp-controller="DotHienMau" asp-action="Details" asp-route-id="@item.MaDot" class="flex-1 inline-flex items-center justify-center gap-1.5 py-2.5 rounded-xl font-label-md text-label-md bg-gradient-to-r from-primary to-primary-container text-on-primary shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
                                 <span class="material-symbols-outlined text-[16px]">favorite</span>
