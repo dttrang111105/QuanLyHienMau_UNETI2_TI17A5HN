@@ -345,5 +345,38 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
 
             return RedirectToAction(nameof(Index));
         }
+        [Authorize(Roles = "Admin,Medical Staff")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var dot = await _context.DotHienMaus
+                .FindAsync(id);
+
+            if (dot == null)
+            {
+                return NotFound();
+            }
+
+            var hasPhieu = await _context.PhieuDangKyHienMaus
+                .AnyAsync(p => p.MaDot == id);
+
+            if (hasPhieu)
+            {
+                TempData["ErrorMessage"] =
+                    "Không thể xóa đợt hiến máu vì đã có phiếu đăng ký.";
+
+                return RedirectToAction(nameof(Index));
+            }
+
+            _context.DotHienMaus.Remove(dot);
+
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] =
+                "Xóa đợt hiến máu thành công.";
+
+            return RedirectToAction(nameof(Index));
+        }
     }
 }
