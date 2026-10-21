@@ -95,7 +95,16 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
         // ==========================================
 
         // GET: /Admin/PhieuDangKyHienMau
-        public async Task<IActionResult> PhieuDangKyHienMau(string? search, string? trangThai, int? maDot, int page = 1)
+        public async Task<IActionResult> PhieuDangKyHienMau(
+            string? tenNguoiHien,
+            string? tenDot,
+            int? maDonViToChuc,
+            string? trangThai,
+            DateTime? tuNgay,
+            DateTime? denNgay,
+            string? sapXep = "ngayNop",
+            string? chieuSapXep = "desc",
+            int page = 1)
         {
             int pageSize = 10;
             if (page < 1) page = 1;
@@ -117,16 +126,17 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
             ViewBag.TuChoiCount = await _context.PhieuDangKyHienMaus.CountAsync(p => p.TrangThai == "Từ chối");
             ViewBag.DaHuyCount = await _context.PhieuDangKyHienMaus.CountAsync(p => p.TrangThai == "Đã hủy");
 
-            // Bộ lọc từ khóa
-            if (!string.IsNullOrWhiteSpace(search))
+            // Lọc độc lập theo người hiến và tên đợt để nhân viên y tế kết hợp nhiều điều kiện.
+            if (!string.IsNullOrWhiteSpace(tenNguoiHien))
             {
-                var searchLower = search.Trim().ToLower();
-                query = query.Where(p =>
-                    (p.NguoiHienMau != null && p.NguoiHienMau.HoTen.ToLower().Contains(searchLower)) ||
-                    (p.NguoiHienMau != null && p.NguoiHienMau.SoDienThoai != null && p.NguoiHienMau.SoDienThoai.Contains(searchLower)) ||
-                    (p.NguoiHienMau != null && p.NguoiHienMau.Email != null && p.NguoiHienMau.Email.ToLower().Contains(searchLower)) ||
-                    (p.DotHienMau != null && p.DotHienMau.TenDot.ToLower().Contains(searchLower)) ||
-                    p.MaPhieu.ToString().Contains(searchLower));
+                var donorName = tenNguoiHien.Trim();
+                query = query.Where(p => p.NguoiHienMau != null && p.NguoiHienMau.HoTen.Contains(donorName));
+            }
+
+            if (!string.IsNullOrWhiteSpace(tenDot))
+            {
+                var campaignName = tenDot.Trim();
+                query = query.Where(p => p.DotHienMau != null && p.DotHienMau.TenDot.Contains(campaignName));
             }
 
             // Bộ lọc trạng thái
@@ -135,10 +145,22 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
                 query = query.Where(p => p.TrangThai == trangThai);
             }
 
-            // Bộ lọc đợt hiến máu
-            if (maDot.HasValue && maDot.Value > 0)
+            // Lọc theo đơn vị tổ chức thông qua đợt hiến máu.
+            if (maDonViToChuc.HasValue && maDonViToChuc.Value > 0)
             {
-                query = query.Where(p => p.MaDot == maDot.Value);
+                query = query.Where(p => p.DotHienMau != null && p.DotHienMau.MaDonViToChuc == maDonViToChuc.Value);
+            }
+
+            if (tuNgay.HasValue)
+            {
+                var startDate = tuNgay.Value.Date;
+                query = query.Where(p => p.NgayNop >= startDate);
+            }
+
+            if (denNgay.HasValue)
+            {
+                var endDateExclusive = denNgay.Value.Date.AddDays(1);
+                query = query.Where(p => p.NgayNop < endDateExclusive);
             }
 
             var totalItems = await query.CountAsync();
@@ -146,19 +168,36 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
             if (totalPages < 1) totalPages = 1;
             if (page > totalPages) page = totalPages;
 
+            var sortDescending = !string.Equals(chieuSapXep, "asc", StringComparison.OrdinalIgnoreCase);
+            sapXep = sapXep is "tenNguoiHien" ? sapXep : "ngayNop";
+            query = (sapXep, sortDescending) switch
+            {
+                ("tenNguoiHien", false) => query.OrderBy(p => p.NguoiHienMau!.HoTen).ThenByDescending(p => p.NgayNop),
+                ("tenNguoiHien", true) => query.OrderByDescending(p => p.NguoiHienMau!.HoTen).ThenByDescending(p => p.NgayNop),
+                (_, false) => query.OrderBy(p => p.NgayNop),
+                _ => query.OrderByDescending(p => p.NgayNop)
+            };
+
             var items = await query
-                .OrderByDescending(p => p.NgayNop)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
 
-            ViewBag.CurrentSearch = search;
+            ViewBag.CurrentTenNguoiHien = tenNguoiHien;
+            ViewBag.CurrentTenDot = tenDot;
+            ViewBag.CurrentMaDonViToChuc = maDonViToChuc;
             ViewBag.CurrentTrangThai = trangThai;
-            ViewBag.CurrentMaDot = maDot;
+            ViewBag.CurrentTuNgay = tuNgay?.ToString("yyyy-MM-dd");
+            ViewBag.CurrentDenNgay = denNgay?.ToString("yyyy-MM-dd");
+            ViewBag.CurrentSapXep = sapXep;
+            ViewBag.CurrentChieuSapXep = sortDescending ? "desc" : "asc";
             ViewBag.CurrentPage = page;
             ViewBag.TotalPages = totalPages;
             ViewBag.TotalItems = totalItems;
-            ViewBag.DotHienMaus = await _context.DotHienMaus.OrderByDescending(d => d.NgayBatDauDangKy).ToListAsync();
+            ViewBag.DonViToChucs = await _context.DonViToChucs
+                .AsNoTracking()
+                .OrderBy(d => d.TenDonViToChuc)
+                .ToListAsync();
 
             return View(items);
         }
@@ -197,7 +236,6 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
         public async Task<IActionResult> XacNhanPhieu(int id, string? ghiChu, string? returnUrl)
         {
             var phieu = await _context.PhieuDangKyHienMaus
-                .Include(p => p.LichKhamSangLocs)
                 .FirstOrDefaultAsync(p => p.MaPhieu == id);
 
             if (phieu == null)
@@ -210,14 +248,19 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
             {
                 TempData["ErrorMessage"] = $"Không thể xác nhận phiếu đang ở trạng thái '{phieu.TrangThai}'. Chỉ có thể duyệt phiếu ở trạng thái 'Chờ xác nhận'.";
             }
+            else if (string.IsNullOrWhiteSpace(ghiChu))
+            {
+                TempData["ErrorMessage"] = "Vui lòng nhập ghi chú xác nhận trước khi duyệt phiếu.";
+            }
+            else if (ghiChu.Trim().Length > 500)
+            {
+                TempData["ErrorMessage"] = "Ghi chú xác nhận không được vượt quá 500 ký tự.";
+            }
             else
             {
                 phieu.TrangThai = "Đã xác nhận";
                 phieu.NgayXuLy = DateTime.Now;
-                if (!string.IsNullOrWhiteSpace(ghiChu))
-                {
-                    phieu.GhiChuXacNhan = ghiChu.Trim();
-                }
+                phieu.GhiChuXacNhan = ghiChu.Trim();
                 await _context.SaveChangesAsync();
                 TempData["SuccessMessage"] = $"Đã duyệt và xác nhận thành công phiếu đăng ký #DKHM-{phieu.MaPhieu:D5}.";
             }
@@ -232,10 +275,9 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
         // POST: /Admin/TuChoiPhieu
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> TuChoiPhieu(int id, string lyDoTuChoi, string? returnUrl)
+        public async Task<IActionResult> TuChoiPhieu(int id, string? lyDoTuChoi, string? returnUrl)
         {
             var phieu = await _context.PhieuDangKyHienMaus
-                .Include(p => p.LichKhamSangLocs)
                 .FirstOrDefaultAsync(p => p.MaPhieu == id);
 
             if (phieu == null)
@@ -248,6 +290,10 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
             {
                 TempData["ErrorMessage"] = "Vui lòng nhập lý do từ chối phiếu đăng ký.";
             }
+            else if (lyDoTuChoi.Trim().Length > 500)
+            {
+                TempData["ErrorMessage"] = "Lý do từ chối không được vượt quá 500 ký tự.";
+            }
             else if (phieu.TrangThai != "Chờ xác nhận")
             {
                 TempData["ErrorMessage"] = $"Không thể từ chối phiếu đang ở trạng thái '{phieu.TrangThai}'. Chỉ có thể từ chối phiếu ở trạng thái 'Chờ xác nhận'.";
@@ -257,12 +303,6 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
                 phieu.TrangThai = "Từ chối";
                 phieu.NgayXuLy = DateTime.Now;
                 phieu.GhiChuXacNhan = lyDoTuChoi.Trim();
-
-                // Hủy các lịch khám sàng lọc đang chờ
-                foreach (var lich in phieu.LichKhamSangLocs.Where(l => l.TrangThai != "Đã hoàn thành"))
-                {
-                    lich.TrangThai = "Đã hủy";
-                }
 
                 await _context.SaveChangesAsync();
                 TempData["SuccessMessage"] = $"Đã từ chối phiếu #DKHM-{phieu.MaPhieu:D5}. Lý do: {lyDoTuChoi}.";

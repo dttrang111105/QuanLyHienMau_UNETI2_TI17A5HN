@@ -3,10 +3,15 @@
     Layout = "_AdminLayout";
     ViewData["Title"] = "Quản Lý & Duyệt Phiếu Đăng Ký Hiến Máu";
 
-    var dotHienMaus = ViewBag.DotHienMaus as List<QuanLyHienMau_UNETI2_TI17A5HN.Models.DotHienMau> ?? new List<QuanLyHienMau_UNETI2_TI17A5HN.Models.DotHienMau>();
-    var currentSearch = ViewBag.CurrentSearch as string;
+    var donViToChucs = ViewBag.DonViToChucs as List<QuanLyHienMau_UNETI2_TI17A5HN.Models.DonViToChuc> ?? new List<QuanLyHienMau_UNETI2_TI17A5HN.Models.DonViToChuc>();
+    var currentTenNguoiHien = ViewBag.CurrentTenNguoiHien as string;
+    var currentTenDot = ViewBag.CurrentTenDot as string;
     var currentTrangThai = ViewBag.CurrentTrangThai as string;
-    var currentMaDot = ViewBag.CurrentMaDot as int?;
+    var currentMaDonViToChuc = ViewBag.CurrentMaDonViToChuc as int?;
+    var currentTuNgay = ViewBag.CurrentTuNgay as string;
+    var currentDenNgay = ViewBag.CurrentDenNgay as string;
+    var currentSapXep = ViewBag.CurrentSapXep as string ?? "ngayNop";
+    var currentChieuSapXep = ViewBag.CurrentChieuSapXep as string ?? "desc";
     int currentPage = ViewBag.CurrentPage ?? 1;
     int totalPages = ViewBag.TotalPages ?? 1;
     int totalItems = ViewBag.TotalItems ?? 0;
@@ -54,17 +59,31 @@
         </div>
 
         <!-- Filter & Search Toolbar -->
-        <form method="get" asp-controller="Admin" asp-action="PhieuDangKyHienMau" class="grid grid-cols-1 md:grid-cols-12 gap-space-sm pt-space-xs">
-            <!-- Search input -->
-            <div class="md:col-span-4 relative">
-                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">search</span>
-                <input type="search" name="search" value="@currentSearch" placeholder="Tìm theo Mã phiếu, Họ tên, SĐT, Email..." class="w-full h-11 pl-10 pr-3 bg-surface-container-low rounded-xl font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-sm placeholder:text-on-surface-variant/70" />
-            </div>
+        <form method="get" asp-controller="Admin" asp-action="PhieuDangKyHienMau" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-space-sm pt-space-xs">
+            <label class="flex flex-col gap-1 font-label-sm text-label-sm font-semibold text-on-surface-variant">
+                Họ tên người hiến máu
+                <input type="search" name="tenNguoiHien" value="@currentTenNguoiHien" placeholder="Nhập họ tên..." class="w-full h-11 px-3 bg-surface-container-low rounded-xl font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-sm placeholder:text-on-surface-variant/70" />
+            </label>
 
-            <!-- Status filter -->
-            <div class="md:col-span-3 relative">
-                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">filter_alt</span>
-                <select name="trangThai" class="w-full h-11 pl-10 pr-8 bg-surface-container-low rounded-xl font-body-sm text-body-sm text-on-surface appearance-none focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-sm cursor-pointer">
+            <label class="flex flex-col gap-1 font-label-sm text-label-sm font-semibold text-on-surface-variant">
+                Tên đợt hiến máu
+                <input type="search" name="tenDot" value="@currentTenDot" placeholder="Nhập tên đợt..." class="w-full h-11 px-3 bg-surface-container-low rounded-xl font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-sm placeholder:text-on-surface-variant/70" />
+            </label>
+
+            <label class="flex flex-col gap-1 font-label-sm text-label-sm font-semibold text-on-surface-variant">
+                Đơn vị tổ chức
+                <select name="maDonViToChuc" class="w-full h-11 px-3 bg-surface-container-low rounded-xl font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-sm cursor-pointer">
+                    <option value="">Tất cả đơn vị</option>
+                    @foreach (var donVi in donViToChucs)
+                    {
+                        <option value="@donVi.MaDonViToChuc" selected="@(currentMaDonViToChuc == donVi.MaDonViToChuc)">@donVi.TenDonViToChuc</option>
+                    }
+                </select>
+            </label>
+
+            <label class="flex flex-col gap-1 font-label-sm text-label-sm font-semibold text-on-surface-variant">
+                Trạng thái phiếu
+                <select name="trangThai" class="w-full h-11 px-3 bg-surface-container-low rounded-xl font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-sm cursor-pointer">
                     <option value="all" selected="@(string.IsNullOrEmpty(currentTrangThai) || currentTrangThai == "all")">Tất cả trạng thái</option>
                     <option value="Chờ xác nhận" selected="@(currentTrangThai == "Chờ xác nhận")">Chờ xác nhận</option>
                     <option value="Đã xác nhận" selected="@(currentTrangThai == "Đã xác nhận")">Đã xác nhận</option>
@@ -75,31 +94,41 @@
                     <option value="Từ chối" selected="@(currentTrangThai == "Từ chối")">Từ chối</option>
                     <option value="Đã hủy" selected="@(currentTrangThai == "Đã hủy")">Đã hủy</option>
                 </select>
-                <span class="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none text-[18px]">arrow_drop_down</span>
-            </div>
+            </label>
 
-            <!-- Campaign filter -->
-            <div class="md:col-span-3 relative">
-                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">campaign</span>
-                <select name="maDot" class="w-full h-11 pl-10 pr-8 bg-surface-container-low rounded-xl font-body-sm text-body-sm text-on-surface appearance-none focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-sm cursor-pointer">
-                    <option value="" selected="@(!currentMaDot.HasValue)">Tất cả đợt hiến</option>
-                    @foreach (var dot in dotHienMaus)
-                    {
-                        <option value="@dot.MaDot" selected="@(currentMaDot == dot.MaDot)">@dot.TenDot (@dot.NgayBatDauDangKy.ToString("dd/MM/yyyy"))</option>
-                    }
+            <label class="flex flex-col gap-1 font-label-sm text-label-sm font-semibold text-on-surface-variant">
+                Từ ngày nộp
+                <input type="date" name="tuNgay" value="@currentTuNgay" class="w-full h-11 px-3 bg-surface-container-low rounded-xl font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-sm" />
+            </label>
+
+            <label class="flex flex-col gap-1 font-label-sm text-label-sm font-semibold text-on-surface-variant">
+                Đến ngày nộp
+                <input type="date" name="denNgay" value="@currentDenNgay" class="w-full h-11 px-3 bg-surface-container-low rounded-xl font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-sm" />
+            </label>
+
+            <label class="flex flex-col gap-1 font-label-sm text-label-sm font-semibold text-on-surface-variant">
+                Sắp xếp theo
+                <select name="sapXep" class="w-full h-11 px-3 bg-surface-container-low rounded-xl font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-sm cursor-pointer">
+                    <option value="ngayNop" selected="@(currentSapXep == "ngayNop")">Ngày nộp</option>
+                    <option value="tenNguoiHien" selected="@(currentSapXep == "tenNguoiHien")">Tên người hiến máu</option>
                 </select>
-                <span class="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none text-[18px]">arrow_drop_down</span>
-            </div>
+            </label>
 
-            <!-- Buttons -->
-            <div class="md:col-span-2 flex items-center gap-2">
-                <button type="submit" class="flex-1 h-11 rounded-xl bg-primary text-on-primary hover:bg-primary-container font-label-md text-label-md font-bold transition-all flex items-center justify-center gap-1.5 shadow-sm">
-                    <span class="material-symbols-outlined text-[18px]">filter_list</span>
-                    <span>Lọc</span>
-                </button>
-                <a asp-controller="Admin" asp-action="PhieuDangKyHienMau" class="h-11 px-3 rounded-xl bg-surface-container text-on-surface hover:bg-surface-container-high transition-colors flex items-center justify-center" title="Xóa bộ lọc">
-                    <span class="material-symbols-outlined text-[18px]">restart_alt</span>
+            <label class="flex flex-col gap-1 font-label-sm text-label-sm font-semibold text-on-surface-variant">
+                Thứ tự
+                <select name="chieuSapXep" class="w-full h-11 px-3 bg-surface-container-low rounded-xl font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-sm cursor-pointer">
+                    <option value="desc" selected="@(currentChieuSapXep == "desc")">Mới nhất / Z → A</option>
+                    <option value="asc" selected="@(currentChieuSapXep == "asc")">Cũ nhất / A → Z</option>
+                </select>
+            </label>
+
+            <div class="sm:col-span-2 xl:col-span-4 flex flex-wrap items-center justify-end gap-2 pt-1">
+                <a asp-controller="Admin" asp-action="PhieuDangKyHienMau" class="h-11 px-4 rounded-xl bg-surface-container text-on-surface hover:bg-surface-container-high transition-colors inline-flex items-center justify-center gap-2" title="Xóa toàn bộ bộ lọc">
+                    <span class="material-symbols-outlined text-[18px]">restart_alt</span> Đặt lại
                 </a>
+                <button type="submit" class="h-11 px-5 rounded-xl bg-primary text-on-primary hover:bg-primary-container font-label-md text-label-md font-bold transition-all inline-flex items-center justify-center gap-2 shadow-sm">
+                    <span class="material-symbols-outlined text-[18px]">filter_list</span> Áp dụng bộ lọc
+                </button>
             </div>
         </form>
     </div>
@@ -393,9 +422,14 @@
                         <!-- Prev -->
                         <a asp-controller="Admin" asp-action="PhieuDangKyHienMau"
                            asp-route-page="@(currentPage - 1)"
-                           asp-route-search="@currentSearch"
+                           asp-route-tenNguoiHien="@currentTenNguoiHien"
+                           asp-route-tenDot="@currentTenDot"
                            asp-route-trangThai="@currentTrangThai"
-                           asp-route-maDot="@currentMaDot"
+                           asp-route-maDonViToChuc="@currentMaDonViToChuc"
+                           asp-route-tuNgay="@currentTuNgay"
+                           asp-route-denNgay="@currentDenNgay"
+                           asp-route-sapXep="@currentSapXep"
+                           asp-route-chieuSapXep="@currentChieuSapXep"
                            class="px-3 py-1.5 rounded-lg border border-outline-variant text-on-surface hover:bg-surface-container @(currentPage <= 1 ? "opacity-40 pointer-events-none" : "")">
                             « Trước
                         </a>
@@ -406,9 +440,14 @@
                             {
                                 <a asp-controller="Admin" asp-action="PhieuDangKyHienMau"
                                    asp-route-page="@i"
-                                   asp-route-search="@currentSearch"
+                                   asp-route-tenNguoiHien="@currentTenNguoiHien"
+                                   asp-route-tenDot="@currentTenDot"
                                    asp-route-trangThai="@currentTrangThai"
-                                   asp-route-maDot="@currentMaDot"
+                                   asp-route-maDonViToChuc="@currentMaDonViToChuc"
+                                   asp-route-tuNgay="@currentTuNgay"
+                                   asp-route-denNgay="@currentDenNgay"
+                                   asp-route-sapXep="@currentSapXep"
+                                   asp-route-chieuSapXep="@currentChieuSapXep"
                                    class="px-3 py-1.5 rounded-lg font-bold @(i == currentPage ? "bg-primary text-on-primary shadow-sm" : "border border-outline-variant text-on-surface hover:bg-surface-container")">
                                     @i
                                 </a>
@@ -422,9 +461,14 @@
                         <!-- Next -->
                         <a asp-controller="Admin" asp-action="PhieuDangKyHienMau"
                            asp-route-page="@(currentPage + 1)"
-                           asp-route-search="@currentSearch"
+                           asp-route-tenNguoiHien="@currentTenNguoiHien"
+                           asp-route-tenDot="@currentTenDot"
                            asp-route-trangThai="@currentTrangThai"
-                           asp-route-maDot="@currentMaDot"
+                           asp-route-maDonViToChuc="@currentMaDonViToChuc"
+                           asp-route-tuNgay="@currentTuNgay"
+                           asp-route-denNgay="@currentDenNgay"
+                           asp-route-sapXep="@currentSapXep"
+                           asp-route-chieuSapXep="@currentChieuSapXep"
                            class="px-3 py-1.5 rounded-lg border border-outline-variant text-on-surface hover:bg-surface-container @(currentPage >= totalPages ? "opacity-40 pointer-events-none" : "")">
                             Sau »
                         </a>
@@ -460,8 +504,9 @@
             </div>
 
             <div>
-                <label class="block font-label-md text-label-md font-bold text-on-surface mb-1">Ghi chú xác nhận (tùy chọn):</label>
-                <textarea name="ghiChu" rows="3" placeholder="Nhập ghi chú hoặc dặn dò cho người hiến (nếu có)..." class="w-full p-3 bg-surface-container-low rounded-xl font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20"></textarea>
+                <label class="block font-label-md text-label-md font-bold text-on-surface mb-1">Ghi chú xác nhận <span class="text-error">*</span></label>
+                <textarea name="ghiChu" required maxlength="500" rows="3" placeholder="Ghi nhận điều kiện đã đối chiếu hoặc hướng dẫn người hiến..." class="w-full p-3 bg-surface-container-low rounded-xl font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20"></textarea>
+                <p class="mt-1 text-xs text-on-surface-variant">Bắt buộc, tối đa 500 ký tự; hệ thống sẽ lưu ghi chú cùng thời điểm xử lý.</p>
             </div>
 
             <div class="p-3 bg-emerald-50 rounded-xl flex items-center gap-2 text-emerald-900 font-label-sm text-label-sm">
@@ -507,7 +552,7 @@
 
             <div>
                 <label class="block font-label-md text-label-md font-bold text-on-surface mb-1">Lý do từ chối <span class="text-error">*</span>:</label>
-                <textarea name="lyDoTuChoi" required rows="3" placeholder="Nhập lý do cụ thể (Ví dụ: Chưa đủ khoảng cách hiến 84 ngày, chưa đủ cân nặng tối thiểu, có tiền sử bệnh lý chống chỉ định...)" class="w-full p-3 bg-surface-container-low rounded-xl font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-error/20"></textarea>
+                <textarea name="lyDoTuChoi" required maxlength="500" rows="3" placeholder="Nhập lý do cụ thể (Ví dụ: Chưa đủ khoảng cách hiến 84 ngày, chưa đủ cân nặng tối thiểu...)" class="w-full p-3 bg-surface-container-low rounded-xl font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-error/20"></textarea>
             </div>
 
             <div class="p-3 bg-error-container/40 rounded-xl flex items-center gap-2 text-on-error-container font-label-sm text-label-sm">

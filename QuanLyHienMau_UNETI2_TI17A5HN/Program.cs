@@ -32,6 +32,10 @@ using (var scope = app.Services.CreateScope())
     {
         var context = services.GetRequiredService<ApplicationDbContext>();
         DbInitializer.Initialize(context);
+        if (app.Environment.IsDevelopment())
+        {
+            DbInitializer.SeedTestData(context);
+        }
     }
     catch (Exception ex)
     {

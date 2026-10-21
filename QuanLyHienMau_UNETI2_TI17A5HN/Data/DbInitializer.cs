@@ -183,5 +183,113 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Data
                 context.SaveChanges();
             }
         }
+
+        /// <summary>
+        /// Tạo dữ liệu thử bộ lọc danh sách phiếu. Phương thức chỉ được gọi trong Development
+        /// và có thể chạy nhiều lần mà không tạo trùng hồ sơ hoặc phiếu mẫu.
+        /// </summary>
+        public static void SeedTestData(ApplicationDbContext context)
+        {
+            var samples = new[]
+            {
+                new { HoTen = "Nguyễn Minh Anh", Email = "demo.minhanh@example.test", Phone = "0981000001", Blood = "O+", Status = "Chờ xác nhận", DayOffset = 0 },
+                new { HoTen = "Trần Quốc Bảo", Email = "demo.quocbao@example.test", Phone = "0981000002", Blood = "A+", Status = "Chờ xác nhận", DayOffset = 1 },
+                new { HoTen = "Lê Thu Hà", Email = "demo.thuha@example.test", Phone = "0981000003", Blood = "B+", Status = "Đã xác nhận", DayOffset = 2 },
+                new { HoTen = "Phạm Đức Huy", Email = "demo.duchuy@example.test", Phone = "0981000004", Blood = "AB+", Status = "Chờ khám sàng lọc", DayOffset = 3 },
+                new { HoTen = "Vũ Ngọc Lan", Email = "demo.ngoclan@example.test", Phone = "0981000005", Blood = "O-", Status = "Từ chối", DayOffset = 5 },
+                new { HoTen = "Đỗ Hải Nam", Email = "demo.hainam@example.test", Phone = "0981000006", Blood = "A-", Status = "Chờ xác nhận", DayOffset = 7 },
+                new { HoTen = "Bùi Khánh Linh", Email = "demo.khanhlinh@example.test", Phone = "0981000007", Blood = "B-", Status = "Đã xác nhận", DayOffset = 10 },
+                new { HoTen = "Hoàng Gia Phúc", Email = "demo.giaphuc@example.test", Phone = "0981000008", Blood = "O+", Status = "Chờ xác nhận", DayOffset = 14 }
+            };
+
+            var sampleEmails = samples.Select(s => s.Email).ToArray();
+            var existingProfiles = context.NguoiHienMaus
+                .Where(n => n.Email != null && sampleEmails.Contains(n.Email))
+                .ToList();
+            var profilesByEmail = existingProfiles.ToDictionary(n => n.Email!, n => n);
+
+            foreach (var sample in samples)
+            {
+                if (profilesByEmail.ContainsKey(sample.Email)) continue;
+
+                var profile = new NguoiHienMau
+                {
+                    HoTen = sample.HoTen,
+                    Email = sample.Email,
+                    SoDienThoai = sample.Phone,
+                    NgaySinh = new DateTime(1995 + sample.DayOffset % 10, 3 + sample.DayOffset % 8, 5 + sample.DayOffset % 20),
+                    GioiTinh = sample.DayOffset % 2 == 0 ? "Nữ" : "Nam",
+                    DiaChi = "Hà Nội",
+                    NhomMau = sample.Blood,
+                    NgheNghiep = "Nhân viên văn phòng",
+                    CanNang = 50 + sample.DayOffset % 20,
+                    TrangThai = "Hoạt động"
+                };
+                context.NguoiHienMaus.Add(profile);
+                profilesByEmail.Add(sample.Email, profile);
+            }
+
+            context.SaveChanges();
+
+            var campaigns = context.DotHienMaus
+                .OrderBy(d => d.MaDot)
+                .ToList();
+
+            if (campaigns.Count == 0)
+            {
+                var organization = context.DonViToChucs.FirstOrDefault();
+                if (organization == null)
+                {
+                    organization = new DonViToChuc
+                    {
+                        TenDonViToChuc = "Đơn vị mẫu kiểm thử",
+                        EmailLienHe = "demo.organization@example.test",
+                        MoTa = "Đơn vị mẫu phục vụ kiểm thử danh sách phiếu.",
+                        TrangThai = "Hoạt động"
+                    };
+                    context.DonViToChucs.Add(organization);
+                    context.SaveChanges();
+                }
+
+                campaigns.Add(new DotHienMau
+                {
+                    TenDot = "Đợt hiến máu mẫu kiểm thử",
+                    MaDonViToChuc = organization.MaDonViToChuc,
+                    ChiTieuDonViMau = 100,
+                    CanNangToiThieu = 45,
+                    NgayBatDauDangKy = DateTime.Today.AddDays(-30),
+                    HanDangKy = DateTime.Today.AddDays(30),
+                    TrangThai = "Đang mở đăng ký"
+                });
+                context.DotHienMaus.Add(campaigns[0]);
+                context.SaveChanges();
+            }
+
+            var sampleDonorIds = profilesByEmail.Values.Select(n => n.MaNguoiHien).ToArray();
+            var donorsWithApplications = context.PhieuDangKyHienMaus
+                .Where(p => sampleDonorIds.Contains(p.MaNguoiHien))
+                .Select(p => p.MaNguoiHien)
+                .ToHashSet();
+
+            var newApplications = samples
+                .Select((sample, index) => new { Sample = sample, Index = index, Donor = profilesByEmail[sample.Email] })
+                .Where(item => !donorsWithApplications.Contains(item.Donor.MaNguoiHien))
+                .Select(item => new PhieuDangKyHienMau
+                {
+                    MaNguoiHien = item.Donor.MaNguoiHien,
+                    MaDot = campaigns[item.Index % campaigns.Count].MaDot,
+                    NgayNop = DateTime.Today.AddDays(-item.Sample.DayOffset).AddHours(8 + item.Index),
+                    TrangThai = item.Sample.Status,
+                    LyDoHienMau = "Đăng ký hiến máu tình nguyện.",
+                    GhiChu = "Dữ liệu mẫu để kiểm thử tìm kiếm, lọc và sắp xếp phiếu."
+                })
+                .ToList();
+
+            if (newApplications.Count > 0)
+            {
+                context.PhieuDangKyHienMaus.AddRange(newApplications);
+                context.SaveChanges();
+            }
+        }
     }
 }
