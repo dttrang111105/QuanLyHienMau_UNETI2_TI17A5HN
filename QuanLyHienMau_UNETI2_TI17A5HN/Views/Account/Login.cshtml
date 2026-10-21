@@ -1,3 +1,9 @@
+<!-- Họ và tên: Nguyễn Tiến Nam
+Mã sinh viên: 23103100275
+Nội dung thực hiện: Tài khoản,
+giao diện trang đăng nhập. -->
+
+
 @{
     ViewData["Title"] = "Đăng Nhập & Đăng Ký Cổng Hiến Máu";
     Layout = "~/Views/Shared/_Layout.cshtml";
@@ -144,7 +150,7 @@
                                 <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-secondary">
                                     <span class="material-symbols-outlined text-[20px]">person</span>
                                 </div>
-                                <input class="w-full h-11 pl-11 pr-4 rounded-xl border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20 font-body-md text-on-surface transition-all bg-surface-container-lowest" id="login-account-id" name="tenDangNhap" required placeholder="Nhập tên đăng nhập, email hoặc SĐT" type="text" />
+                                <input class="w-full h-11 pl-11 pr-4 rounded-xl border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20 font-body-md text-on-surface transition-all bg-surface-container-lowest" id="login-account-id" name="tenDangNhap" value="@(ViewBag.LoginTenDangNhap ?? "")" required placeholder="Nhập tên đăng nhập, email hoặc SĐT" type="text" />
                             </div>
                         </div>
 
@@ -237,7 +243,7 @@
                                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-secondary">
                                         <span class="material-symbols-outlined text-[18px]">account_circle</span>
                                     </div>
-                                    <input class="w-full h-10 pl-10 pr-3 rounded-xl border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20 font-body-md text-on-surface text-sm transition-all bg-surface-container-lowest" id="reg-username" name="tenDangNhap" placeholder="Ví dụ: nguyenvana" required type="text" />
+                                    <input class="w-full h-10 pl-10 pr-3 rounded-xl border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20 font-body-md text-on-surface text-sm transition-all bg-surface-container-lowest" id="reg-username" name="tenDangNhap" value="@(ViewBag.RegTenDangNhap ?? "")" placeholder="Ví dụ: nguyenvana" required type="text" />
                                 </div>
                             </div>
                             <div>
@@ -248,7 +254,7 @@
                                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-secondary">
                                         <span class="material-symbols-outlined text-[18px]">badge</span>
                                     </div>
-                                    <input class="w-full h-10 pl-10 pr-3 rounded-xl border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20 font-body-md text-on-surface text-sm transition-all bg-surface-container-lowest" id="reg-fullname" name="hoTen" placeholder="Ví dụ: Nguyễn Văn A" required type="text" />
+                                    <input class="w-full h-10 pl-10 pr-3 rounded-xl border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20 font-body-md text-on-surface text-sm transition-all bg-surface-container-lowest" id="reg-fullname" name="hoTen" value="@(ViewBag.RegHoTen ?? "")" placeholder="Ví dụ: Nguyễn Văn A" required type="text" />
                                 </div>
                             </div>
                         </div>
@@ -263,7 +269,7 @@
                                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-secondary">
                                         <span class="material-symbols-outlined text-[18px]">mail</span>
                                     </div>
-                                    <input class="w-full h-10 pl-10 pr-3 rounded-xl border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20 font-body-md text-on-surface text-sm transition-all bg-surface-container-lowest" id="reg-email" name="email" placeholder="email@gmail.com" type="email" />
+                                    <input class="w-full h-10 pl-10 pr-3 rounded-xl border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20 font-body-md text-on-surface text-sm transition-all bg-surface-container-lowest" id="reg-email" name="email" value="@(ViewBag.RegEmail ?? "")" placeholder="email@gmail.com" type="email" />
                                 </div>
                             </div>
                             <div>
@@ -274,7 +280,7 @@
                                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-secondary">
                                         <span class="material-symbols-outlined text-[18px]">phone</span>
                                     </div>
-                                    <input class="w-full h-10 pl-10 pr-3 rounded-xl border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20 font-body-md text-on-surface text-sm transition-all bg-surface-container-lowest" id="reg-phone" name="soDienThoai" placeholder="09xx xxx xxx" type="tel" />
+                                    <input class="w-full h-10 pl-10 pr-3 rounded-xl border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20 font-body-md text-on-surface text-sm transition-all bg-surface-container-lowest" id="reg-phone" name="soDienThoai" value="@(ViewBag.RegSoDienThoai ?? "")" placeholder="09xx xxx xxx" type="tel" />
                                 </div>
                             </div>
                         </div>
@@ -290,15 +296,15 @@
                                         <span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">bloodtype</span>
                                     </div>
                                     <select class="w-full h-10 pl-10 pr-8 rounded-xl border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20 font-body-md text-on-surface text-sm transition-all bg-surface-container-lowest appearance-none cursor-pointer" id="reg-blood-type" name="nhomMau">
-                                        <option value="unknown">Chưa rõ (Sẽ xét nghiệm)</option>
-                                        <option value="O+">Nhóm O Rh(+)</option>
-                                        <option value="A+">Nhóm A Rh(+)</option>
-                                        <option value="B+">Nhóm B Rh(+)</option>
-                                        <option value="AB+">Nhóm AB Rh(+)</option>
-                                        <option value="O-">Nhóm O Rh(-) [Hiếm]</option>
-                                        <option value="A-">Nhóm A Rh(-) [Hiếm]</option>
-                                        <option value="B-">Nhóm B Rh(-) [Hiếm]</option>
-                                        <option value="AB-">Nhóm AB Rh(-) [Hiếm]</option>
+                                        <option value="unknown" selected="@(ViewBag.RegNhomMau == null || ViewBag.RegNhomMau == "unknown" ? "selected" : null)">Chưa rõ (Sẽ xét nghiệm)</option>
+                                        <option value="O+" selected="@(ViewBag.RegNhomMau == "O+" ? "selected" : null)">Nhóm O Rh(+)</option>
+                                        <option value="A+" selected="@(ViewBag.RegNhomMau == "A+" ? "selected" : null)">Nhóm A Rh(+)</option>
+                                        <option value="B+" selected="@(ViewBag.RegNhomMau == "B+" ? "selected" : null)">Nhóm B Rh(+)</option>
+                                        <option value="AB+" selected="@(ViewBag.RegNhomMau == "AB+" ? "selected" : null)">Nhóm AB Rh(+)</option>
+                                        <option value="O-" selected="@(ViewBag.RegNhomMau == "O-" ? "selected" : null)">Nhóm O Rh(-) [Hiếm]</option>
+                                        <option value="A-" selected="@(ViewBag.RegNhomMau == "A-" ? "selected" : null)">Nhóm A Rh(-) [Hiếm]</option>
+                                        <option value="B-" selected="@(ViewBag.RegNhomMau == "B-" ? "selected" : null)">Nhóm B Rh(-) [Hiếm]</option>
+                                        <option value="AB-" selected="@(ViewBag.RegNhomMau == "AB-" ? "selected" : null)">Nhóm AB Rh(-) [Hiếm]</option>
                                     </select>
                                     <div class="absolute inset-y-0 right-0 pr-2.5 flex items-center pointer-events-none text-secondary">
                                         <span class="material-symbols-outlined text-[18px]">arrow_drop_down</span>
@@ -313,7 +319,7 @@
                                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-secondary">
                                         <span class="material-symbols-outlined text-[18px]">fitness_center</span>
                                     </div>
-                                    <input class="w-full h-10 pl-10 pr-3 rounded-xl border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20 font-body-md text-on-surface text-sm transition-all bg-surface-container-lowest" id="reg-weight" name="canNang" placeholder="Ví dụ: 55" type="number" step="0.5" min="30" max="150" />
+                                    <input class="w-full h-10 pl-10 pr-3 rounded-xl border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20 font-body-md text-on-surface text-sm transition-all bg-surface-container-lowest" id="reg-weight" name="canNang" value="@(ViewBag.RegCanNang != null ? ViewBag.RegCanNang.ToString() : "")" placeholder="Ví dụ: 55" type="number" step="0.5" min="30" max="150" />
                                 </div>
                             </div>
                         </div>
@@ -328,7 +334,7 @@
                                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-secondary">
                                         <span class="material-symbols-outlined text-[18px]">lock</span>
                                     </div>
-                                    <input class="w-full h-10 pl-10 pr-9 rounded-xl border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20 font-body-md text-on-surface text-sm transition-all bg-surface-container-lowest" id="reg-password" name="matKhau" minlength="6" placeholder="Tối thiểu 6 ký tự" required type="password" />
+                                    <input class="w-full h-10 pl-10 pr-9 rounded-xl border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20 font-body-md text-on-surface text-sm transition-all bg-surface-container-lowest" id="reg-password" name="matKhau" value="@(ViewBag.RegMatKhau ?? "")" minlength="6" placeholder="Tối thiểu 6 ký tự" required type="password" />
                                     <button class="absolute inset-y-0 right-0 pr-2.5 flex items-center text-secondary hover:text-on-surface cursor-pointer" onclick="togglePasswordVisibility('reg-password', 'eye-reg-pwd')" type="button">
                                         <span class="material-symbols-outlined text-[16px]" id="eye-reg-pwd">visibility</span>
                                     </button>
@@ -342,7 +348,7 @@
                                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-secondary">
                                         <span class="material-symbols-outlined text-[18px]">lock_reset</span>
                                     </div>
-                                    <input class="w-full h-10 pl-10 pr-9 rounded-xl border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20 font-body-md text-on-surface text-sm transition-all bg-surface-container-lowest" id="reg-confirm-password" name="xacNhanMatKhau" minlength="6" placeholder="Nhập lại mật khẩu" required type="password" />
+                                    <input class="w-full h-10 pl-10 pr-9 rounded-xl border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20 font-body-md text-on-surface text-sm transition-all bg-surface-container-lowest" id="reg-confirm-password" name="xacNhanMatKhau" value="@(ViewBag.RegXacNhanMatKhau ?? "")" minlength="6" placeholder="Nhập lại mật khẩu" required type="password" />
                                     <button class="absolute inset-y-0 right-0 pr-2.5 flex items-center text-secondary hover:text-on-surface cursor-pointer" onclick="togglePasswordVisibility('reg-confirm-password', 'eye-reg-cpwd')" type="button">
                                         <span class="material-symbols-outlined text-[16px]" id="eye-reg-cpwd">visibility</span>
                                     </button>
@@ -352,14 +358,14 @@
 
                         <!-- Terms Agreement Checkbox -->
                         <label class="flex items-start gap-2.5 cursor-pointer select-none pt-1">
-                            <input class="w-4 h-4 rounded mt-0.5 text-primary focus:ring-primary/20 border-outline-variant accent-primary" required type="checkbox" />
+                            <input id="chk-terms" class="w-4 h-4 rounded mt-0.5 text-primary focus:ring-primary/20 border-outline-variant accent-primary cursor-pointer" type="checkbox" onchange="toggleRegisterButton()" @(ViewBag.RegDongYDieuKhoan == true ? "checked" : null) />
                             <span class="font-body-sm text-[12px] text-on-surface-variant leading-tight">
                                 Tôi đồng ý với <a class="text-primary font-bold hover:underline" href="javascript:void(0)">Điều khoản phục vụ</a> &amp; <a class="text-primary font-bold hover:underline" href="javascript:void(0)">Chính sách quyền riêng tư y tế</a> của Vitalis Blood Community.
                             </span>
                         </label>
 
-                        <!-- Action Submit Button -->
-                        <button class="w-full py-3.5 px-6 rounded-xl bg-primary-container hover:bg-primary text-on-primary font-label-lg font-bold flex items-center justify-center gap-2 shadow-md shadow-primary/25 transition-all active:scale-[0.99] mt-2 cursor-pointer" type="submit">
+                        <!-- Action Submit Button (Mặc định disabled, chỉ enable khi chọn ô điều khoản) -->
+                        <button id="btn-register-submit" disabled class="w-full py-3.5 px-6 rounded-xl bg-primary-container hover:bg-primary text-on-primary font-label-lg font-bold flex items-center justify-center gap-2 shadow-md shadow-primary/25 transition-all active:scale-[0.99] mt-2 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none disabled:shadow-none" type="submit">
                             <span>Đăng Ký Tài Khoản Tình Nguyện Viên</span>
                             <span class="material-symbols-outlined text-[20px]">how_to_reg</span>
                         </button>
@@ -395,6 +401,7 @@
             btnLogin.className = 'flex-1 py-2.5 rounded-xl font-label-md text-label-md transition-all font-semibold flex items-center justify-center gap-2 text-secondary hover:text-on-surface cursor-pointer';
             contentRegister.classList.remove('hidden');
             contentLogin.classList.add('hidden');
+            toggleRegisterButton();
         }
     }
 
@@ -411,5 +418,21 @@
             }
         }
     }
+
+    function toggleRegisterButton() {
+        const chkTerms = document.getElementById('chk-terms');
+        const btnSubmit = document.getElementById('btn-register-submit');
+        if (chkTerms && btnSubmit) {
+            if (chkTerms.checked) {
+                btnSubmit.disabled = false;
+            } else {
+                btnSubmit.disabled = true;
+            }
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        toggleRegisterButton();
+    });
 </script>
 }

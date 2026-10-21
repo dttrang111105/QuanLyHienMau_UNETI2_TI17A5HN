@@ -1,3 +1,8 @@
+// Họ và tên: Nguyễn Tiến Nam
+// Mã sinh viên: 23103100275
+// Nội dung thực hiện: Quản lí đơn vị tổ chức hiến máu
+// Thêm sửa xóa đơn vị, quản lí đơn vị tổ chức 
+
 using System.Globalization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -838,6 +843,36 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateDonViToChuc([Bind("TenDonViToChuc,MoTa,EmailLienHe,TrangThai")] DonViToChuc donVi)
         {
+            // Kiểm tra tên bắt buộc
+            if (string.IsNullOrWhiteSpace(donVi.TenDonViToChuc))
+            {
+                TempData["ErrorMessage"] = "Tên đơn vị tổ chức không được để trống.";
+                return RedirectToAction(nameof(DonViToChuc));
+            }
+
+            // Kiểm tra định dạng email nếu có nhập
+            if (!string.IsNullOrWhiteSpace(donVi.EmailLienHe))
+            {
+                var emailPattern = new System.Text.RegularExpressions.Regex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$");
+                if (!emailPattern.IsMatch(donVi.EmailLienHe.Trim()))
+                {
+                    TempData["ErrorMessage"] = "Địa chỉ email liên hệ không đúng định dạng.";
+                    return RedirectToAction(nameof(DonViToChuc));
+                }
+            }
+
+            // Kiểm tra trùng tên đơn vị tổ chức
+            var tenTrimmed = donVi.TenDonViToChuc.Trim();
+            var isDuplicate = await _context.DonViToChucs
+                .AnyAsync(d => d.TenDonViToChuc.ToLower() == tenTrimmed.ToLower());
+            if (isDuplicate)
+            {
+                TempData["ErrorMessage"] = $"Tên đơn vị \"{tenTrimmed}\" đã tồn tại. Vui lòng chọn tên khác.";
+                return RedirectToAction(nameof(DonViToChuc));
+            }
+
+            donVi.TenDonViToChuc = tenTrimmed;
+
             if (ModelState.IsValid)
             {
                 _context.DonViToChucs.Add(donVi);
@@ -856,6 +891,37 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
             {
                 return NotFound();
             }
+
+            // Kiểm tra tên bắt buộc
+            if (string.IsNullOrWhiteSpace(donVi.TenDonViToChuc))
+            {
+                TempData["ErrorMessage"] = "Tên đơn vị tổ chức không được để trống.";
+                return RedirectToAction(nameof(DonViToChuc));
+            }
+
+            // Kiểm tra định dạng email nếu có nhập
+            if (!string.IsNullOrWhiteSpace(donVi.EmailLienHe))
+            {
+                var emailPattern = new System.Text.RegularExpressions.Regex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$");
+                if (!emailPattern.IsMatch(donVi.EmailLienHe.Trim()))
+                {
+                    TempData["ErrorMessage"] = "Địa chỉ email liên hệ không đúng định dạng.";
+                    return RedirectToAction(nameof(DonViToChuc));
+                }
+            }
+
+            // Kiểm tra trùng tên đơn vị tổ chức (loại trừ chính nó)
+            var tenTrimmed = donVi.TenDonViToChuc.Trim();
+            var isDuplicate = await _context.DonViToChucs
+                .AnyAsync(d => d.TenDonViToChuc.ToLower() == tenTrimmed.ToLower()
+                            && d.MaDonViToChuc != donVi.MaDonViToChuc);
+            if (isDuplicate)
+            {
+                TempData["ErrorMessage"] = $"Tên đơn vị \"{tenTrimmed}\" đã tồn tại. Vui lòng chọn tên khác.";
+                return RedirectToAction(nameof(DonViToChuc));
+            }
+
+            donVi.TenDonViToChuc = tenTrimmed;
 
             if (ModelState.IsValid)
             {
@@ -880,6 +946,32 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
             return RedirectToAction(nameof(DonViToChuc));
         }
 
+        // GET: /Admin/CheckDuplicateDonViToChuc (AJAX API kiểm tra trùng tên)
+        [HttpGet]
+        public async Task<IActionResult> CheckDuplicateDonViToChuc(string ten, int? excludeId)
+        {
+            if (string.IsNullOrWhiteSpace(ten))
+            {
+                return Json(new { isDuplicate = false });
+            }
+
+            var tenLower = ten.Trim().ToLower();
+            bool isDuplicate;
+
+            if (excludeId.HasValue)
+            {
+                isDuplicate = await _context.DonViToChucs
+                    .AnyAsync(d => d.TenDonViToChuc.ToLower() == tenLower && d.MaDonViToChuc != excludeId.Value);
+            }
+            else
+            {
+                isDuplicate = await _context.DonViToChucs
+                    .AnyAsync(d => d.TenDonViToChuc.ToLower() == tenLower);
+            }
+
+            return Json(new { isDuplicate });
+        }
+
         // POST: /Admin/DeleteDonViToChuc
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -893,7 +985,7 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
             {
                 if (donVi.DotHienMaus.Any())
                 {
-                    TempData["ErrorMessage"] = "Không thể xóa đơn vị tổ chức đang có đợt hiến máu!";
+                    TempData["ErrorMessage"] = $"Không thể xóa đơn vị \"{donVi.TenDonViToChuc}\" vì đang có {donVi.DotHienMaus.Count} đợt hiến máu liên kết. Việc xóa sẽ làm các đợt hiến máu này không còn hợp lệ.";
                 }
                 else
                 {
