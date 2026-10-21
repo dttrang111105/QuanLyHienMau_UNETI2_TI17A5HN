@@ -1,3 +1,5 @@
+@using QuanLyHienMau_UNETI2_TI17A5HN.ViewModels
+@model DashboardVm
 @{
     Layout = "_AdminLayout";
     ViewData["Title"] = "Bảng Điều Hành & Quản Lý Hiến Máu";
@@ -21,7 +23,7 @@
         : 100;
 }
 
-<div class="flex flex-col w-full">
+<partial name="_Module5Feedback"/>
     <!-- TOAST ALERT NOTIFICATION -->
     @if (TempData["SuccessMessage"] != null)
     {
@@ -29,10 +31,16 @@
             <div class="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center shrink-0">
                 <span class="material-symbols-outlined text-emerald-600 text-[18px]">verified</span>
             </div>
-            <p class="font-body-sm text-body-sm text-on-surface font-semibold pr-2">@TempData["SuccessMessage"]</p>
-            <button class="p-1 text-on-surface-variant hover:text-on-surface" onclick="this.parentElement.remove()">
-                <span class="material-symbols-outlined text-[16px]">close</span>
-            </button>
+            <div class="flex flex-col pr-2">
+                <div class="flex items-center gap-2">
+                    <span class="font-label-md text-label-md text-on-surface font-bold">Thông báo hệ thống</span>
+                    <span class="font-label-sm text-label-sm text-surface-variant font-normal">Vừa xong</span>
+                </div>
+                <p class="font-body-sm text-body-sm text-on-surface font-semibold pr-2">@TempData["SuccessMessage"]</p>
+                <button class="p-1 text-on-surface-variant hover:text-on-surface" onclick="this.parentElement.remove()">
+                    <span class="material-symbols-outlined text-[16px]">close</span>
+                </button>
+            </div>
         </div>
     }
 
@@ -61,6 +69,10 @@
                     <span class="material-symbols-outlined text-[18px]">biotech</span>
                     <span>Quản lý kết quả (@(hienMauThanhCong + khongDuDieuKien))</span>
                 </a>
+                <button class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md transition-all shadow-sm font-semibold" type="button" onclick="location.href='/ThongKe/Export'">
+                    <span class="material-symbols-outlined text-[18px]">download</span>
+                    <span>Xuất Báo Cáo</span>
+                </button>
                 <a asp-controller="DotHienMau" asp-action="Index" class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md shadow-md transition-all font-bold">
                     <span class="material-symbols-outlined text-[20px]">event_available</span>
                     <span>Danh Sách Đợt (@dotDangMo đợt mở)</span>
@@ -75,7 +87,7 @@
                 <div class="flex items-start justify-between">
                     <div class="space-y-1">
                         <span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant font-semibold">Tổng Người Hiến Máu</span>
-                        <div class="font-headline-lg text-headline-lg text-on-surface font-bold">@tongNguoiHien <span class="font-title-md text-title-md font-normal text-on-surface-variant">người</span></div>
+                        <div class="font-headline-lg text-headline-lg text-on-surface font-bold"><span data-m5-metric="nguoi">@(Model?.Nguoi ?? tongNguoiHien)</span> <span class="font-title-md text-title-md font-normal text-on-surface-variant">người</span></div>
                     </div>
                     <div class="w-12 h-12 rounded-2xl bg-surface-container-low flex items-center justify-center text-primary">
                         <span class="material-symbols-outlined text-[26px]">how_to_reg</span>
@@ -94,7 +106,7 @@
                 <div class="flex items-start justify-between">
                     <div class="space-y-1">
                         <span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant font-semibold">Đợt Hiến Đang Mở</span>
-                        <div class="font-headline-lg text-headline-lg text-on-surface font-bold">@dotDangMo <span class="font-title-md text-title-md font-normal text-on-surface-variant">/ @dotList.Count đợt</span></div>
+                        <div class="font-headline-lg text-headline-lg text-on-surface font-bold"><span data-m5-metric="dotmo">@(Model?.DotMo ?? dotDangMo)</span> <span class="font-title-md text-title-md font-normal text-on-surface-variant">/ <span data-m5-metric="dot">@(Model?.Dot ?? dotList.Count)</span> đợt</span></div>
                     </div>
                     <div class="w-12 h-12 rounded-2xl bg-surface-container-low flex items-center justify-center text-primary">
                         <span class="material-symbols-outlined text-[26px]">event_repeat</span>
@@ -102,7 +114,7 @@
                 </div>
                 <div class="mt-4 pt-3 flex items-center justify-between font-body-sm text-body-sm bg-surface-container-low/50 px-3 py-1.5 rounded-xl">
                     <span class="text-emerald-700 font-semibold flex items-center gap-1">
-                        <span class="material-symbols-outlined text-[16px]">apartment</span> @tongDonVi đơn vị tổ chức
+                        <span class="material-symbols-outlined text-[16px]">apartment</span> <span data-m5-metric="donvi">@(Model?.DonVi ?? tongDonVi)</span> đơn vị tổ chức
                     </span>
                     <span class="text-on-surface-variant">Đang nhận hồ sơ</span>
                 </div>
@@ -113,7 +125,7 @@
                 <div class="flex items-start justify-between">
                     <div class="space-y-1">
                         <span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant font-semibold">Tổng Phiếu Đăng Ký</span>
-                        <div class="font-headline-lg text-headline-lg text-on-surface font-bold">@tongPhieu <span class="font-title-md text-title-md font-normal text-on-surface-variant">phiếu</span></div>
+                        <div class="font-headline-lg text-headline-lg text-on-surface font-bold"><span data-m5-metric="phieu">@(Model?.Phieu ?? tongPhieu)</span> <span class="font-title-md text-title-md font-normal text-on-surface-variant">phiếu</span></div>
                     </div>
                     <div class="w-12 h-12 rounded-2xl bg-surface-container-low flex items-center justify-center text-primary">
                         <span class="material-symbols-outlined text-[26px]">assignment</span>
@@ -121,9 +133,9 @@
                 </div>
                 <div class="mt-4 pt-3 flex items-center justify-between font-body-sm text-body-sm bg-surface-container-low/50 px-3 py-1.5 rounded-xl">
                     <span class="text-amber-700 font-semibold flex items-center gap-1">
-                        <span class="material-symbols-outlined text-[16px]">pending_actions</span> @phieuChoXacNhan chờ duyệt
+                        <span class="material-symbols-outlined text-[16px]">pending_actions</span> <span data-m5-metric="cho">@(Model?.ChoXacNhan ?? phieuChoXacNhan)</span> chờ duyệt
                     </span>
-                    <span class="text-on-surface-variant">@phieuDaXacNhan đã duyệt</span>
+                    <span class="text-on-surface-variant"><span data-m5-metric="xacnhan">@(Model?.DaXacNhan ?? phieuDaXacNhan)</span> đã duyệt</span>
                 </div>
             </div>
 
@@ -132,7 +144,7 @@
                 <div class="flex items-start justify-between">
                     <div class="space-y-1">
                         <span class="font-label-sm text-label-sm uppercase tracking-wider text-emerald-800 font-semibold">Hiến Máu Thành Công</span>
-                        <div class="font-headline-lg text-headline-lg text-emerald-700 font-bold">@hienMauThanhCong <span class="font-title-md text-title-md font-normal text-emerald-600">ca</span></div>
+                        <div class="font-headline-lg text-headline-lg text-emerald-700 font-bold"><span data-m5-metric="thanhcong">@(Model?.ThanhCong ?? hienMauThanhCong)</span> <span class="font-title-md text-title-md font-normal text-emerald-600">ca</span></div>
                     </div>
                     <div class="w-12 h-12 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-600">
                         <span class="material-symbols-outlined text-[26px]">water_drop</span>
@@ -160,7 +172,7 @@
                     </div>
                     <div>
                         <div class="flex items-center gap-1.5">
-                            <span class="font-headline-sm text-headline-sm text-on-surface font-bold">@phieuChoXacNhan</span>
+                            <span class="font-headline-sm text-headline-sm text-on-surface font-bold" data-m5-metric="cho">@(Model?.ChoXacNhan ?? phieuChoXacNhan)</span>
                             <span class="font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-bold">Chờ duyệt</span>
                         </div>
                         <p class="font-body-sm text-body-sm text-on-surface-variant">Phiếu chờ thẩm định</p>
@@ -179,10 +191,10 @@
                     </div>
                     <div>
                         <div class="flex items-center gap-1.5">
-                            <span class="font-headline-sm text-headline-sm text-on-surface font-bold">@phieuDaXacNhan</span>
-                            <span class="font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-sky-100 text-sky-800 font-semibold">Đã duyệt</span>
+                            <span class="font-headline-sm text-headline-sm text-on-surface font-bold" data-m5-metric="xacnhan">@(Model?.DaXacNhan ?? phieuDaXacNhan)</span>
+                            <span class="font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-semibold">Hợp lệ</span>
                         </div>
-                        <p class="font-body-sm text-body-sm text-on-surface-variant">Sẵn sàng điều phối khám</p>
+                        <p class="font-body-sm text-body-sm text-on-surface-variant">Phiếu đã xác nhận</p>
                     </div>
                 </div>
                 <a asp-action="LichKhamSangLoc" class="material-symbols-outlined text-surface-variant hover:text-primary text-[24px]">calendar_month</a>
@@ -196,7 +208,7 @@
                     </div>
                     <div>
                         <div class="flex items-center gap-1.5">
-                            <span class="font-headline-sm text-headline-sm text-on-surface font-bold">@phieuDaKham</span>
+                            <span class="font-headline-sm text-headline-sm text-on-surface font-bold" data-m5-metric="lich">@(Model?.LichSapToi ?? phieuDaKham)</span>
                             <span class="font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-purple-100 text-purple-800 font-bold">Đã khám</span>
                         </div>
                         <p class="font-body-sm text-body-sm text-on-surface-variant">Chờ nhập kết quả lấy máu</p>
@@ -215,7 +227,7 @@
                     </div>
                     <div>
                         <div class="flex items-center gap-1.5">
-                            <span class="font-headline-sm text-headline-sm text-on-surface font-bold">@khongDuDieuKien</span>
+                            <span class="font-headline-sm text-headline-sm text-on-surface font-bold" data-m5-metric="thanhcong">@(Model?.ThanhCong ?? khongDuDieuKien)</span>
                             <span class="font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 font-bold">Hoãn hiến</span>
                         </div>
                         <p class="font-body-sm text-body-sm text-on-surface-variant">Huyết áp / Thể trạng</p>

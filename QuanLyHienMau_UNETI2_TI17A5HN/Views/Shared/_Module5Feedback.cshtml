@@ -1,0 +1,10 @@
+@foreach (var entry in new[] { ("Ok", "bg-emerald-50 text-emerald-900", "check_circle"), ("Error", "bg-error-container text-on-error-container", "error"), ("Warning", "bg-amber-50 text-amber-900", "warning") })
+{
+    if (TempData[entry.Item1] is string message)
+    {
+        <div class="module5-feedback fixed top-20 right-8 z-50 flex items-start gap-3 p-4 rounded-xl shadow-xl max-w-lg @entry.Item2" role="alert" data-kind="@entry.Item1">
+            <span class="material-symbols-outlined">@entry.Item3</span><span>@message</span>
+            <button class="ml-2" type="button" aria-label="Đóng thông báo" onclick="this.closest('.module5-feedback').remove()"><span class="material-symbols-outlined">close</span></button>
+        </div>
+    }
+}

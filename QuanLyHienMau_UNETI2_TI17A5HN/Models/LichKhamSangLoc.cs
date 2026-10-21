@@ -18,8 +18,8 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Models
         [Required(ErrorMessage = "Thời gian kết thúc không được để trống")]
         public DateTime ThoiGianKetThuc { get; set; }
 
-        [StringLength(100)]
-        public string? HinhThucTiepNhan { get; set; } // Trực tiếp tại điểm hiến, Lưu động, Trực tuyến
+        [StringLength(80)]
+        public string? HinhThucTiepNhan { get; set; } = "Trực tiếp";
 
         [StringLength(255)]
         public string? DiaDiemHoacLienKet { get; set; }
@@ -27,15 +27,30 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Models
         [StringLength(100)]
         public string? BacSiSangLoc { get; set; }
 
-        [StringLength(500)]
+        // Bổ sung từ nhánh minh
+        [StringLength(120)]
+        public string? BacSiChuanHoa { get; set; }
+
+        [StringLength(1000)]
         public string? GhiChu { get; set; }
 
         [Required]
         [StringLength(50)]
-        public string TrangThai { get; set; } = "Đã lên lịch"; // Đã lên lịch, Đã hoàn thành, Đã hủy
+        public string TrangThai { get; set; } = "Đã lên lịch";
 
-        // Navigation Property
-        [ForeignKey("MaPhieu")]
-        public virtual PhieuDangKyHienMau? PhieuDangKyHienMau { get; set; }
+        // Giữ tên navigation property của nhánh integration
+        [ForeignKey(nameof(MaPhieu))]
+        public virtual PhieuDangKyHienMau? PhieuDangKyHienMau
+        {
+            get;
+            set;
+        }
+
+        [NotMapped]
+        public virtual PhieuDangKyHienMau? Phieu
+        {
+            get => PhieuDangKyHienMau;
+            set => PhieuDangKyHienMau = value;
+        }
     }
 }

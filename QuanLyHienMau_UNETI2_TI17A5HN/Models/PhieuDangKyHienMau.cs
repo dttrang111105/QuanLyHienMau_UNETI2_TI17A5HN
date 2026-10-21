@@ -44,11 +44,17 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Models
         // Navigation Properties
         [ForeignKey("MaNguoiHien")]
         public virtual NguoiHienMau? NguoiHienMau { get; set; }
+        [NotMapped]
+        public virtual NguoiHienMau? NguoiHien { get => NguoiHienMau; set => NguoiHienMau = value; }
 
         [ForeignKey("MaDot")]
         public virtual DotHienMau? DotHienMau { get; set; }
+        [NotMapped]
+        public virtual DotHienMau? Dot { get => DotHienMau; set => DotHienMau = value; }
 
         public virtual ICollection<LichKhamSangLoc> LichKhamSangLocs { get; set; } = new List<LichKhamSangLoc>();
+        [NotMapped]
+        public virtual ICollection<LichKhamSangLoc> LichKhams { get => LichKhamSangLocs; set => LichKhamSangLocs = value; }
 
         public virtual KetQuaHienMau? KetQuaHienMau { get; set; }
     }

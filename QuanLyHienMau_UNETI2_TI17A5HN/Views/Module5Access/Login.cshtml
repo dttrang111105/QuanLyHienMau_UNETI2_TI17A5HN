@@ -1,0 +1,64 @@
+@* Họ và tên: ĐIỀN HỌ TÊN CỦA BẠN | Mã sinh viên: ĐIỀN MSSV CỦA BẠN | Nội dung: Module 5. *@
+@model QuanLyHienMau_UNETI2_TI17A5HN.ViewModels.LoginVm
+@{Layout="_Layout";ViewData["Title"]="Đăng nhập";}
+<div class="flex-1 flex items-center justify-center py-8 lg:py-12 px-4 sm:px-6 lg:px-8"><div class="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">        <section class="lg:col-span-5 flex flex-col gap-6 lg:pr-4">
+            <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-primary-fixed/60 border border-primary-fixed-dim w-fit">
+                <span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+                <span class="font-label-sm text-primary font-bold tracking-wide uppercase">Chiến Dịch Giọt Hồng Yêu Thương 2026</span>
+            </div>
+
+            <div class="space-y-3">
+                <h1 class="font-headline-lg lg:text-[40px] lg:leading-[48px] text-on-surface font-extrabold tracking-tight">
+                    Mỗi giọt máu cho đi - <span class="text-primary-container bg-gradient-to-r from-primary-container to-primary bg-clip-text text-transparent">Một cuộc đời</span> ở lại.
+                </h1>
+                <p class="font-body-md text-on-surface-variant leading-relaxed">
+                    Chỉ cần 15 phút sẻ chia giọt máu quý giá, bạn đã tiếp thêm hy vọng sống cho những bệnh nhân cần truyền máu cấp cứu. Hãy tham gia mạng lưới hiến máu nhân đạo lớn nhất toàn quốc.
+                </p>
+            </div>
+
+            <!-- Community Impact Numbers -->
+            <div class="grid grid-cols-3 gap-3 p-4 rounded-2xl bg-surface-container-low border border-surface-container-high/60 shadow-sm">
+                <div class="flex flex-col">
+                    <span class="font-headline-md font-extrabold text-primary tracking-tight">50.000+</span>
+                    <span class="font-body-sm text-[12px] text-on-surface-variant font-medium mt-0.5">Người hiến máu thân thiết</span>
+                </div>
+                <div class="flex flex-col border-l border-surface-container-high pl-3">
+                    <span class="font-headline-md font-extrabold text-primary tracking-tight">120+</span>
+                    <span class="font-body-sm text-[12px] text-on-surface-variant font-medium mt-0.5">Bệnh viện &amp; Viện huyết học</span>
+                </div>
+                <div class="flex flex-col border-l border-surface-container-high pl-3">
+                    <span class="font-headline-md font-extrabold text-primary tracking-tight">24/7</span>
+                    <span class="font-body-sm text-[12px] text-on-surface-variant font-medium mt-0.5">Điều phối cấp cứu khẩn</span>
+                </div>
+            </div>
+
+            <!-- Testimonial card -->
+            <div class="p-4 rounded-2xl bg-surface-container-lowest border border-surface-container shadow-sm flex items-start gap-3.5">
+                <div class="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center text-primary shrink-0 mt-0.5">
+                    <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">favorite</span>
+                </div>
+                <div class="space-y-1">
+                    <p class="font-body-sm text-on-surface italic leading-normal">
+                        "Nhờ ứng dụng Vitalis, tôi nhận thông báo kịp thời khi bệnh viện nhi cần nhóm máu O hiếm và đã kịp cứu sống một em nhỏ."
+                    </p>
+                    <div class="flex items-center gap-2">
+                        <span class="font-label-sm text-on-surface font-bold">Nguyễn Thảo My</span>
+                        <span class="text-xs text-secondary">• Người hiến máu 12 lần</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ministry of Health Safe guarantee -->
+            <div class="flex items-center gap-2 text-secondary text-xs">
+                <span class="material-symbols-outlined text-primary text-[18px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+                <span>Hệ thống bảo mật dữ liệu y tế cá nhân theo Thông tư 26/2013/TT-BYT</span>
+            </div>
+        </section>
+
+
+<section class="lg:col-span-7"><div class="bg-surface-container-lowest rounded-3xl p-6 sm:p-8 shadow-xl border border-surface-container"><h2 class="font-headline-sm text-headline-sm text-on-surface font-extrabold mb-6">Đăng nhập</h2>
+<form asp-controller="Module5Access" asp-action="Login" method="post" class="space-y-5"><input asp-for="ReturnUrl" type="hidden"/><div asp-validation-summary="All" class="text-error text-sm"></div>
+<div class="space-y-2"><label asp-for="TenDangNhap" class="font-label-md text-on-surface font-semibold">Tên đăng nhập</label><div class="relative"><span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-secondary text-[20px]">person</span><input asp-for="TenDangNhap" autocomplete="username" class="w-full h-12 pl-11 pr-4 rounded-xl border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20 font-body-md text-on-surface bg-surface-container-lowest" required autofocus/></div><span asp-validation-for="TenDangNhap" class="text-error text-xs"></span></div>
+<div class="space-y-2"><label asp-for="MatKhau" class="font-label-md text-on-surface font-semibold">Mật khẩu</label><div class="relative"><span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-secondary text-[20px]">lock</span><input asp-for="MatKhau" type="password" autocomplete="current-password" class="w-full h-12 pl-11 pr-12 rounded-xl border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20 font-body-md text-on-surface bg-surface-container-lowest" required/><button type="button" aria-label="Hiện mật khẩu" class="absolute right-3 top-3 text-secondary" onclick="const p=document.getElementById('MatKhau');p.type=p.type==='password'?'text':'password'"><span class="material-symbols-outlined">visibility</span></button></div><span asp-validation-for="MatKhau" class="text-error text-xs"></span></div>
+<button class="w-full py-3.5 px-6 rounded-xl bg-primary-container hover:bg-primary text-on-primary font-label-lg font-bold flex items-center justify-center gap-2 shadow-md shadow-primary/25" type="submit"><span class="material-symbols-outlined text-[20px]">login</span>Đăng nhập</button>
+</form></div></section></div></div>

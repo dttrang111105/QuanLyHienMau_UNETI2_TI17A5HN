@@ -1,17 +1,19 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using QuanLyHienMau_UNETI2_TI17A5HN.Data;
+using QuanLyHienMau_UNETI2_TI17A5HN.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// Đăng ký MVC
 builder.Services.AddControllersWithViews();
 
-// Register DbContext with SQL Server
+// Đăng ký DbContext sử dụng SQL Server
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Configure Cookie Authentication
+// Cấu hình xác thực bằng Cookie
 builder.Services.AddAuthentication("QuanLyHienMau.Auth")
     .AddCookie("QuanLyHienMau.Auth", options =>
     {
@@ -22,37 +24,55 @@ builder.Services.AddAuthentication("QuanLyHienMau.Auth")
         options.SlidingExpiration = true;
     });
 
+// Đăng ký Session
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession();
+
+// Đăng ký các dịch vụ của Module 5
+builder.Services.AddModule5(builder.Configuration);
+
 var app = builder.Build();
 
-// Seed initial test data for Accounts, DonViToChuc, and DotHienMau if empty
+// Khởi tạo dữ liệu mẫu
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
+
     try
     {
-        var context = services.GetRequiredService<ApplicationDbContext>();
+        var context =
+            services.GetRequiredService<ApplicationDbContext>();
+
         DbInitializer.Initialize(context);
     }
     catch (Exception ex)
     {
-        var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "Đã xảy ra lỗi trong quá trình khởi tạo dữ liệu mẫu.");
+        var logger =
+            services.GetRequiredService<ILogger<Program>>();
+
+        logger.LogError(
+            ex,
+            "Đã xảy ra lỗi trong quá trình khởi tạo dữ liệu mẫu.");
     }
 }
 
-// Configure the HTTP request pipeline.
+// Cấu hình HTTP request pipeline
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
 app.UseHttpsRedirection();
 app.UseRouting();
 
+app.UseSession();
+
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Middleware của Module 5
+app.UseMiddleware<Module5Middleware>();
 
 app.MapStaticAssets();
 

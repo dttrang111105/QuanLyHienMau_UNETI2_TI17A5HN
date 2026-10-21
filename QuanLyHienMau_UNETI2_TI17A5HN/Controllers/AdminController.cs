@@ -9,17 +9,22 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using QuanLyHienMau_UNETI2_TI17A5HN.Data;
 using QuanLyHienMau_UNETI2_TI17A5HN.Models;
+using QuanLyHienMau_UNETI2_TI17A5HN.Services;
 
 namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
 {
-    [Authorize(Roles = "Admin,Medical Staff")]
+    [Authorize(Roles = "Admin,Medical Staff,NhanVienYTe")]
     public class AdminController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly Module5Service module5;
+        private readonly Module5Pages pages;
 
-        public AdminController(ApplicationDbContext context)
+        public AdminController(ApplicationDbContext context, Module5Service module5, Module5Pages pages)
         {
             _context = context;
+            this.module5 = module5;
+            this.pages = pages;
         }
 
         private static bool TryParseDateTime(string? input, out DateTime result)
@@ -92,7 +97,8 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
 
             ViewBag.RecentTickets = recentTickets;
 
-            return View();
+            var model = await module5.Dashboard();
+            return View(model);
         }
 
         // ==========================================
@@ -319,88 +325,10 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
         // ==========================================
 
         // GET: /Admin/LichKhamSangLoc
-        public async Task<IActionResult> LichKhamSangLoc(string? search, string? trangThai, DateTime? ngay, int? maDot, int page = 1)
+        [Authorize(Roles = "Admin,Medical Staff,NhanVienYTe")]
+        public async Task<IActionResult> LichKhamSangLoc(string? q, string? trangThai, DateTime? tuNgay, int page = 1, string view = "calendar", DateTime? ngay = null, int? maDot = null, string? bacSi = null, bool newSlot = false, int? editId = null, string? search = null)
         {
-            int pageSize = 12;
-            if (page < 1) page = 1;
-
-            var query = _context.LichKhamSangLocs
-                .Include(l => l.PhieuDangKyHienMau!)
-                    .ThenInclude(p => p.NguoiHienMau)
-                .Include(l => l.PhieuDangKyHienMau!)
-                    .ThenInclude(p => p.DotHienMau!)
-                        .ThenInclude(d => d.DonViToChuc)
-                .AsQueryable();
-
-            // Thống kê nhanh
-            ViewBag.TotalLich = await _context.LichKhamSangLocs.CountAsync();
-            ViewBag.DaLenLichCount = await _context.LichKhamSangLocs.CountAsync(l => l.TrangThai == "Đã lên lịch");
-            ViewBag.DaHoanThanhCount = await _context.LichKhamSangLocs.CountAsync(l => l.TrangThai == "Đã hoàn thành");
-            ViewBag.DaHuyCount = await _context.LichKhamSangLocs.CountAsync(l => l.TrangThai == "Đã hủy");
-
-            // Bộ lọc từ khóa
-            if (!string.IsNullOrWhiteSpace(search))
-            {
-                var searchLower = search.Trim().ToLower();
-                query = query.Where(l =>
-                    (l.PhieuDangKyHienMau != null && l.PhieuDangKyHienMau.NguoiHienMau != null && l.PhieuDangKyHienMau.NguoiHienMau.HoTen.ToLower().Contains(searchLower)) ||
-                    (l.PhieuDangKyHienMau != null && l.PhieuDangKyHienMau.NguoiHienMau != null && l.PhieuDangKyHienMau.NguoiHienMau.SoDienThoai != null && l.PhieuDangKyHienMau.NguoiHienMau.SoDienThoai.Contains(searchLower)) ||
-                    (l.BacSiSangLoc != null && l.BacSiSangLoc.ToLower().Contains(searchLower)) ||
-                    (l.DiaDiemHoacLienKet != null && l.DiaDiemHoacLienKet.ToLower().Contains(searchLower)) ||
-                    l.MaPhieu.ToString().Contains(searchLower) ||
-                    l.MaLichKhamSangLoc.ToString().Contains(searchLower));
-            }
-
-            // Bộ lọc trạng thái
-            if (!string.IsNullOrWhiteSpace(trangThai) && trangThai != "all")
-            {
-                query = query.Where(l => l.TrangThai == trangThai);
-            }
-
-            // Bộ lọc ngày
-            if (ngay.HasValue)
-            {
-                var date = ngay.Value.Date;
-                var nextDate = date.AddDays(1);
-                query = query.Where(l => l.ThoiGianBatDau >= date && l.ThoiGianBatDau < nextDate);
-            }
-
-            // Bộ lọc đợt
-            if (maDot.HasValue && maDot.Value > 0)
-            {
-                query = query.Where(l => l.PhieuDangKyHienMau != null && l.PhieuDangKyHienMau.MaDot == maDot.Value);
-            }
-
-            var totalItems = await query.CountAsync();
-            var totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
-            if (totalPages < 1) totalPages = 1;
-            if (page > totalPages) page = totalPages;
-
-            var items = await query
-                .OrderByDescending(l => l.ThoiGianBatDau)
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
-
-            ViewBag.CurrentSearch = search;
-            ViewBag.CurrentTrangThai = trangThai;
-            ViewBag.CurrentNgay = ngay?.ToString("yyyy-MM-dd");
-            ViewBag.CurrentMaDot = maDot;
-            ViewBag.CurrentPage = page;
-            ViewBag.TotalPages = totalPages;
-            ViewBag.TotalItems = totalItems;
-            ViewBag.DotHienMaus = await _context.DotHienMaus.OrderByDescending(d => d.NgayBatDauDangKy).ToListAsync();
-
-            // Danh sách phiếu đang ở trạng thái hợp lệ để tạo lịch khám mới nếu cần
-            ViewBag.PhieuSanSangTaoLich = await _context.PhieuDangKyHienMaus
-                .Include(p => p.NguoiHienMau)
-                .Include(p => p.DotHienMau)
-                .Where(p => p.TrangThai == "Đã xác nhận" || p.TrangThai == "Chờ khám sàng lọc")
-                .OrderByDescending(p => p.NgayNop)
-                .Take(50)
-                .ToListAsync();
-
-            return View(items);
+            return await pages.Lich(this, q ?? search, trangThai, tuNgay, page, view, ngay, maDot, bacSi, newSlot, editId);
         }
 
         // POST: /Admin/TaoLichKham
@@ -609,6 +537,11 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
             return View();
         }
 
+        [Authorize(Roles = "Admin,NhanVienYTe")]
+        public async Task<IActionResult> KetQuaXetNghiem(int? id = null, string? q = null, int? maDot = null, string? trangThai = null, string? nhomMau = null, int page = 1)
+        {
+            return await pages.KetQua(this, id, q, maDot, trangThai, nhomMau, page);
+        }
 
         public IActionResult KhoLuuTruMau()
         {
@@ -1247,9 +1180,13 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
             return RedirectToAction(nameof(ChiTietKetQua), new { id = ketQuaRecord.MaKetQuaHienMau });
         }
 
-        public IActionResult BaoCao()
+        [Authorize(Roles = "Admin,NhanVienYTe")]
+        public async Task<IActionResult> BaoCao(int? nam, int? maDonVi = null)
         {
-            return View();
+            var year = nam ?? module5.Now.Year;
+            if (year < 2000 || year > 2100)
+                return BadRequest("Năm không hợp lệ.");
+            return View(await module5.ThongKe(year, maDonVi));
         }
 
         [Authorize(Roles = "Admin")]

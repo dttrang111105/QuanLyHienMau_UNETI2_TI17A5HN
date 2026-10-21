@@ -1,47 +1,11 @@
-## Visual Studio & .NET .gitignore
+################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
 
-# Build results
-[Bb]in/
-[Oo]bj/
-[Ll]og/
-[Ll]ogs/
-
-# Visual Studio files
 .vs/
 *.user
-*.userosscache
-*.sln.docstates
 *.suo
-*.userprefs
-
-# Visual Studio Code
-.vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
-
-# User-specific files
-*.rsuser
-*.suo
-*.user
-*.userosscache
-*.sln.docstates
-
-# ASP.NET / .NET Core
-project.lock.json
-project.fragment.lock.json
-artifacts/
-**/Properties/launchSettings.json.user
-
-# OS generated files
-.DS_Store
-Thumbs.db
-ehthumbs.db
-[Dd]esktop.ini
-
-# Temporary files
-*.tmp
-*.bak
-*.swp
-*~
+[Bb]in/
+[Oo]bj/
+QuanLyHienMau_UNETI2_TI17A5HN/bin/
+QuanLyHienMau_UNETI2_TI17A5HN/obj/

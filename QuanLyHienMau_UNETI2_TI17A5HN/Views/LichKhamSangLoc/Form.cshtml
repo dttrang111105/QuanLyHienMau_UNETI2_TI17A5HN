@@ -1,0 +1,68 @@
+@* Họ và tên: ĐIỀN HỌ TÊN CỦA BẠN | Mã sinh viên: ĐIỀN MSSV CỦA BẠN | Nội dung: Module 5. *@
+@using QuanLyHienMau_UNETI2_TI17A5HN.ViewModels
+@model LichFormVm
+@{Layout="_AdminLayout";ViewData["Title"]=Model.Id==0?"Lập lịch khám":"Sửa lịch khám";}
+
+<link rel="stylesheet" href="~/css/module5-integration.css" asp-append-version="true"/><div class="m5-ui p-space-lg max-w-[1600px] mx-auto w-full"><partial name="_Module5Messages"/>
+<div class="page-head">
+<div>
+
+<h1>@ViewData["Title"]</h1>
+
+</div>
+<a class="button quiet" asp-action="Index">Về danh sách</a>
+</div>
+<section class="card form-card">
+<form asp-action="Save" method="post">
+<input asp-for="Id" type="hidden"/>
+<div asp-validation-summary="All">
+</div>
+<div class="field">
+<label asp-for="MaPhieu">Phiếu đăng ký đã xác nhận</label>@if(Model.Id!=0){<input asp-for="MaPhieu" type="hidden"/>
+<input readonly value="@Model.Phieus.FirstOrDefault(x=>x.Value==Model.MaPhieu.ToString())?.Text"/>}else{<select asp-for="MaPhieu" asp-items="Model.Phieus">
+<option value="0">— Chọn phiếu —</option>
+</select>}<span asp-validation-for="MaPhieu">
+</span>
+</div>
+<div class="grid2">
+<div class="field">
+<label asp-for="ThoiGianBatDau">Thời gian bắt đầu</label>
+<input asp-for="ThoiGianBatDau" asp-format="{0:yyyy-MM-ddTHH:mm}" type="datetime-local" required/>
+</div>
+<div class="field">
+<label asp-for="ThoiGianKetThuc">Thời gian kết thúc</label>
+<input asp-for="ThoiGianKetThuc" asp-format="{0:yyyy-MM-ddTHH:mm}" type="datetime-local" required/>
+</div>
+<div class="field">
+<label asp-for="BacSiSangLoc">Bác sĩ sàng lọc</label>
+<input asp-for="BacSiSangLoc" list="bacsi" required maxlength="120"/>
+<datalist id="bacsi">
+<option value="Bác sĩ Nguyễn An">
+</option>
+<option value="Bác sĩ Trần Bình">
+</option>
+</datalist>
+</div>
+<div class="field">
+<label asp-for="HinhThucTiepNhan">Hình thức tiếp nhận</label>
+<select asp-for="HinhThucTiepNhan">
+<option>Trực tiếp</option>
+<option>Trực tuyến</option>
+</select>
+</div>
+<div class="field full">
+<label asp-for="DiaDiemHoacLienKet">Địa điểm hoặc liên kết</label>
+<input asp-for="DiaDiemHoacLienKet" maxlength="250" required/>
+</div>
+<div class="field full">
+<label asp-for="GhiChu">Ghi chú</label>
+<textarea asp-for="GhiChu" maxlength="1000">
+</textarea>
+</div>
+</div>
+<button>Lưu lịch khám</button>
+<a class="button quiet" asp-action="Index">Quay lại</a>
+</form>
+</section>
+
+</div>
