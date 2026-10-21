@@ -1,6 +1,11 @@
+// Họ và tên: NGUYỄN THỊ PHƯƠNG THẢO
+// Mã sinh viên: 23103100272
+// Nội dung thực hiện: Quản lý đợt hiến máu,
+// tìm kiếm, lọc, sắp xếp và phân trang.
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using QuanLyHienMau_UNETI2_TI17A5HN.Data;
+using Microsoft.AspNetCore.Authorization;
 using QuanLyHienMau_UNETI2_TI17A5HN.Models;
 
 namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
@@ -15,62 +20,187 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
         }
 
         // GET: /DotHienMau
-        public async Task<IActionResult> Index(string? search, string? status, int? donViId, string? nhomMau, double? canNang)
+        public async Task<IActionResult> Index(string? search, string? status, int? donViId, string? nhomMau, double? canNang, string? thoiHan, string? sort,int page = 1)
         {
+            const int pageSize = 6;
+
             var query = _context.DotHienMaus
                 .Include(d => d.DonViToChuc)
                 .AsQueryable();
 
-            // Tìm kiếm theo tên đợt, mô tả hoặc tên đơn vị tổ chức
+            //SEARCH Tìm kiếm theo tên đợt, mô tả hoặc tên đơn vị tổ chức
             if (!string.IsNullOrWhiteSpace(search))
             {
-                var searchLower = search.Trim().ToLower();
-                query = query.Where(d => d.TenDot.ToLower().Contains(searchLower) ||
-                                         (d.MoTaDot != null && d.MoTaDot.ToLower().Contains(searchLower)) ||
-                                         (d.DonViToChuc != null && d.DonViToChuc.TenDonViToChuc.ToLower().Contains(searchLower)));
+                var keyword = search.Trim().ToLower();
+
+                query = query.Where(d =>
+                    d.TenDot.ToLower().Contains(keyword) ||
+                    (
+                        d.DonViToChuc != null &&
+                        d.DonViToChuc.TenDonViToChuc
+                            .ToLower()
+                            .Contains(keyword)
+                    ));
             }
 
-            // Lọc theo trạng thái
-            if (!string.IsNullOrWhiteSpace(status) && status != "all")
-            {
-                query = query.Where(d => d.TrangThai == status);
-            }
-
-            // Lọc theo đơn vị tổ chức
-            if (donViId.HasValue && donViId > 0)
+            //FILTER ĐƠN VỊ: Lọc theo đơn vị tổ chức
+            if (donViId.HasValue && donViId.Value > 0)
             {
                 query = query.Where(d => d.MaDonViToChuc == donViId.Value);
             }
 
-            // Lọc theo nhóm máu ưu tiên
+            //FILTER NHÓM MÁU: Lọc theo nhóm máu ưu tiên
             if (!string.IsNullOrWhiteSpace(nhomMau))
             {
                 query = query.Where(d => d.NhomMauUuTien != null && d.NhomMauUuTien.Contains(nhomMau));
             }
 
-            // Lọc theo cân nặng tối thiểu
+            //FILTER TRẠNG THÁI: Lọc theo trạng thái
+            if (!string.IsNullOrWhiteSpace(status) && status != "all")
+            {
+                query = query.Where(d => d.TrangThai == status);
+            }
+
+            //FILTER CÂN NẶNG: Lọc theo cân nặng tối thiểu
             if (canNang.HasValue && canNang > 0)
             {
                 query = query.Where(d => d.CanNangToiThieu <= canNang.Value);
             }
 
-            // Danh sách đơn vị phục vụ dropdown bộ lọc
+            //CÒN HẠN/ HẾT HẠN
+            var today = DateTime.Today;
+
+            if (thoiHan == "conhan")
+            {
+                query = query.Where(d =>
+                    d.HanDangKy >= today);
+            }
+            else if (thoiHan == "hethan")
+            {
+                query = query.Where(d =>
+                    d.HanDangKy < today);
+            }
+
+            //SORT SẮP XẾP 
+            query = sort switch
+            {
+                "name_asc" =>
+                    query.OrderBy(d => d.TenDot),
+
+                "name_desc" =>
+                    query.OrderByDescending(d => d.TenDot),
+
+                "deadline_asc" =>
+                    query.OrderBy(d => d.HanDangKy),
+
+                "deadline_desc" =>
+                    query.OrderByDescending(d => d.HanDangKy),
+
+                "quota_asc" =>
+                    query.OrderBy(d => d.ChiTieuDonViMau),
+
+                "quota_desc" =>
+                    query.OrderByDescending(d => d.ChiTieuDonViMau),
+
+                _ =>
+                    query.OrderByDescending(d =>
+                        d.NgayBatDauDangKy)
+            };
+
+            // PAGINATION
+            var totalItems = await query.CountAsync();
+            
+            var totalPages =(int)Math.Ceiling(totalItems / (double)pageSize);
+
+            if (page < 1)
+            {
+                page = 1;
+            }
+
+            if (totalPages > 0 && page > totalPages)
+            {
+                page = totalPages;
+            }
+            var result = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+            
+            //LOAD ĐƠN VỊ: Danh sách đơn vị phục vụ dropdown bộ lọc
             ViewBag.DonViList = await _context.DonViToChucs
                 .Where(dv => dv.TrangThai == "Hoạt động")
+                 .OrderBy(d =>d.TenDonViToChuc)
                 .ToListAsync();
 
-            // Giữ lại tham số tìm kiếm/lọc
+            //GIỮ FILTER: Giữ lại tham số tìm kiếm/lọc
             ViewBag.CurrentSearch = search;
             ViewBag.CurrentStatus = status;
             ViewBag.CurrentDonViId = donViId;
             ViewBag.CurrentNhomMau = nhomMau;
             ViewBag.CurrentCanNang = canNang;
+            ViewBag.CurrentThoiHan = thoiHan;
+            ViewBag.CurrentSort = sort;
 
-            var result = await query
-                .OrderByDescending(d => d.NgayBatDauDangKy)
-                .ToListAsync();
+            // PAGINATION
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages = totalPages;
+            ViewBag.TotalItems = totalItems;
+            //var result = await query
+            //    .OrderByDescending(d => d.NgayBatDauDangKy)
+            //    .ToListAsync();
 
             return View(result);
+        }
+
+        // GET: /DotHienMau/Create
+        [Authorize(Roles = "Admin,Medical Staff")]
+        [HttpGet]
+        public async Task<IActionResult> Create()
+        {
+            ViewBag.DonViList = await _context.DonViToChucs
+                .OrderBy(d => d.TenDonViToChuc)
+                .ToListAsync();
+
+            return View();
+        }
+
+
+        // POST: /DotHienMau/Create
+        [Authorize(Roles = "Admin,Medical Staff")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Create(DotHienMau model)
+        {
+            // Trạng thái do hệ thống tự đặt
+            model.TrangThai = "Chưa mở";
+
+            // Vì TrangThai không nhập từ form nên xóa lỗi binding cũ nếu có
+            ModelState.Remove(nameof(model.TrangThai));
+
+            // Kiểm tra hạn đăng ký
+            if (model.HanDangKy < model.NgayBatDauDangKy)
+            {
+                ModelState.AddModelError(
+                    nameof(model.HanDangKy),
+                    "Hạn đăng ký phải sau hoặc bằng ngày bắt đầu đăng ký."
+                );
+            }
+
+            if (ModelState.IsValid)
+            {
+                _context.DotHienMaus.Add(model);
+
+                await _context.SaveChangesAsync();
+
+                TempData["SuccessMessage"] =
+                    "Thêm đợt hiến máu thành công.";
+
+                return RedirectToAction(nameof(Index));
+            }
+
+            // Nếu lỗi thì nạp lại dropdown
+            ViewBag.DonViList = await _context.DonViToChucs
+                .OrderBy(d => d.TenDonViToChuc)
+                .ToListAsync();
+
+            return View(model);
         }
 
         // GET: /DotHienMau/Details/5
@@ -91,6 +221,162 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
             }
 
             return View(dotHienMau);
+        }
+        [Authorize(Roles = "Admin,Medical Staff")]
+        [HttpGet]
+        public async Task<IActionResult> Edit(int id)
+        {
+            var dot = await _context.DotHienMaus
+                .FindAsync(id);
+
+            if (dot == null)
+            {
+                return NotFound();
+            }
+
+            ViewBag.DonViList = await _context.DonViToChucs
+                .OrderBy(d => d.TenDonViToChuc)
+                .ToListAsync();
+
+            return View(dot);
+        }
+        [Authorize(Roles = "Admin,Medical Staff")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(
+    int id,
+    DotHienMau model)
+        {
+            if (id != model.MaDot)
+            {
+                return NotFound();
+            }
+
+            if (model.HanDangKy < model.NgayBatDauDangKy)
+            {
+                ModelState.AddModelError(
+                    nameof(model.HanDangKy),
+                    "Hạn đăng ký phải sau hoặc bằng ngày bắt đầu đăng ký."
+                );
+            }
+
+            if (!ModelState.IsValid)
+            {
+                ViewBag.DonViList = await _context.DonViToChucs
+                    .OrderBy(d => d.TenDonViToChuc)
+                    .ToListAsync();
+
+                return View(model);
+            }
+
+            var dot = await _context.DotHienMaus
+                .FindAsync(id);
+
+            if (dot == null)
+            {
+                return NotFound();
+            }
+
+            dot.TenDot = model.TenDot;
+            dot.MaDonViToChuc = model.MaDonViToChuc;
+            dot.ChiTieuDonViMau = model.ChiTieuDonViMau;
+            dot.NhomMauUuTien = model.NhomMauUuTien;
+            dot.CanNangToiThieu = model.CanNangToiThieu;
+            dot.NgayBatDauDangKy = model.NgayBatDauDangKy;
+            dot.HanDangKy = model.HanDangKy;
+            dot.MoTaDot = model.MoTaDot;
+            dot.DieuKienNguoiHien = model.DieuKienNguoiHien;
+
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] =
+                "Cập nhật đợt hiến máu thành công.";
+
+            return RedirectToAction(nameof(Index));
+        }
+        [Authorize(Roles = "Admin,Medical Staff")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ChangeStatus(
+    int id,
+    string trangThai)
+        {
+            var dot = await _context.DotHienMaus
+                .FindAsync(id);
+
+            if (dot == null)
+            {
+                return NotFound();
+            }
+
+            var validStates = new[]
+            {
+        "Chưa mở",
+        "Đang mở đăng ký",
+        "Tạm dừng",
+        "Đã đóng"
+    };
+
+            if (!validStates.Contains(trangThai))
+            {
+                return BadRequest();
+            }
+
+            if (trangThai == "Đang mở đăng ký")
+            {
+                if (string.IsNullOrWhiteSpace(dot.TenDot) ||
+                    dot.ChiTieuDonViMau <= 0 ||
+                    dot.CanNangToiThieu < 0 ||
+                    dot.HanDangKy < dot.NgayBatDauDangKy)
+                {
+                    TempData["ErrorMessage"] =
+                        "Dữ liệu chưa hợp lệ nên không thể mở đăng ký.";
+
+                    return RedirectToAction(nameof(Index));
+                }
+            }
+
+            dot.TrangThai = trangThai;
+
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] =
+                "Cập nhật trạng thái thành công.";
+
+            return RedirectToAction(nameof(Index));
+        }
+        [Authorize(Roles = "Admin,Medical Staff")]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var dot = await _context.DotHienMaus
+                .FindAsync(id);
+
+            if (dot == null)
+            {
+                return NotFound();
+            }
+
+            var hasPhieu = await _context.PhieuDangKyHienMaus
+                .AnyAsync(p => p.MaDot == id);
+
+            if (hasPhieu)
+            {
+                TempData["ErrorMessage"] =
+                    "Không thể xóa đợt hiến máu vì đã có phiếu đăng ký.";
+
+                return RedirectToAction(nameof(Index));
+            }
+
+            _context.DotHienMaus.Remove(dot);
+
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] =
+                "Xóa đợt hiến máu thành công.";
+
+            return RedirectToAction(nameof(Index));
         }
     }
 }

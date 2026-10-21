@@ -1,14 +1,32 @@
+@*
+Họ và tên: NGUYỄN THỊ PHƯƠNG THẢO
+Mã sinh viên: 23103100272
+Nội dung thực hiện: Quản lý đợt hiến máu,
+tìm kiếm, lọc, sắp xếp và phân trang.
+*@
 @model IEnumerable<QuanLyHienMau_UNETI2_TI17A5HN.Models.DotHienMau>
 
 @{
     ViewData["Title"] = "Danh Sách Đợt Hiến Máu Vì Cộng Đồng";
-    var donViList = ViewBag.DonViList as List<QuanLyHienMau_UNETI2_TI17A5HN.Models.DonViToChuc> ?? new List<QuanLyHienMau_UNETI2_TI17A5HN.Models.DonViToChuc>();
+
+
+    var donViList =
+        ViewBag.DonViList
+        as List<QuanLyHienMau_UNETI2_TI17A5HN.Models.DonViToChuc>
+        ?? new List<QuanLyHienMau_UNETI2_TI17A5HN.Models.DonViToChuc>();
+
     var currentSearch = ViewBag.CurrentSearch as string;
     var currentStatus = ViewBag.CurrentStatus as string;
     var currentDonViId = ViewBag.CurrentDonViId as int?;
     var currentNhomMau = ViewBag.CurrentNhomMau as string;
     var currentCanNang = ViewBag.CurrentCanNang as double?;
-    var totalCount = Model?.Count() ?? 0;
+
+    var currentThoiHan = ViewBag.CurrentThoiHan as string;
+    var currentSort = ViewBag.CurrentSort as string;
+
+    int currentPage = ViewBag.CurrentPage ?? 1;
+    int totalPages = ViewBag.TotalPages ?? 0;
+    int totalItems = ViewBag.TotalItems ?? 0;
 }
 
 <div class="flex flex-col w-full">
@@ -39,6 +57,34 @@
                 </p>
             </div>
 
+            @if (User.IsInRole("Admin") || User.IsInRole("Medical Staff"))
+            {
+                <div class="mb-6">
+                    <a asp-controller="DotHienMau"
+                       asp-action="Create"
+                       class="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-primary text-on-primary font-label-lg font-bold shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all">
+
+                        <span class="material-symbols-outlined text-[20px]">
+                            add
+                        </span>
+
+                        <span>Thêm đợt hiến máu</span>
+                    </a>
+                </div>
+            }
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="mb-4 rounded-xl bg-green-50 px-4 py-3 text-green-700 border border-green-200">
+                    @TempData["SuccessMessage"]
+                </div>
+            }
+
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="mb-4 rounded-xl bg-red-50 px-4 py-3 text-red-700 border border-red-200">
+                    @TempData["ErrorMessage"]
+                </div>
+            }
             <!-- Large Center Search Bar -->
             <form method="get" asp-controller="DotHienMau" asp-action="Index" class="bg-surface-container-lowest p-2.5 rounded-2xl shadow-[0_12px_32px_-4px_rgba(198,40,61,0.08),0_4px_12px_-2px_rgba(0,0,0,0.03)] flex flex-col md:flex-row items-center gap-2 max-w-4xl">
                 <div class="flex items-center gap-3 px-4 py-2 w-full flex-1">
@@ -76,7 +122,7 @@
         <!-- Filter Control Bar -->
         <form method="get" asp-controller="DotHienMau" asp-action="Index" class="bg-surface-container-lowest p-6 rounded-2xl shadow-[0_4px_20px_-2px_rgba(198,40,61,0.04)] mb-8">
             <input type="hidden" name="search" value="@currentSearch" />
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <!-- Tổ chức -->
                 <div class="flex flex-col gap-1.5">
                     <label class="font-label-md text-label-md text-on-surface flex items-center gap-1">
@@ -139,7 +185,7 @@
                 <div class="flex flex-col gap-1.5">
                     <label class="font-label-md text-label-md text-on-surface flex items-center gap-1">
                         <span class="material-symbols-outlined text-[16px] text-primary">fitness_center</span>
-                        <span>Cân nặng tối đa cho phép</span>
+                        <span>Cân nặng tối thiểu</span>
                     </label>
                     <div class="relative">
                         <select name="canNang" onchange="this.form.submit()" class="w-full h-12 bg-surface-container-low text-on-surface font-body-sm text-body-sm rounded-xl px-3.5 appearance-none focus:outline-none focus:bg-surface-container-lowest cursor-pointer shadow-sm pr-9">
@@ -150,6 +196,96 @@
                         </select>
                         <span class="material-symbols-outlined absolute right-3 top-3.5 text-on-surface-variant pointer-events-none text-[18px]">expand_more</span>
                     </div>
+                    <!-- Thời hạn đăng ký -->
+                    <div class="flex flex-col gap-1.5">
+                        <label class="font-label-md text-label-md text-on-surface flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[16px] text-primary">
+                                event_available
+                            </span>
+                            <span>Thời hạn đăng ký</span>
+                        </label>
+
+                        <div class="relative">
+                            <select name="thoiHan"
+                                    onchange="this.form.submit()"
+                                    class="w-full h-12 bg-surface-container-low text-on-surface font-body-sm text-body-sm rounded-xl px-3.5 appearance-none focus:outline-none focus:bg-surface-container-lowest cursor-pointer shadow-sm pr-9">
+
+                                <option value=""
+                                        selected="@(string.IsNullOrEmpty(currentThoiHan))">
+                                    Tất cả thời hạn
+                                </option>
+
+                                <option value="conhan"
+                                        selected="@(currentThoiHan == "conhan")">
+                                    Còn hạn đăng ký
+                                </option>
+
+                                <option value="hethan"
+                                        selected="@(currentThoiHan == "hethan")">
+                                    Hết hạn đăng ký
+                                </option>
+                            </select>
+
+                            <span class="material-symbols-outlined absolute right-3 top-3.5 text-on-surface-variant pointer-events-none text-[18px]">
+                                expand_more
+                            </span>
+                        </div>
+                    </div>
+                    <!-- Sắp xếp -->
+                    <div class="flex flex-col gap-1.5">
+                        <label class="font-label-md text-label-md text-on-surface flex items-center gap-1">
+                            <span class="material-symbols-outlined text-[16px] text-primary">
+                                sort
+                            </span>
+                            <span>Sắp xếp</span>
+                        </label>
+
+                        <div class="relative">
+                            <select name="sort"
+                                    onchange="this.form.submit()"
+                                    class="w-full h-12 bg-surface-container-low text-on-surface font-body-sm text-body-sm rounded-xl px-3.5 appearance-none focus:outline-none focus:bg-surface-container-lowest cursor-pointer shadow-sm pr-9">
+
+                                <option value=""
+                                        selected="@(string.IsNullOrEmpty(currentSort))">
+                                    Mặc định
+                                </option>
+
+                                <option value="name_asc"
+                                        selected="@(currentSort == "name_asc")">
+                                    Tên A → Z
+                                </option>
+
+                                <option value="name_desc"
+                                        selected="@(currentSort == "name_desc")">
+                                    Tên Z → A
+                                </option>
+
+                                <option value="deadline_asc"
+                                        selected="@(currentSort == "deadline_asc")">
+                                    Hạn đăng ký tăng dần
+                                </option>
+
+                                <option value="deadline_desc"
+                                        selected="@(currentSort == "deadline_desc")">
+                                    Hạn đăng ký giảm dần
+                                </option>
+
+                                <option value="quota_asc"
+                                        selected="@(currentSort == "quota_asc")">
+                                    Chỉ tiêu tăng dần
+                                </option>
+
+                                <option value="quota_desc"
+                                        selected="@(currentSort == "quota_desc")">
+                                    Chỉ tiêu giảm dần
+                                </option>
+                            </select>
+
+                            <span class="material-symbols-outlined absolute right-3 top-3.5 text-on-surface-variant pointer-events-none text-[18px]">
+                                expand_more
+                            </span>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -159,9 +295,17 @@
                 <div class="flex flex-wrap items-center gap-3">
                     <div class="inline-flex items-center gap-1.5 bg-primary/10 text-primary px-3.5 py-1.5 rounded-full font-label-md text-label-md font-bold">
                         <span class="material-symbols-outlined text-[16px]">done_all</span>
-                        <span>Tìm thấy @totalCount đợt hiến máu</span>
+                        <span>Tìm thấy @totalItems đợt hiến máu</span>
                     </div>
-                    @if (!string.IsNullOrEmpty(currentSearch) || !string.IsNullOrEmpty(currentStatus) || currentDonViId.HasValue || !string.IsNullOrEmpty(currentNhomMau) || currentCanNang.HasValue)
+                    @if (
+                            !string.IsNullOrEmpty(currentSearch)
+                            || (!string.IsNullOrEmpty(currentStatus) && currentStatus != "all")
+                            || currentDonViId.HasValue
+                            || !string.IsNullOrEmpty(currentNhomMau)
+                            || currentCanNang.HasValue
+                            || !string.IsNullOrEmpty(currentThoiHan)
+                            || !string.IsNullOrEmpty(currentSort)
+)
                     {
                         <span class="text-on-surface-variant text-body-sm font-body-sm hidden sm:inline">•</span>
                         <span class="text-on-surface-variant text-body-sm font-body-sm">Đang áp dụng lọc</span>
@@ -290,6 +434,98 @@
                             <a asp-controller="DotHienMau" asp-action="Details" asp-route-id="@item.MaDot" class="flex-1 text-center py-2.5 rounded-xl font-label-md text-label-md text-on-surface-variant hover:text-primary hover:bg-surface-container transition-all">
                                 Xem chi tiết
                             </a>
+                            @if (User.IsInRole("Admin") || User.IsInRole("Medical Staff"))
+                            {
+                                <a asp-controller="DotHienMau"
+                                   asp-action="Edit"
+                                   asp-route-id="@item.MaDot"
+                                   class="inline-flex items-center gap-1 px-3 py-2 rounded-xl bg-surface-container text-on-surface hover:text-primary transition">
+                                    <span class="material-symbols-outlined text-[18px]">
+                                        edit
+                                    </span>
+
+                                    Sửa
+                                </a>
+                                
+                                    <form asp-controller="DotHienMau"
+                                          asp-action="Delete"
+                                          asp-route-id="@item.MaDot"
+                                          method="post"
+                                          class="inline">
+
+                                        @Html.AntiForgeryToken()
+
+                                        <button type="submit"
+                                                onclick="return confirm('Bạn có chắc chắn muốn xóa đợt hiến máu này?')"
+                                                class="inline-flex items-center gap-1 px-3 py-2 rounded-xl bg-red-50 text-red-600 hover:bg-red-100 transition">
+
+                                            <span class="material-symbols-outlined text-[18px]">
+                                                delete
+                                            </span>
+
+                                            Xóa
+                                        </button>
+                                    </form>
+                                
+                                    <form asp-controller="DotHienMau"
+                                          asp-action="ChangeStatus"
+                                          method="post"
+                                          class="flex items-center gap-2 mt-2">
+
+                                        @Html.AntiForgeryToken()
+
+                                        <input type="hidden"
+                                               name="id"
+                                               value="@item.MaDot" />
+
+                                        <select name="trangThai"
+                                                class="rounded-lg px-2 py-1 border">
+
+                                            @if (item.TrangThai == "Chưa mở")
+                                            {
+                                                <option value="Chưa mở" selected>Chưa mở</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="Chưa mở">Chưa mở</option>
+                                            }
+
+                                            @if (item.TrangThai == "Đang mở đăng ký")
+                                            {
+                                                <option value="Đang mở đăng ký" selected>Đang mở đăng ký</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="Đang mở đăng ký">Đang mở đăng ký</option>
+                                            }
+
+                                            @if (item.TrangThai == "Tạm dừng")
+                                            {
+                                                <option value="Tạm dừng" selected>Tạm dừng</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="Tạm dừng">Tạm dừng</option>
+                                            }
+
+                                            @if (item.TrangThai == "Đã đóng")
+                                            {
+                                                <option value="Đã đóng" selected>Đã đóng</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="Đã đóng">Đã đóng</option>
+                                            }
+
+                                        </select>
+
+                                        <button type="submit"
+                                                class="px-3 py-1 rounded-lg bg-primary text-on-primary">
+                                            Cập nhật
+                                        </button>
+                                    </form>
+                                
+                            }
                             <a asp-controller="DotHienMau" asp-action="Details" asp-route-id="@item.MaDot" class="flex-1 inline-flex items-center justify-center gap-1.5 py-2.5 rounded-xl font-label-md text-label-md bg-gradient-to-r from-primary to-primary-container text-on-primary shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
                                 <span class="material-symbols-outlined text-[16px]">favorite</span>
                                 <span>Đăng ký ngay</span>
@@ -313,6 +549,102 @@
                     <span class="material-symbols-outlined text-[18px]">restart_alt</span>
                     <span>Xem tất cả đợt hiến máu</span>
                 </a>
+            </div>
+        }
+        @if (totalPages > 1)
+        {
+            <div class="mt-10 flex flex-col sm:flex-row items-center justify-between gap-4">
+
+                <!-- Thông tin trang -->
+                <div class="font-body-sm text-body-sm text-on-surface-variant">
+                    Trang
+                    <strong class="text-on-surface">@currentPage</strong>
+                    /
+                    <strong class="text-on-surface">@totalPages</strong>
+                </div>
+
+                <!-- Các nút phân trang -->
+                <div class="flex items-center gap-2">
+
+                    <!-- Trang trước -->
+                    @if (currentPage > 1)
+                    {
+                        <a asp-controller="DotHienMau"
+                            asp-action="Index"
+                            asp-route-page="@(currentPage - 1)"
+                            asp-route-search="@currentSearch"
+                            asp-route-status="@currentStatus"
+                            asp-route-donViId="@currentDonViId"
+                            asp-route-nhomMau="@currentNhomMau"
+                            asp-route-canNang="@currentCanNang"
+                            asp-route-thoiHan="@currentThoiHan"
+                            asp-route-sort="@currentSort"
+                            class="inline-flex items-center justify-center h-10 px-3 rounded-xl bg-surface-container-lowest text-on-surface border border-surface-container-high hover:text-primary hover:bg-surface-container transition-all shadow-sm">
+
+                            <span class="material-symbols-outlined text-[18px]">
+                                chevron_left
+                            </span>
+
+                            <span class="hidden sm:inline">
+                                Trước
+                            </span>
+                        </a>
+                    }
+
+                    <!-- Các số trang -->
+                    @for (int i = 1; i <= totalPages; i++)
+                    {
+                        if (i == currentPage)
+                        {
+                            <span class="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-primary text-on-primary font-label-md font-bold shadow-sm">
+                                @i
+                            </span>
+                        }
+                        else
+                        {
+                            <a asp-controller="DotHienMau"
+                                asp-action="Index"
+                                asp-route-page="@i"
+                                asp-route-search="@currentSearch"
+                                asp-route-status="@currentStatus"
+                                asp-route-donViId="@currentDonViId"
+                                asp-route-nhomMau="@currentNhomMau"
+                                asp-route-canNang="@currentCanNang"
+                                asp-route-thoiHan="@currentThoiHan"
+                                asp-route-sort="@currentSort"
+                                class="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-surface-container-lowest text-on-surface hover:bg-surface-container hover:text-primary transition-all shadow-sm">
+
+                                @i
+                            </a>
+                        }
+                    }
+
+                    <!-- Trang sau -->
+                    @if (currentPage < totalPages)
+                    {
+                        <a asp-controller="DotHienMau"
+                            asp-action="Index"
+                            asp-route-page="@(currentPage + 1)"
+                            asp-route-search="@currentSearch"
+                            asp-route-status="@currentStatus"
+                            asp-route-donViId="@currentDonViId"
+                            asp-route-nhomMau="@currentNhomMau"
+                            asp-route-canNang="@currentCanNang"
+                            asp-route-thoiHan="@currentThoiHan"
+                            asp-route-sort="@currentSort"
+                            class="inline-flex items-center justify-center h-10 px-3 rounded-xl bg-surface-container-lowest text-on-surface border border-surface-container-high hover:text-primary hover:bg-surface-container transition-all shadow-sm">
+
+                            <span class="hidden sm:inline">
+                                Sau
+                            </span>
+
+                            <span class="material-symbols-outlined text-[18px]">
+                                chevron_right
+                            </span>
+                        </a>
+                    }
+
+                </div>
             </div>
         }
 

@@ -1,0 +1,132 @@
+﻿@*
+    Họ và tên: NGUYỄN THỊ PHƯƠNG THẢO
+    Mã sinh viên: 23103100272
+    Nội dung thực hiện: Tạo mới đợt hiến máu
+*@
+
+@model QuanLyHienMau_UNETI2_TI17A5HN.Models.DotHienMau
+
+@{
+    ViewData["Title"] = "Thêm đợt hiến máu";
+}
+
+<h2>Thêm đợt hiến máu</h2>
+
+<form asp-action="Create" method="post">
+
+    @Html.AntiForgeryToken()
+
+    <div asp-validation-summary="ModelOnly"></div>
+
+    <div>
+        <label asp-for="TenDot"></label>
+        <input asp-for="TenDot" />
+        <span asp-validation-for="TenDot"></span>
+    </div>
+
+    <div>
+        <label>Đơn vị tổ chức</label>
+
+        <select asp-for="MaDonViToChuc">
+            <option value="">
+                -- Chọn đơn vị tổ chức --
+            </option>
+
+            @foreach (var item in ViewBag.DonViList)
+            {
+                <option value="@item.MaDonViToChuc">
+                    @item.TenDonViToChuc
+                </option>
+            }
+        </select>
+
+        <span asp-validation-for="MaDonViToChuc"></span>
+    </div>
+
+    <div>
+        <label asp-for="ChiTieuDonViMau"></label>
+
+        <input asp-for="ChiTieuDonViMau"
+               type="number"
+               min="1" />
+
+        <span asp-validation-for="ChiTieuDonViMau"></span>
+    </div>
+
+    <div>
+        <label asp-for="NhomMauUuTien"></label>
+
+        <select asp-for="NhomMauUuTien">
+            <option value="">Không ưu tiên</option>
+            <option value="A">A</option>
+            <option value="B">B</option>
+            <option value="AB">AB</option>
+            <option value="O">O</option>
+        </select>
+
+        <span asp-validation-for="NhomMauUuTien"></span>
+    </div>
+
+    <div>
+        <label asp-for="CanNangToiThieu"></label>
+
+        <input asp-for="CanNangToiThieu"
+               type="number"
+               step="0.1"
+               min="0" />
+
+        <span asp-validation-for="CanNangToiThieu"></span>
+    </div>
+
+    <div>
+        <label asp-for="NgayBatDauDangKy"></label>
+
+        <input asp-for="NgayBatDauDangKy"
+               type="date" />
+
+        <span asp-validation-for="NgayBatDauDangKy"></span>
+    </div>
+
+    <div>
+        <label asp-for="HanDangKy"></label>
+
+        <input asp-for="HanDangKy"
+               type="date" />
+
+        <span asp-validation-for="HanDangKy"></span>
+    </div>
+
+    <div>
+        <label asp-for="MoTaDot"></label>
+
+        <textarea asp-for="MoTaDot"
+                  rows="5"></textarea>
+
+        <span asp-validation-for="MoTaDot"></span>
+    </div>
+
+    <div>
+        <label asp-for="DieuKienNguoiHien"></label>
+
+        <textarea asp-for="DieuKienNguoiHien"
+                  rows="5"></textarea>
+
+        <span asp-validation-for="DieuKienNguoiHien"></span>
+    </div>
+
+    <div>
+        <button type="submit">
+            Thêm đợt hiến máu
+        </button>
+
+        <a asp-controller="DotHienMau"
+           asp-action="Index">
+            Quay lại danh sách
+        </a>
+    </div>
+
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
