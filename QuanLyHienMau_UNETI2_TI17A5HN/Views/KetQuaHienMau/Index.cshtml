@@ -1,0 +1,41 @@
+@model QuanLyHienMau_UNETI2_TI17A5HN.ViewModels.KetQuaListViewModel
+@{
+    Layout = Model.ChiCuaToi ? "_Layout" : "_AdminLayout";
+    ViewData["Title"] = Model.ChiCuaToi ? "Kết quả hiến máu của tôi" : "Kết quả hiến máu";
+    var action = Model.ChiCuaToi ? "CuaToi" : "Index";
+}
+<div class="m5-page">
+    <partial name="Module5/_Nav" />
+    <div class="m5-header"><div><span class="m5-kicker">Sau khám sàng lọc</span><h1>@ViewData["Title"]</h1><p>Kết quả cuối cùng đã được nhân viên y tế xác nhận và công bố.</p></div>@if (!Model.ChiCuaToi) { <a asp-action="Create" class="m5-btn"><span class="material-symbols-outlined">add_task</span>Ghi nhận kết quả</a> }</div>
+    <partial name="Module5/_Alerts" />
+    <div class="m5-stats">
+        <article class="m5-kpi"><div><small>Hiến máu thành công</small><strong>@Model.SoThanhCong</strong><small>Các kết quả đã xác nhận</small></div><span class="m5-kpi-icon green"><span class="material-symbols-outlined">verified</span></span></article>
+        <article class="m5-kpi"><div><small>Không đủ điều kiện hiến</small><strong>@Model.SoKhongDuDieuKien</strong><small>Các kết quả đã xác nhận</small></div><span class="m5-kpi-icon"><span class="material-symbols-outlined">assignment_late</span></span></article>
+        <article class="m5-kpi"><div><small>Đã khám, chờ kết quả</small><strong>@Model.SoChoKetQua</strong>@if (!Model.ChiCuaToi) { <a asp-action="Create">Ghi nhận kết quả →</a> }</div><span class="m5-kpi-icon amber"><span class="material-symbols-outlined">pending_actions</span></span></article>
+    </div>
+    <section class="m5-card">
+        <div class="m5-card-head"><div><h2>Danh sách kết quả</h2><p>@Model.TotalCount kết quả phù hợp</p></div></div>
+        <form asp-action="@action" method="get" class="m5-toolbar">
+            <div class="m5-field search"><label for="search">Tìm kiếm</label><input id="search" name="search" value="@Model.Search" placeholder="Người hiến, tên đợt hoặc mã phiếu" /></div>
+            <div class="m5-field"><label for="maDot">Đợt hiến máu</label><select asp-for="MaDot" id="maDot" name="maDot" asp-items="Model.DotOptions"><option value="">Tất cả đợt</option></select></div>
+            <div class="m5-field"><label for="ketQua">Kết quả</label><select id="ketQua" name="ketQua"><option value="">Tất cả kết quả</option><option value="@Module5TrangThai.Phieu.HienMauThanhCong" selected="@(Model.KetQua == Module5TrangThai.Phieu.HienMauThanhCong)">@Module5TrangThai.Phieu.HienMauThanhCong</option><option value="@Module5TrangThai.Phieu.KhongDuDieuKienHien" selected="@(Model.KetQua == Module5TrangThai.Phieu.KhongDuDieuKienHien)">@Module5TrangThai.Phieu.KhongDuDieuKienHien</option></select></div>
+            <div class="m5-actions"><button type="submit" class="m5-btn">Lọc</button><a asp-action="@action" class="m5-btn secondary">Đặt lại</a></div>
+        </form>
+        <div class="m5-table-wrap"><table class="m5-table"><thead><tr><th>Kết quả / Phiếu</th><th>Người hiến &amp; đợt</th><th>Điểm đánh giá</th><th>Kết quả</th><th>Cập nhật</th><th></th></tr></thead><tbody>
+            @if (Model.Items.Count == 0) { <tr><td colspan="6" class="m5-empty"><span class="material-symbols-outlined">assignment</span>Chưa có kết quả phù hợp với điều kiện đã chọn.</td></tr> }
+            @foreach (var ketQua in Model.Items)
+            {
+                <tr><td><strong>#@ketQua.MaKetQuaHienMau</strong><small>Phiếu #@ketQua.MaPhieu</small></td><td><strong>@ketQua.PhieuDangKyHienMau.NguoiHienMau.HoTen</strong><small>@ketQua.PhieuDangKyHienMau.DotHienMau.TenDot</small></td><td>@(ketQua.DiemDanhGia?.ToString("0.##") ?? "—")</td><td><partial name="Module5/_Badge" model="ketQua.KetQua" /></td><td>@ketQua.NgayCapNhat.ToString("dd/MM/yyyy")<small>@ketQua.NgayCapNhat.ToString("HH:mm")</small></td><td><a asp-action="Details" asp-route-id="@ketQua.MaKetQuaHienMau" class="m5-btn small secondary">Chi tiết</a></td></tr>
+            }
+        </tbody></table></div>
+        <div class="m5-pagination"><span>@Model.TotalCount kết quả · Trang @Model.Page / @Math.Max(1, Model.TotalPages)</span><nav aria-label="Phân trang kết quả">
+            @if (Model.Page > 1) { <a asp-action="@action" asp-route-page="@(Model.Page - 1)" asp-route-search="@Model.Search" asp-route-maDot="@Model.MaDot" asp-route-ketQua="@Model.KetQua">Trước</a> }
+            @for (var i = Math.Max(1, Model.Page - 2); i <= Math.Min(Model.TotalPages, Model.Page + 2); i++)
+            {
+                if (i == Model.Page) { <span class="current" aria-current="page">@i</span> }
+                else { <a asp-action="@action" asp-route-page="@i" asp-route-search="@Model.Search" asp-route-maDot="@Model.MaDot" asp-route-ketQua="@Model.KetQua">@i</a> }
+            }
+            @if (Model.Page < Model.TotalPages) { <a asp-action="@action" asp-route-page="@(Model.Page + 1)" asp-route-search="@Model.Search" asp-route-maDot="@Model.MaDot" asp-route-ketQua="@Model.KetQua">Sau</a> }
+        </nav></div>
+    </section>
+</div>

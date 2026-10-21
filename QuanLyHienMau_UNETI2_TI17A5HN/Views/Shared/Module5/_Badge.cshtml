@@ -1,0 +1,12 @@
+@model string
+@{
+    var color = Model switch
+    {
+        Module5TrangThai.Phieu.HienMauThanhCong or Module5TrangThai.LichKham.DaHoanThanh or Module5TrangThai.Phieu.DaXacNhan => "success",
+        Module5TrangThai.Phieu.TuChoi or Module5TrangThai.Phieu.KhongDuDieuKienHien or Module5TrangThai.Phieu.DaHuy => "danger",
+        Module5TrangThai.LichKham.DaLenLich or Module5TrangThai.Phieu.ChoKhamSangLoc => "scheduled",
+        Module5TrangThai.Phieu.ChoXacNhan => "pending",
+        _ => ""
+    };
+}
+<span class="m5-badge @color">@Model</span>
