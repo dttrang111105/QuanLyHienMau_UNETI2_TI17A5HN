@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using QuanLyHienMau_UNETI2_TI17A5HN.Models;
 
 namespace QuanLyHienMau_UNETI2_TI17A5HN.Data
@@ -7,7 +8,7 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Data
     {
         public static void Initialize(ApplicationDbContext context)
         {
-            context.Database.EnsureCreated();
+            context.Database.Migrate();
 
             var passwordHasher = new PasswordHasher<TaiKhoan>();
 

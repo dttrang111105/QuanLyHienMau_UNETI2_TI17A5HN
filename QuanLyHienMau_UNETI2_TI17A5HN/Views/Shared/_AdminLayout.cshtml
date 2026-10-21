@@ -161,10 +161,6 @@
                 <!-- Group 2: Quản lý y tế -->
                 <nav class="space-y-space-xs">
                     <p class="px-space-sm font-label-sm text-label-sm text-surface-variant uppercase tracking-wider font-semibold mb-space-xs">Quản lý y tế</p>
-                    <a asp-controller="DotHienMau" asp-action="Index" class="flex items-center gap-space-sm px-space-md py-2.5 rounded-xl text-inverse-on-surface hover:bg-surface-container-highest hover:text-on-surface transition-all duration-150">
-                        <span class="material-symbols-outlined text-[20px]">event_available</span>
-                        <span class="font-label-md text-label-md">Đợt hiến máu (Campaigns)</span>
-                    </a>
                     <a asp-controller="Admin" asp-action="PhieuDangKyHienMau" class="flex items-center justify-between px-space-md py-2.5 transition-all duration-150 @(currentController == "Admin" && (currentAction == "PhieuDangKyHienMau" || currentAction == "ChiTietPhieuDangKy") ? "bg-primary text-on-primary font-bold shadow-md rounded-xl" : "rounded-xl text-inverse-on-surface hover:bg-surface-container-highest hover:text-on-surface")">
                         <div class="flex items-center gap-space-sm">
                             <span class="material-symbols-outlined text-[20px]">assignment_turned_in</span>
