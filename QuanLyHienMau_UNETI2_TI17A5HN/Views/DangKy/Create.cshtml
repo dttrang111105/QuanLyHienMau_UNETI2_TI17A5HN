@@ -1,5 +1,16 @@
+@*
+    ============================================================================
+    DỰ ÁN QUẢN LÝ HIẾN MÁU NHÂN ĐẠO VITALIS - UNETI (TI17A5HN)
+    MODULE 3: QUẢN LÝ NGƯỜI HIẾN MÁU & PHIẾU ĐĂNG KÝ HIẾN MÁU
+    Màn hình: Nộp phiếu đăng ký hiến máu trực tuyến theo đợt
+    ============================================================================
+*@
+@model QuanLyHienMau_UNETI2_TI17A5HN.Models.DotHienMau
+
 @{
-    ViewData["Title"] = "Nộp Phiếu Đăng Ký Hiến Máu (Quy Trình 4 Bước)";
+    ViewData["Title"] = $"Nộp Phiếu Đăng Ký Hiến Máu – {Model.TenDot}";
+    var donor = ViewBag.NguoiHienMau as QuanLyHienMau_UNETI2_TI17A5HN.Models.NguoiHienMau;
+    var minWeight = Model.CanNangToiThieu;
 }
 
 <div class="flex flex-col w-full">
@@ -14,12 +25,24 @@
                 <span class="material-symbols-outlined text-[16px] text-outline-variant">chevron_right</span>
                 <a asp-controller="DotHienMau" asp-action="Index" class="hover:text-primary transition-colors">Đợt hiến máu</a>
                 <span class="material-symbols-outlined text-[16px] text-outline-variant">chevron_right</span>
-                <span class="text-on-surface-variant line-clamp-1 max-w-[280px] sm:max-w-none">Giọt Hồng UNETI – Trao Đời Sự Sống 2026</span>
+                <span class="text-on-surface-variant line-clamp-1 max-w-[280px] sm:max-w-none">@Model.TenDot</span>
                 <span class="material-symbols-outlined text-[16px] text-outline-variant">chevron_right</span>
                 <span class="text-primary font-bold">Nộp phiếu đăng ký</span>
             </nav>
         </div>
     </section>
+
+    <!-- ALERTS -->
+    @if (TempData["ErrorMessage"] != null || ViewBag.ErrorMessage != null)
+    {
+        var errorMsg = (TempData["ErrorMessage"] ?? ViewBag.ErrorMessage)?.ToString();
+        <div class="max-w-[1240px] w-full mx-auto px-6 pt-4">
+            <div class="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 flex items-center gap-3 shadow-sm">
+                <span class="material-symbols-outlined text-rose-600 text-[24px]">error</span>
+                <span class="font-body-md text-sm font-semibold">@errorMsg</span>
+            </div>
+        </div>
+    }
 
     <!-- Drive Header Showcase Banner -->
     <section class="w-full bg-surface-container-lowest">
@@ -34,10 +57,10 @@
                         <div class="flex items-center gap-3 flex-wrap">
                             <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 backdrop-blur-md text-emerald-100 font-label-sm text-label-sm font-bold tracking-wider">
                                 <span class="w-2 h-2 rounded-full bg-emerald-300 animate-ping"></span>
-                                ĐANG MỞ ĐĂNG KÝ
+                                @Model.TrangThai.ToUpper()
                             </span>
                             <span class="font-label-sm text-label-sm bg-white/15 px-3 py-1 rounded-full text-white/95 font-semibold tracking-wide">
-                                Mã đợt: #VTL-UNETI-HN09
+                                Mã đợt: #DOT-@Model.MaDot.ToString("D4")
                             </span>
                             <span class="font-label-sm text-label-sm text-rose-100/90 flex items-center gap-1">
                                 <span class="material-symbols-outlined text-[16px]">verified</span>
@@ -45,16 +68,16 @@
                             </span>
                         </div>
                         <h1 class="font-headline-lg text-headline-lg sm:text-display-hero text-white tracking-tight leading-tight">
-                            Giọt Hồng UNETI – Trao Đời Sự Sống 2026
+                            @Model.TenDot
                         </h1>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1 text-white/90 font-body-sm text-body-sm">
                             <div class="flex items-center gap-2">
                                 <span class="material-symbols-outlined text-[20px] text-rose-200">calendar_month</span>
-                                <span><strong>15/11/2026</strong> (07:30 – 16:30)</span>
+                                <span><strong>@Model.NgayBatDauDangKy.ToString("dd/MM/yyyy")</strong> - <strong>@Model.HanDangKy.ToString("dd/MM/yyyy")</strong></span>
                             </div>
                             <div class="flex items-center gap-2">
                                 <span class="material-symbols-outlined text-[20px] text-rose-200">location_on</span>
-                                <span class="line-clamp-1">Hội trường Nhà C, 218 Lĩnh Nam, Hoàng Mai, Hà Nội</span>
+                                <span class="line-clamp-1">@(Model.DonViToChuc?.TenDonViToChuc ?? "Điểm hiến máu nhân đạo UNETI")</span>
                             </div>
                         </div>
                     </div>
@@ -81,8 +104,8 @@
                         <div class="h-full bg-gradient-to-r from-primary to-primary-container transition-all duration-700 w-1/2" id="stepperProgressBar"></div>
                     </div>
                     <!-- Step 1 -->
-                    <div class="relative z-10 flex flex-col items-center text-center group cursor-pointer">
-                        <div class="w-12 h-12 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-md shadow-primary/25 transition-transform group-hover:scale-105">
+                    <div class="relative z-10 flex flex-col items-center text-center group">
+                        <div class="w-12 h-12 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-md shadow-primary/25">
                             <span class="material-symbols-outlined text-[22px]">check</span>
                         </div>
                         <div class="mt-3">
@@ -103,7 +126,7 @@
                         </div>
                     </div>
                     <!-- Step 3 -->
-                    <div class="relative z-10 flex flex-col items-center text-center opacity-75 group cursor-pointer hover:opacity-100 transition-opacity">
+                    <div class="relative z-10 flex flex-col items-center text-center opacity-75 group">
                         <div class="w-12 h-12 rounded-full bg-surface-container-highest text-secondary flex items-center justify-center shadow-inner">
                             <span class="material-symbols-outlined text-[20px]">assignment_turned_in</span>
                         </div>
@@ -133,7 +156,9 @@
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                 <!-- Left Column: Form Content -->
                 <div class="lg:col-span-8 space-y-8">
-                    <form class="space-y-8" id="bloodDonationForm" onsubmit="event.preventDefault(); showSuccessDialog();">
+                    <form asp-controller="DangKy" asp-action="Create" method="post" class="space-y-8" id="bloodDonationForm">
+                        <input type="hidden" name="maDot" value="@Model.MaDot" />
+
                         <!-- GROUP 1: Identification & Contact Information -->
                         <div class="bg-surface-container-lowest p-6 sm:p-8 rounded-2xl shadow-sm space-y-6">
                             <div class="flex items-center justify-between pb-3 bg-surface-container-low px-4 py-3 rounded-xl">
@@ -143,7 +168,7 @@
                                     </div>
                                     <div>
                                         <h2 class="font-headline-sm text-headline-sm text-on-surface">1. Thông tin định danh &amp; Liên lạc</h2>
-                                        <p class="font-body-sm text-body-sm text-on-surface-variant">Tự động đối soát với cơ sở dữ liệu sinh viên / cán bộ UNETI</p>
+                                        <p class="font-body-sm text-body-sm text-on-surface-variant">Tự động đồng bộ với hồ sơ người hiến máu UNETI</p>
                                     </div>
                                 </div>
                                 <span class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-label-sm font-label-sm font-semibold">
@@ -159,49 +184,50 @@
                                         <span class="text-[12px] font-normal text-on-surface-variant">Khớp với thẻ CCCD</span>
                                     </label>
                                     <div class="relative">
-                                        <input class="w-full h-12 bg-surface-container-lowest text-on-surface px-4 rounded-xl font-body-md text-body-md focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary shadow-sm border border-outline-variant/40" placeholder="VD: NGUYỄN VĂN AN" required="" type="text" value="Nguyễn Hoàng Nam">
+                                        <input class="w-full h-12 bg-surface-container-lowest text-on-surface px-4 rounded-xl font-body-md text-body-md focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary shadow-sm border border-outline-variant/40" name="hoTen" placeholder="VD: NGUYỄN VĂN AN" required="" type="text" value="@(donor?.HoTen ?? "")">
                                         <span class="absolute right-3.5 top-3.5 material-symbols-outlined text-emerald-600 text-[20px]">check_circle</span>
                                     </div>
                                 </div>
                                 <div class="space-y-1.5">
                                     <label class="font-label-md text-label-md text-on-surface">
-                                        <span>Số CCCD / Mã định danh 12 số <span class="text-primary">*</span></span>
+                                        <span>Mã hồ sơ người hiến</span>
                                     </label>
                                     <div class="relative">
-                                        <input class="w-full h-12 bg-surface-container-lowest text-on-surface px-4 rounded-xl font-body-md text-body-md focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary shadow-sm border border-outline-variant/40" maxlength="12" placeholder="12 chữ số" required="" type="text" value="001099028891">
+                                        <input class="w-full h-12 bg-surface-container-low text-on-surface px-4 rounded-xl font-body-md text-body-md border border-outline-variant/40 cursor-not-allowed font-mono font-bold text-primary" readonly type="text" value="#NHM-@(donor?.MaNguoiHien.ToString("D5") ?? "00001")">
                                         <span class="absolute right-3.5 top-3.5 material-symbols-outlined text-primary text-[20px]">fingerprint</span>
                                     </div>
                                 </div>
                                 <div class="grid grid-cols-2 gap-3">
                                     <div class="space-y-1.5">
-                                        <label class="font-label-md text-label-md text-on-surface">Ngày sinh <span class="text-primary">*</span></label>
-                                        <input class="w-full h-12 bg-surface-container-lowest text-on-surface px-3 rounded-xl font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-primary shadow-sm border border-outline-variant/40" required="" type="date" value="2003-08-14">
+                                        <label class="font-label-md text-label-md text-on-surface">Ngày sinh</label>
+                                        <input class="w-full h-12 bg-surface-container-lowest text-on-surface px-3 rounded-xl font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-primary shadow-sm border border-outline-variant/40" type="date" value="@(donor?.NgaySinh?.ToString("yyyy-MM-dd") ?? "2003-08-14")">
                                     </div>
                                     <div class="space-y-1.5">
-                                        <label class="font-label-md text-label-md text-on-surface">Giới tính <span class="text-primary">*</span></label>
+                                        <label class="font-label-md text-label-md text-on-surface">Giới tính</label>
                                         <select class="w-full h-12 bg-surface-container-lowest text-on-surface px-3 rounded-xl font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-primary shadow-sm border border-outline-variant/40 cursor-pointer">
-                                            <option selected="" value="male">Nam</option>
-                                            <option value="female">Nữ</option>
+                                            <option value="Nam" selected="@(donor?.GioiTinh == "Nam")">Nam</option>
+                                            <option value="Nữ" selected="@(donor?.GioiTinh == "Nữ")">Nữ</option>
+                                            <option value="Khác" selected="@(donor?.GioiTinh == "Khác")">Khác</option>
                                         </select>
                                     </div>
                                 </div>
                                 <div class="space-y-1.5">
                                     <label class="font-label-md text-label-md text-on-surface">Số điện thoại di động <span class="text-primary">*</span></label>
                                     <div class="relative">
-                                        <input class="w-full h-12 bg-surface-container-lowest text-on-surface px-4 rounded-xl font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-primary shadow-sm border border-outline-variant/40" placeholder="VD: 0912345678" required="" type="tel" value="0988 123 456">
+                                        <input class="w-full h-12 bg-surface-container-lowest text-on-surface px-4 rounded-xl font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-primary shadow-sm border border-outline-variant/40" name="soDienThoai" placeholder="VD: 0912345678" required="" type="tel" value="@(donor?.SoDienThoai ?? "0988 123 456")">
                                         <span class="absolute right-3.5 top-3.5 material-symbols-outlined text-on-surface-variant text-[20px]">phone_iphone</span>
                                     </div>
                                 </div>
                                 <div class="space-y-1.5">
-                                    <label class="font-label-md text-label-md text-on-surface">Email nhận mã QR Check-in <span class="text-primary">*</span></label>
+                                    <label class="font-label-md text-label-md text-on-surface">Email nhận thông báo <span class="text-primary">*</span></label>
                                     <div class="relative">
-                                        <input class="w-full h-12 bg-surface-container-lowest text-on-surface px-4 rounded-xl font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-primary shadow-sm border border-outline-variant/40" placeholder="email@uneti.edu.vn" required="" type="email" value="sinhvien.uneti@gmail.com">
+                                        <input class="w-full h-12 bg-surface-container-lowest text-on-surface px-4 rounded-xl font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-primary shadow-sm border border-outline-variant/40" name="email" placeholder="email@uneti.edu.vn" required="" type="email" value="@(donor?.Email ?? "sinhvien.uneti@gmail.com")">
                                         <span class="absolute right-3.5 top-3.5 material-symbols-outlined text-on-surface-variant text-[20px]">mail</span>
                                     </div>
                                 </div>
                                 <div class="sm:col-span-2 space-y-1.5">
                                     <label class="font-label-md text-label-md text-on-surface">Lớp / Khoa / Đơn vị công tác (UNETI)</label>
-                                    <input class="w-full h-12 bg-surface-container-lowest text-on-surface px-4 rounded-xl font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-primary shadow-sm border border-outline-variant/40" placeholder="VD: Lớp DHTI17A5HN - Khoa Công Nghệ Thông Tin" type="text" value="Lớp DHTI17A5HN - Khoa Công Nghệ Thông Tin">
+                                    <input class="w-full h-12 bg-surface-container-lowest text-on-surface px-4 rounded-xl font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-primary shadow-sm border border-outline-variant/40" placeholder="VD: Lớp DHTI17A5HN - Khoa Công Nghệ Thông Tin" type="text" value="@(donor?.NgheNghiep ?? "Lớp DHTI17A5HN - Khoa CNTT")">
                                 </div>
                             </div>
                         </div>
@@ -224,27 +250,27 @@
                                 </label>
                                 <div class="grid grid-cols-2 sm:grid-cols-5 gap-3" id="bloodTypeSelector">
                                     <label class="relative flex flex-col items-center justify-center p-3 rounded-xl bg-surface-container-low cursor-pointer hover:bg-secondary-fixed/50 transition-all font-label-md text-label-md text-on-surface border-2 border-transparent has-[:checked]:bg-primary-fixed has-[:checked]:text-primary has-[:checked]:border-primary shadow-sm">
-                                        <input checked="" class="hidden" name="blood_group" type="radio" value="O">
+                                        <input @(donor?.NhomMau?.Contains("O") == true ? "checked" : "") class="hidden" name="bloodGroup" type="radio" value="O Rh(+)">
                                         <span class="font-headline-sm text-headline-sm font-bold">O</span>
                                         <span class="text-[11px] text-secondary">Phổ biến</span>
                                     </label>
                                     <label class="relative flex flex-col items-center justify-center p-3 rounded-xl bg-surface-container-low cursor-pointer hover:bg-secondary-fixed/50 transition-all font-label-md text-label-md text-on-surface border-2 border-transparent has-[:checked]:bg-primary-fixed has-[:checked]:text-primary has-[:checked]:border-primary shadow-sm">
-                                        <input class="hidden" name="blood_group" type="radio" value="A">
+                                        <input @(donor?.NhomMau?.Contains("A") == true && !donor?.NhomMau?.Contains("AB") == true ? "checked" : "") class="hidden" name="bloodGroup" type="radio" value="A Rh(+)">
                                         <span class="font-headline-sm text-headline-sm font-bold">A</span>
                                         <span class="text-[11px] text-secondary">Hồng cầu</span>
                                     </label>
                                     <label class="relative flex flex-col items-center justify-center p-3 rounded-xl bg-surface-container-low cursor-pointer hover:bg-secondary-fixed/50 transition-all font-label-md text-label-md text-on-surface border-2 border-transparent has-[:checked]:bg-primary-fixed has-[:checked]:text-primary has-[:checked]:border-primary shadow-sm">
-                                        <input class="hidden" name="blood_group" type="radio" value="B">
+                                        <input @(donor?.NhomMau?.Contains("B") == true && !donor?.NhomMau?.Contains("AB") == true ? "checked" : "") class="hidden" name="bloodGroup" type="radio" value="B Rh(+)">
                                         <span class="font-headline-sm text-headline-sm font-bold">B</span>
                                         <span class="text-[11px] text-secondary">Cần thiết</span>
                                     </label>
                                     <label class="relative flex flex-col items-center justify-center p-3 rounded-xl bg-surface-container-low cursor-pointer hover:bg-secondary-fixed/50 transition-all font-label-md text-label-md text-on-surface border-2 border-transparent has-[:checked]:bg-primary-fixed has-[:checked]:text-primary has-[:checked]:border-primary shadow-sm">
-                                        <input class="hidden" name="blood_group" type="radio" value="AB">
+                                        <input @(donor?.NhomMau?.Contains("AB") == true ? "checked" : "") class="hidden" name="bloodGroup" type="radio" value="AB Rh(+)">
                                         <span class="font-headline-sm text-headline-sm font-bold">AB</span>
                                         <span class="text-[11px] text-secondary">Kháng thể</span>
                                     </label>
                                     <label class="relative flex flex-col items-center justify-center p-3 rounded-xl bg-surface-container-low cursor-pointer hover:bg-secondary-fixed/50 transition-all font-label-md text-label-md text-on-surface col-span-2 sm:col-span-1 border-2 border-transparent has-[:checked]:bg-primary-fixed has-[:checked]:text-primary has-[:checked]:border-primary shadow-sm">
-                                        <input class="hidden" name="blood_group" type="radio" value="UNKNOWN">
+                                        <input @(string.IsNullOrEmpty(donor?.NhomMau) ? "checked" : "") class="hidden" name="bloodGroup" type="radio" value="UNKNOWN">
                                         <span class="font-headline-sm text-label-md font-bold">Chưa biết</span>
                                         <span class="text-[11px] text-secondary">Test tại chỗ</span>
                                     </label>
@@ -254,17 +280,17 @@
                                 <div class="space-y-1.5">
                                     <div class="flex items-center justify-between">
                                         <label class="font-label-md text-label-md text-on-surface">Cân nặng hiện tại (kg) <span class="text-primary">*</span></label>
-                                        <span class="font-label-sm text-label-sm text-emerald-700 font-semibold" id="weightValidationLabel">Đủ điều kiện (≥ 45kg)</span>
+                                        <span class="font-label-sm text-label-sm text-emerald-700 font-semibold" id="weightValidationLabel">Đủ điều kiện (≥ @minWeight kg)</span>
                                     </div>
                                     <div class="relative">
-                                        <input class="w-full h-12 bg-surface-container-lowest text-on-surface px-4 rounded-xl font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-primary shadow-sm border border-outline-variant/40" id="donorWeight" max="150" min="40" required="" step="0.5" type="number" value="64">
+                                        <input class="w-full h-12 bg-surface-container-lowest text-on-surface px-4 rounded-xl font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-primary shadow-sm border border-outline-variant/40" id="donorWeight" max="150" min="@minWeight" name="canNang" required="" step="0.5" type="number" value="@(donor?.CanNang ?? 64)">
                                         <span class="absolute right-4 top-3 font-label-md text-label-md text-secondary">kg</span>
                                     </div>
                                 </div>
                                 <div class="space-y-1.5">
-                                    <label class="font-label-md text-label-md text-on-surface">Chiều cao hiện tại (cm) <span class="text-primary">*</span></label>
+                                    <label class="font-label-md text-label-md text-on-surface">Chiều cao hiện tại (cm)</label>
                                     <div class="relative">
-                                        <input class="w-full h-12 bg-surface-container-lowest text-on-surface px-4 rounded-xl font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-primary shadow-sm border border-outline-variant/40" max="210" min="140" required="" type="number" value="172">
+                                        <input class="w-full h-12 bg-surface-container-lowest text-on-surface px-4 rounded-xl font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-primary shadow-sm border border-outline-variant/40" max="210" min="140" type="number" value="172">
                                         <span class="absolute right-4 top-3 font-label-md text-label-md text-secondary">cm</span>
                                     </div>
                                 </div>
@@ -286,7 +312,7 @@
                                 <div class="flex items-start gap-3">
                                     <span class="w-6 h-6 rounded-full bg-surface-container-highest text-secondary flex items-center justify-center text-label-sm font-bold shrink-0 mt-0.5">1</span>
                                     <div>
-                                        <p class="font-title-md text-title-md text-on-surface">Trong vòng 6 tháng qua bạn có xăm hình, xỏ khuyên tai, phẫu thuật hoặc tiêm vaccine gần đây?</p>
+                                        <p class="font-title-md text-title-md text-on-surface">Trong vòng 6 tháng qua bạn có xăm hình, phẫu thuật hoặc tiêm vaccine gần đây?</p>
                                     </div>
                                 </div>
                                 <div class="flex items-center gap-4 shrink-0">
@@ -334,40 +360,40 @@
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                                 <label class="p-4 rounded-xl bg-surface-container-low cursor-pointer hover:bg-secondary-fixed/50 transition-all flex items-center justify-between border-2 border-primary bg-primary-fixed/40 shadow-sm">
                                     <div class="flex items-center gap-3">
-                                        <input checked="" class="accent-primary w-4 h-4" name="time_slot" type="radio" value="Ca 1: 07:30 - 09:30">
+                                        <input checked="" class="accent-primary w-4 h-4" name="timeSlot" type="radio" value="Ca 1: 07:30 - 09:30">
                                         <div>
                                             <span class="font-title-md text-title-md font-bold text-primary block">Ca 1: 07:30 – 09:30</span>
                                             <span class="font-body-sm text-body-sm text-on-surface-variant">Buổi sáng lý tưởng</span>
                                         </div>
                                     </div>
-                                    <span class="font-label-sm text-label-sm px-2.5 py-1 rounded-md bg-white text-emerald-700 font-bold shadow-xs">Còn 24 chỗ</span>
+                                    <span class="font-label-sm text-label-sm px-2.5 py-1 rounded-md bg-white text-emerald-700 font-bold shadow-xs">Sẵn sàng</span>
                                 </label>
                                 <label class="p-4 rounded-xl bg-surface-container-low cursor-pointer hover:bg-secondary-fixed/50 transition-all flex items-center justify-between border-2 border-transparent has-[:checked]:border-primary has-[:checked]:bg-primary-fixed/40 shadow-sm">
                                     <div class="flex items-center gap-3">
-                                        <input class="accent-primary w-4 h-4" name="time_slot" type="radio" value="Ca 2: 09:30 - 11:30">
+                                        <input class="accent-primary w-4 h-4" name="timeSlot" type="radio" value="Ca 2: 09:30 - 11:30">
                                         <div>
                                             <span class="font-title-md text-title-md font-bold text-on-surface block">Ca 2: 09:30 – 11:30</span>
                                             <span class="font-body-sm text-body-sm text-on-surface-variant">Giữa buổi sáng</span>
                                         </div>
                                     </div>
-                                    <span class="font-label-sm text-label-sm px-2.5 py-1 rounded-md bg-white text-emerald-700 font-bold shadow-xs">Còn 18 chỗ</span>
+                                    <span class="font-label-sm text-label-sm px-2.5 py-1 rounded-md bg-white text-emerald-700 font-bold shadow-xs">Sẵn sàng</span>
                                 </label>
                             </div>
                             <div class="space-y-3 pt-2">
                                 <label class="font-label-md text-label-md text-on-surface">Lượng máu toàn phần dự kiến hiến (ml)</label>
                                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
                                     <label class="p-4 rounded-xl bg-surface-container-low cursor-pointer hover:bg-secondary-fixed/50 transition-all border-2 border-transparent has-[:checked]:border-primary has-[:checked]:bg-primary-fixed/40 shadow-sm">
-                                        <input class="accent-primary w-4 h-4 mb-2" name="blood_volume" type="radio" value="250ml">
+                                        <input class="accent-primary w-4 h-4 mb-2" name="bloodVolume" type="radio" value="250ml">
                                         <span class="font-headline-sm text-headline-sm font-bold text-on-surface block">250 ml</span>
                                         <span class="font-body-sm text-[12px] text-on-surface-variant block mt-1">Nữ 42kg - 45kg</span>
                                     </label>
                                     <label class="p-4 rounded-xl bg-surface-container-low cursor-pointer hover:bg-secondary-fixed/50 transition-all border-2 border-primary bg-primary-fixed/40 shadow-sm">
-                                        <input checked="" class="accent-primary w-4 h-4 mb-2" name="blood_volume" type="radio" value="350ml">
+                                        <input checked="" class="accent-primary w-4 h-4 mb-2" name="bloodVolume" type="radio" value="350ml">
                                         <span class="font-headline-sm text-headline-sm font-bold text-primary block">350 ml</span>
                                         <span class="font-body-sm text-[12px] text-on-surface-variant block mt-1">Chuẩn cho người ≥ 45kg</span>
                                     </label>
                                     <label class="p-4 rounded-xl bg-surface-container-low cursor-pointer hover:bg-secondary-fixed/50 transition-all border-2 border-transparent has-[:checked]:border-primary has-[:checked]:bg-primary-fixed/40 shadow-sm">
-                                        <input class="accent-primary w-4 h-4 mb-2" name="blood_volume" type="radio" value="450ml">
+                                        <input class="accent-primary w-4 h-4 mb-2" name="bloodVolume" type="radio" value="450ml">
                                         <span class="font-headline-sm text-headline-sm font-bold text-on-surface block">450 ml</span>
                                         <span class="font-body-sm text-[12px] text-on-surface-variant block mt-1">Thể trạng tốt (&gt; 55kg)</span>
                                     </label>
@@ -377,11 +403,11 @@
 
                         <!-- Action Controls -->
                         <div class="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
-                            <a asp-controller="DotHienMau" asp-action="Index" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-label-md text-label-md text-on-surface hover:bg-surface-container transition-all">
+                            <a asp-controller="DotHienMau" asp-action="Details" asp-route-id="@Model.MaDot" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl font-label-md text-label-md text-on-surface hover:bg-surface-container transition-all">
                                 <span class="material-symbols-outlined text-[20px]">arrow_back</span>
-                                <span>Quay lại</span>
+                                <span>Quay lại chi tiết đợt</span>
                             </a>
-                            <button class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-gradient-to-r from-primary to-primary-container text-on-primary font-label-md text-label-md px-8 py-3.5 rounded-xl shadow-lg shadow-primary-container/30 hover:shadow-xl hover:-translate-y-0.5 transition-all" type="submit">
+                            <button class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-gradient-to-r from-primary to-primary-container text-on-primary font-label-md text-label-md px-8 py-3.5 rounded-xl shadow-lg shadow-primary-container/30 hover:shadow-xl hover:-translate-y-0.5 transition-all cursor-pointer font-bold" type="submit">
                                 <span class="material-symbols-outlined text-[20px]">send</span>
                                 <span>XÁC NHẬN &amp; NỘP PHIẾU ĐĂNG KÝ</span>
                             </button>
@@ -402,30 +428,30 @@
                         <div class="p-4 rounded-xl bg-surface-container-low space-y-3.5">
                             <div>
                                 <span class="font-label-sm text-label-sm text-secondary uppercase tracking-wider block">Sự kiện</span>
-                                <span class="font-title-md text-title-md text-primary font-bold">Giọt Hồng UNETI 2026</span>
+                                <span class="font-title-md text-title-md text-primary font-bold">@Model.TenDot</span>
                             </div>
                             <div class="grid grid-cols-2 gap-2 text-on-surface">
                                 <div>
-                                    <span class="font-label-sm text-label-sm text-secondary uppercase block">Ngày hẹn</span>
-                                    <span class="font-label-md text-label-md font-bold">15/11/2026</span>
+                                    <span class="font-label-sm text-label-sm text-secondary uppercase block">Ngày bắt đầu</span>
+                                    <span class="font-label-md text-label-md font-bold">@Model.NgayBatDauDangKy.ToString("dd/MM/yyyy")</span>
                                 </div>
                                 <div>
-                                    <span class="font-label-sm text-label-sm text-secondary uppercase block">Khung giờ</span>
-                                    <span class="font-label-md text-label-md font-bold text-primary">07:30 – 09:30</span>
+                                    <span class="font-label-sm text-label-sm text-secondary uppercase block">Hạn đăng ký</span>
+                                    <span class="font-label-md text-label-md font-bold text-primary">@Model.HanDangKy.ToString("dd/MM/yyyy")</span>
                                 </div>
                             </div>
                             <div>
                                 <span class="font-label-sm text-label-sm text-secondary uppercase block">Địa điểm</span>
-                                <span class="font-body-sm text-body-sm text-on-surface block font-medium">Hội trường Nhà C, 218 Lĩnh Nam</span>
+                                <span class="font-body-sm text-body-sm text-on-surface block font-medium">@(Model.DonViToChuc?.TenDonViToChuc ?? "Điểm hiến máu UNETI")</span>
                             </div>
                             <div class="pt-2 bg-surface-container-highest/30 p-2.5 rounded-lg flex items-center justify-between">
                                 <div>
-                                    <span class="font-label-sm text-label-sm text-secondary uppercase block">Nhóm máu</span>
-                                    <span class="font-headline-sm text-headline-sm text-primary font-extrabold">O Rh(+)</span>
+                                    <span class="font-label-sm text-label-sm text-secondary uppercase block">Nhóm máu ưu tiên</span>
+                                    <span class="font-headline-sm text-headline-sm text-primary font-extrabold">@(string.IsNullOrEmpty(Model.NhomMauUuTien) ? "Tất cả" : Model.NhomMauUuTien)</span>
                                 </div>
                                 <div class="text-right">
-                                    <span class="font-label-sm text-label-sm text-secondary uppercase block">Lượng máu</span>
-                                    <span class="font-headline-sm text-headline-sm text-on-surface font-extrabold">350 ml</span>
+                                    <span class="font-label-sm text-label-sm text-secondary uppercase block">Cân nặng tối thiểu</span>
+                                    <span class="font-headline-sm text-headline-sm text-on-surface font-extrabold">≥ @Model.CanNangToiThieu kg</span>
                                 </div>
                             </div>
                         </div>
@@ -434,74 +460,4 @@
             </div>
         </div>
     </main>
-
-    <!-- SUCCESS STATE MODAL DIALOG -->
-    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-inverse-surface/40 backdrop-blur-sm hidden opacity-0 transition-opacity duration-300" id="successModal">
-        <div class="relative w-full max-w-xl bg-surface-container-lowest rounded-3xl p-6 sm:p-8 shadow-2xl text-center space-y-6 overflow-hidden">
-            <div class="mx-auto w-20 h-20 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-500/20 relative">
-                <span class="material-symbols-outlined text-[48px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
-            </div>
-            <div class="space-y-2">
-                <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-amber-50 text-amber-800 font-label-sm text-label-sm font-bold">
-                    <span class="w-2 h-2 rounded-full bg-amber-500"></span>
-                    Trạng thái: Chờ tiếp đón tại điểm hiến
-                </span>
-                <h2 class="font-headline-lg text-headline-lg text-on-surface">Đăng Ký Hiến Máu Thành Công!</h2>
-                <p class="font-body-md text-body-md text-on-surface-variant max-w-md mx-auto">
-                    Cảm ơn bạn <strong class="text-on-surface">Nguyễn Hoàng Nam</strong> đã gửi gắm nghĩa cử nhân ái vì mạng sống cộng đồng.
-                </p>
-            </div>
-            <div class="p-5 rounded-2xl bg-surface-container-low text-left space-y-4 shadow-inner">
-                <div class="flex items-center justify-between flex-wrap gap-2">
-                    <div>
-                        <span class="font-label-sm text-label-sm text-secondary uppercase block">Mã phiếu tiếp nhận</span>
-                        <span class="font-headline-sm text-headline-sm font-bold text-primary">#DKHM-UNETI-8892VN</span>
-                    </div>
-                </div>
-                <div class="grid grid-cols-2 gap-3 text-on-surface font-body-sm text-body-sm pt-1">
-                    <div>
-                        <span class="text-secondary block">Thời gian:</span>
-                        <span class="font-semibold">07:30 - 09:30, 15/11/2026</span>
-                    </div>
-                    <div>
-                        <span class="text-secondary block">Địa điểm:</span>
-                        <span class="font-semibold">Hội trường Nhà C - UNETI</span>
-                    </div>
-                </div>
-            </div>
-            <div class="flex flex-col sm:flex-row items-center gap-3 justify-center pt-2">
-                <a asp-controller="DangKy" asp-action="TheoDoi" asp-route-code="DKHM-UNETI-8892VN" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-primary to-primary-container text-on-primary font-label-md text-label-md shadow-md hover:shadow-lg transition-all">
-                    <span class="material-symbols-outlined text-[18px]">assignment</span>
-                    <span>Theo dõi tiến trình phiếu</span>
-                </a>
-            </div>
-            <button aria-label="Đóng" class="absolute top-4 right-4 w-9 h-9 rounded-full bg-surface-container-low hover:bg-surface-container-high flex items-center justify-center text-on-surface-variant transition-colors" onclick="closeSuccessDialog();" type="button">
-                <span class="material-symbols-outlined text-[20px]">close</span>
-            </button>
-        </div>
-    </div>
 </div>
-
-@section Scripts {
-    <script>
-        function showSuccessDialog() {
-            const modal = document.getElementById('successModal');
-            if (modal) {
-                modal.classList.remove('hidden');
-                setTimeout(() => {
-                    modal.classList.remove('opacity-0');
-                }, 20);
-            }
-        }
-
-        function closeSuccessDialog() {
-            const modal = document.getElementById('successModal');
-            if (modal) {
-                modal.classList.add('opacity-0');
-                setTimeout(() => {
-                    modal.classList.add('hidden');
-                }, 300);
-            }
-        }
-    </script>
-}

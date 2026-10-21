@@ -1,5 +1,14 @@
+@model IEnumerable<QuanLyHienMau_UNETI2_TI17A5HN.Models.DotHienMau>
+
 @{
     ViewData["Title"] = "Danh Sách Đợt Hiến Máu Vì Cộng Đồng";
+    var donViList = ViewBag.DonViList as List<QuanLyHienMau_UNETI2_TI17A5HN.Models.DonViToChuc> ?? new List<QuanLyHienMau_UNETI2_TI17A5HN.Models.DonViToChuc>();
+    var currentSearch = ViewBag.CurrentSearch as string;
+    var currentStatus = ViewBag.CurrentStatus as string;
+    var currentDonViId = ViewBag.CurrentDonViId as int?;
+    var currentNhomMau = ViewBag.CurrentNhomMau as string;
+    var currentCanNang = ViewBag.CurrentCanNang as double?;
+    var totalCount = Model?.Count() ?? 0;
 }
 
 <div class="flex flex-col w-full">
@@ -31,35 +40,43 @@
             </div>
 
             <!-- Large Center Search Bar -->
-            <div class="bg-surface-container-lowest p-2.5 rounded-2xl shadow-[0_12px_32px_-4px_rgba(198,40,61,0.08),0_4px_12px_-2px_rgba(0,0,0,0.03)] flex flex-col md:flex-row items-center gap-2 max-w-4xl">
+            <form method="get" asp-controller="DotHienMau" asp-action="Index" class="bg-surface-container-lowest p-2.5 rounded-2xl shadow-[0_12px_32px_-4px_rgba(198,40,61,0.08),0_4px_12px_-2px_rgba(0,0,0,0.03)] flex flex-col md:flex-row items-center gap-2 max-w-4xl">
                 <div class="flex items-center gap-3 px-4 py-2 w-full flex-1">
                     <span class="material-symbols-outlined text-primary text-[24px]">search</span>
-                    <input class="w-full bg-transparent font-body-md text-body-md text-on-surface placeholder:text-outline focus:outline-none" placeholder="Tìm theo tên chiến dịch, bệnh viện, trường học..." type="text">
+                    <input name="search" value="@currentSearch" class="w-full bg-transparent font-body-md text-body-md text-on-surface placeholder:text-outline focus:outline-none" placeholder="Tìm theo tên chiến dịch, đơn vị tổ chức, mô tả..." type="text">
                 </div>
                 <div class="h-8 w-px bg-surface-container-high hidden md:block"></div>
                 <div class="flex items-center gap-2.5 px-4 py-2 w-full md:w-auto md:min-w-[240px]">
-                    <span class="material-symbols-outlined text-secondary text-[22px]">location_on</span>
-                    <select class="w-full bg-transparent font-body-md text-body-md text-on-surface focus:outline-none cursor-pointer">
-                        <option value="">Toàn quốc (Tất cả tỉnh thành)</option>
-                        <option value="hn">Hà Nội (Cơ sở Lĩnh Nam / Minh Khai)</option>
-                        <option value="nd">Nam Định (Cơ sở 353 Trần Hưng Đạo)</option>
-                        <option value="hcm">TP. Hồ Chí Minh</option>
-                        <option value="dn">Đà Nẵng</option>
+                    <span class="material-symbols-outlined text-secondary text-[22px]">apartment</span>
+                    <select name="donViId" class="w-full bg-transparent font-body-md text-body-md text-on-surface focus:outline-none cursor-pointer">
+                        <option value="">Tất cả đơn vị</option>
+                        @foreach (var dv in donViList)
+                        {
+                            if (currentDonViId == dv.MaDonViToChuc)
+                            {
+                                <option value="@dv.MaDonViToChuc" selected>@dv.TenDonViToChuc</option>
+                            }
+                            else
+                            {
+                                <option value="@dv.MaDonViToChuc">@dv.TenDonViToChuc</option>
+                            }
+                        }
                     </select>
                 </div>
-                <button class="w-full md:w-auto inline-flex items-center justify-center gap-2 bg-gradient-to-r from-primary to-primary-container text-on-primary font-label-lg text-label-lg px-8 py-3.5 rounded-xl shadow-[0_4px_16px_-2px_rgba(198,40,61,0.35)] hover:shadow-[0_8px_24px_-2px_rgba(198,40,61,0.45)] hover:-translate-y-0.5 active:translate-y-0 transition-all shrink-0">
+                <button type="submit" class="w-full md:w-auto inline-flex items-center justify-center gap-2 bg-gradient-to-r from-primary to-primary-container text-on-primary font-label-lg text-label-lg px-8 py-3.5 rounded-xl shadow-[0_4px_16px_-2px_rgba(198,40,61,0.35)] hover:shadow-[0_8px_24px_-2px_rgba(198,40,61,0.45)] hover:-translate-y-0.5 active:translate-y-0 transition-all shrink-0 cursor-pointer">
                     <span class="material-symbols-outlined text-[20px]">search</span>
                     <span>Tìm kiếm</span>
                 </button>
-            </div>
+            </form>
         </div>
     </section>
 
     <!-- Main Content Layout (Filter + Grid) -->
     <section class="max-w-[1240px] mx-auto px-6 py-6 w-full">
         <!-- Filter Control Bar -->
-        <div class="bg-surface-container-lowest p-6 rounded-2xl shadow-[0_4px_20px_-2px_rgba(198,40,61,0.04)] mb-8">
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <form method="get" asp-controller="DotHienMau" asp-action="Index" class="bg-surface-container-lowest p-6 rounded-2xl shadow-[0_4px_20px_-2px_rgba(198,40,61,0.04)] mb-8">
+            <input type="hidden" name="search" value="@currentSearch" />
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <!-- Tổ chức -->
                 <div class="flex flex-col gap-1.5">
                     <label class="font-label-md text-label-md text-on-surface flex items-center gap-1">
@@ -67,12 +84,19 @@
                         <span>Đơn vị tổ chức</span>
                     </label>
                     <div class="relative">
-                        <select class="w-full h-12 bg-surface-container-low text-on-surface font-body-sm text-body-sm rounded-xl px-3.5 appearance-none focus:outline-none focus:bg-surface-container-lowest cursor-pointer shadow-sm pr-9">
+                        <select name="donViId" onchange="this.form.submit()" class="w-full h-12 bg-surface-container-low text-on-surface font-body-sm text-body-sm rounded-xl px-3.5 appearance-none focus:outline-none focus:bg-surface-container-lowest cursor-pointer shadow-sm pr-9">
                             <option value="">Tất cả đơn vị</option>
-                            <option value="uneti">Đoàn Thanh Niên UNETI</option>
-                            <option value="vien-huyet-hoc">Viện Huyết học TW</option>
-                            <option value="cho-ray">Bệnh viện Chợ Rẫy</option>
-                            <option value="chu-thap-do">Hội Chữ Thập Đỏ</option>
+                            @foreach (var dv in donViList)
+                            {
+                                if (currentDonViId == dv.MaDonViToChuc)
+                                {
+                                    <option value="@dv.MaDonViToChuc" selected>@dv.TenDonViToChuc</option>
+                                }
+                                else
+                                {
+                                    <option value="@dv.MaDonViToChuc">@dv.TenDonViToChuc</option>
+                                }
+                            }
                         </select>
                         <span class="material-symbols-outlined absolute right-3 top-3.5 text-on-surface-variant pointer-events-none text-[18px]">expand_more</span>
                     </div>
@@ -84,13 +108,12 @@
                         <span>Nhóm máu ưu tiên</span>
                     </label>
                     <div class="relative">
-                        <select class="w-full h-12 bg-surface-container-low text-on-surface font-body-sm text-body-sm rounded-xl px-3.5 appearance-none focus:outline-none focus:bg-surface-container-lowest cursor-pointer shadow-sm pr-9">
+                        <select name="nhomMau" onchange="this.form.submit()" class="w-full h-12 bg-surface-container-low text-on-surface font-body-sm text-body-sm rounded-xl px-3.5 appearance-none focus:outline-none focus:bg-surface-container-lowest cursor-pointer shadow-sm pr-9">
                             <option value="">Tất cả nhóm máu</option>
-                            <option value="O">Nhóm O (Khẩn cấp)</option>
-                            <option value="A">Nhóm A</option>
-                            <option value="B">Nhóm B</option>
-                            <option value="AB">Nhóm AB</option>
-                            <option value="urgent">Khẩn cấp cần gấp</option>
+                            <option value="O" selected="@(currentNhomMau == "O")">Nhóm O</option>
+                            <option value="A" selected="@(currentNhomMau == "A")">Nhóm A</option>
+                            <option value="B" selected="@(currentNhomMau == "B")">Nhóm B</option>
+                            <option value="AB" selected="@(currentNhomMau == "AB")">Nhóm AB</option>
                         </select>
                         <span class="material-symbols-outlined absolute right-3 top-3.5 text-on-surface-variant pointer-events-none text-[18px]">expand_more</span>
                     </div>
@@ -102,11 +125,12 @@
                         <span>Trạng thái</span>
                     </label>
                     <div class="relative">
-                        <select class="w-full h-12 bg-surface-container-low text-on-surface font-body-sm text-body-sm rounded-xl px-3.5 appearance-none focus:outline-none focus:bg-surface-container-lowest cursor-pointer shadow-sm pr-9">
-                            <option selected="" value="open">Đang mở đăng ký</option>
-                            <option value="upcoming">Sắp diễn ra</option>
-                            <option value="filled">Đã đủ chỉ tiêu</option>
-                            <option value="closed">Đã đóng</option>
+                        <select name="status" onchange="this.form.submit()" class="w-full h-12 bg-surface-container-low text-on-surface font-body-sm text-body-sm rounded-xl px-3.5 appearance-none focus:outline-none focus:bg-surface-container-lowest cursor-pointer shadow-sm pr-9">
+                            <option value="all" selected="@(string.IsNullOrEmpty(currentStatus) || currentStatus == "all")">Tất cả trạng thái</option>
+                            <option value="Đang mở đăng ký" selected="@(currentStatus == "Đang mở đăng ký")">Đang mở đăng ký</option>
+                            <option value="Chưa mở" selected="@(currentStatus == "Chưa mở")">Chưa mở</option>
+                            <option value="Tạm dừng" selected="@(currentStatus == "Tạm dừng")">Tạm dừng</option>
+                            <option value="Đã đóng" selected="@(currentStatus == "Đã đóng")">Đã đóng</option>
                         </select>
                         <span class="material-symbols-outlined absolute right-3 top-3.5 text-on-surface-variant pointer-events-none text-[18px]">expand_more</span>
                     </div>
@@ -115,30 +139,14 @@
                 <div class="flex flex-col gap-1.5">
                     <label class="font-label-md text-label-md text-on-surface flex items-center gap-1">
                         <span class="material-symbols-outlined text-[16px] text-primary">fitness_center</span>
-                        <span>Cân nặng tối thiểu</span>
+                        <span>Cân nặng tối đa cho phép</span>
                     </label>
                     <div class="relative">
-                        <select class="w-full h-12 bg-surface-container-low text-on-surface font-body-sm text-body-sm rounded-xl px-3.5 appearance-none focus:outline-none focus:bg-surface-container-lowest cursor-pointer shadow-sm pr-9">
+                        <select name="canNang" onchange="this.form.submit()" class="w-full h-12 bg-surface-container-low text-on-surface font-body-sm text-body-sm rounded-xl px-3.5 appearance-none focus:outline-none focus:bg-surface-container-lowest cursor-pointer shadow-sm pr-9">
                             <option value="">Tất cả thể trạng</option>
-                            <option value="42">Từ 42kg (Nữ giới)</option>
-                            <option selected="" value="45">Từ 45kg trở lên</option>
-                            <option value="50">Từ 50kg (Hiến 450ml)</option>
-                        </select>
-                        <span class="material-symbols-outlined absolute right-3 top-3.5 text-on-surface-variant pointer-events-none text-[18px]">expand_more</span>
-                    </div>
-                </div>
-                <!-- Thời gian hạn đăng ký -->
-                <div class="flex flex-col gap-1.5">
-                    <label class="font-label-md text-label-md text-on-surface flex items-center gap-1">
-                        <span class="material-symbols-outlined text-[16px] text-primary">calendar_clock</span>
-                        <span>Thời gian / Hạn</span>
-                    </label>
-                    <div class="relative">
-                        <select class="w-full h-12 bg-surface-container-low text-on-surface font-body-sm text-body-sm rounded-xl px-3.5 appearance-none focus:outline-none focus:bg-surface-container-lowest cursor-pointer shadow-sm pr-9">
-                            <option value="all">Còn hạn đăng ký</option>
-                            <option value="urgent_3days">Sắp hết hạn (trong 3 ngày)</option>
-                            <option value="this_week">Trong tuần này</option>
-                            <option value="this_month">Trong tháng này</option>
+                            <option value="42" selected="@(currentCanNang == 42)">Từ 42kg (Nữ giới)</option>
+                            <option value="45" selected="@(currentCanNang == 45)">Từ 45kg trở lên</option>
+                            <option value="50" selected="@(currentCanNang == 50)">Từ 50kg (Hiến 450ml)</option>
                         </select>
                         <span class="material-symbols-outlined absolute right-3 top-3.5 text-on-surface-variant pointer-events-none text-[18px]">expand_more</span>
                     </div>
@@ -151,277 +159,165 @@
                 <div class="flex flex-wrap items-center gap-3">
                     <div class="inline-flex items-center gap-1.5 bg-primary/10 text-primary px-3.5 py-1.5 rounded-full font-label-md text-label-md font-bold">
                         <span class="material-symbols-outlined text-[16px]">done_all</span>
-                        <span>Tìm thấy 48 đợt hiến máu</span>
+                        <span>Tìm thấy @totalCount đợt hiến máu</span>
                     </div>
-                    <span class="text-on-surface-variant text-body-sm font-body-sm hidden sm:inline">•</span>
-                    <span class="text-on-surface-variant text-body-sm font-body-sm">Đang áp dụng lọc:</span>
-                    <span class="inline-flex items-center gap-1 bg-surface-container text-on-surface px-2.5 py-1 rounded-lg text-label-sm font-label-sm">
-                        <span>≥ 45kg</span>
-                        <button class="hover:text-primary transition-colors flex items-center"><span class="material-symbols-outlined text-[14px]">close</span></button>
-                    </span>
-                    <span class="inline-flex items-center gap-1 bg-surface-container text-on-surface px-2.5 py-1 rounded-lg text-label-sm font-label-sm">
-                        <span>Đang mở</span>
-                        <button class="hover:text-primary transition-colors flex items-center"><span class="material-symbols-outlined text-[14px]">close</span></button>
-                    </span>
+                    @if (!string.IsNullOrEmpty(currentSearch) || !string.IsNullOrEmpty(currentStatus) || currentDonViId.HasValue || !string.IsNullOrEmpty(currentNhomMau) || currentCanNang.HasValue)
+                    {
+                        <span class="text-on-surface-variant text-body-sm font-body-sm hidden sm:inline">•</span>
+                        <span class="text-on-surface-variant text-body-sm font-body-sm">Đang áp dụng lọc</span>
+                    }
                 </div>
-                <!-- Sort selector and Reset button -->
+                <!-- Reset button -->
                 <div class="flex items-center gap-3 w-full md:w-auto justify-between md:justify-end">
-                    <div class="flex items-center gap-2">
-                        <span class="font-label-sm text-label-sm text-secondary uppercase tracking-wider shrink-0">Sắp xếp:</span>
-                        <div class="relative">
-                            <select class="h-10 bg-surface-container text-on-surface font-label-md text-label-md rounded-xl pl-3 pr-8 appearance-none focus:outline-none cursor-pointer">
-                                <option selected="" value="nearest">Hạn đăng ký gần nhất</option>
-                                <option value="quota_high">Chỉ tiêu tiếp nhận cao nhất</option>
-                                <option value="alphabet">Tên A → Z</option>
-                                <option value="newest">Mới nhất</option>
-                            </select>
-                            <span class="material-symbols-outlined absolute right-2.5 top-2.5 text-on-surface-variant pointer-events-none text-[16px]">arrow_drop_down</span>
-                        </div>
-                    </div>
-                    <button class="inline-flex items-center gap-1 text-on-surface-variant hover:text-primary transition-colors px-3 py-2 rounded-xl hover:bg-surface-container font-label-md text-label-md">
+                    <a asp-controller="DotHienMau" asp-action="Index" class="inline-flex items-center gap-1 text-on-surface-variant hover:text-primary transition-colors px-3 py-2 rounded-xl hover:bg-surface-container font-label-md text-label-md">
                         <span class="material-symbols-outlined text-[16px]">restart_alt</span>
                         <span>Đặt lại bộ lọc</span>
-                    </button>
+                    </a>
                 </div>
             </div>
-        </div>
+        </form>
 
-        <!-- Campaign Cards Grid (6 Cards) -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <!-- CARD 1 -->
-            <article class="bg-surface-container-lowest rounded-2xl shadow-[0_4px_20px_-2px_rgba(198,40,61,0.05),0_2px_6px_-1px_rgba(0,0,0,0.04)] hover:shadow-[0_12px_28px_-3px_rgba(198,40,61,0.12)] hover:-translate-y-1 transition-all duration-200 flex flex-col justify-between overflow-hidden group">
-                <div>
-                    <div class="relative h-48 w-full overflow-hidden bg-surface-container">
-                        <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://images.unsplash.com/photo-1615461066841-6116e61058f4?auto=format&fit=crop&w=600&q=80" alt="Giọt Hồng Thanh Niên">
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
-                        <div class="absolute top-3.5 left-3.5 right-3.5 flex items-center justify-between">
-                            <span class="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full font-label-sm text-label-sm font-bold shadow-sm">
-                                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                                <span>ĐANG MỞ</span>
-                            </span>
-                            <span class="inline-flex items-center gap-1 bg-surface-container-lowest/95 backdrop-blur-sm text-on-surface px-2.5 py-1 rounded-full font-label-sm text-label-sm font-semibold shadow-sm">
-                                <span class="material-symbols-outlined text-primary text-[15px]">event</span>
-                                <span>Còn 5 ngày</span>
-                            </span>
-                        </div>
-                        <div class="absolute bottom-3 left-3.5 right-3.5">
-                            <div class="inline-flex items-center gap-1.5 text-on-primary font-label-sm text-label-sm drop-shadow">
-                                <span class="material-symbols-outlined text-[16px]">account_balance</span>
-                                <span class="truncate">Đoàn Thanh Niên &amp; Viện Huyết học TW</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="p-5">
-                        <h2 class="font-headline-sm text-headline-sm text-on-surface font-bold leading-tight group-hover:text-primary transition-colors mb-2.5 line-clamp-1">
-                            Giọt Hồng Thanh Niên – Trao Đời Sự Sống
-                        </h2>
-                        <div class="space-y-2 mb-4">
-                            <div class="flex items-start gap-2 text-on-surface-variant font-body-sm text-body-sm">
-                                <span class="material-symbols-outlined text-primary text-[18px] shrink-0 mt-0.5">date_range</span>
-                                <span><strong>15/11/2026</strong> - <strong>25/11/2026</strong> (07:30 - 16:30)</span>
-                            </div>
-                            <div class="flex items-start gap-2 text-on-surface-variant font-body-sm text-body-sm">
-                                <span class="material-symbols-outlined text-secondary text-[18px] shrink-0 mt-0.5">pin_drop</span>
-                                <span class="line-clamp-1">Cơ sở 218 Lĩnh Nam, Hoàng Mai, Hà Nội</span>
-                            </div>
-                        </div>
-                        <div class="flex flex-wrap items-center gap-1.5 mb-4">
-                            <span class="font-label-sm text-label-sm text-secondary uppercase">Ưu tiên:</span>
-                            <span class="px-2 py-0.5 bg-primary-fixed text-on-primary-fixed-variant rounded-md font-label-sm text-label-sm font-bold">Nhóm O</span>
-                            <span class="px-2 py-0.5 bg-primary-fixed text-on-primary-fixed-variant rounded-md font-label-sm text-label-sm font-bold">Nhóm A</span>
-                            <span class="px-2 py-0.5 bg-primary-fixed text-on-primary-fixed-variant rounded-md font-label-sm text-label-sm font-bold">Nhóm B</span>
-                            <span class="ml-auto text-on-surface-variant font-label-sm text-label-sm bg-surface-container px-2 py-0.5 rounded-md">≥ 45kg</span>
-                        </div>
-                        <div class="bg-surface-container-low p-3 rounded-xl mb-2">
-                            <div class="flex items-center justify-between font-label-sm text-label-sm mb-1.5">
-                                <span class="text-on-surface-variant">Chỉ tiêu tiếp nhận</span>
-                                <span class="font-bold text-primary">142/200 đơn vị (71%)</span>
-                            </div>
-                            <div class="w-full h-2 bg-surface-container rounded-full overflow-hidden">
-                                <div class="bg-gradient-to-r from-primary to-primary-container h-full rounded-full transition-all" style="width: 71%"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="p-5 pt-0 flex items-center gap-2">
-                    <a asp-controller="DotHienMau" asp-action="Details" asp-route-id="1" class="flex-1 text-center py-2.5 rounded-xl font-label-md text-label-md text-on-surface-variant hover:text-primary hover:bg-surface-container transition-all">
-                        Xem chi tiết
-                    </a>
-                    <a asp-controller="DotHienMau" asp-action="Details" asp-route-id="1" class="flex-1 inline-flex items-center justify-center gap-1.5 py-2.5 rounded-xl font-label-md text-label-md bg-gradient-to-r from-primary to-primary-container text-on-primary shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
-                        <span class="material-symbols-outlined text-[16px]">favorite</span>
-                        <span>Đăng ký ngay</span>
-                    </a>
-                </div>
-            </article>
+        <!-- Campaign Cards Grid -->
+        @if (Model != null && Model.Any())
+        {
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                @foreach (var item in Model)
+                {
+                    var isDangMo = item.TrangThai == "Đang mở đăng ký";
+                    var isChuaMo = item.TrangThai == "Chưa mở";
+                    var isTamDung = item.TrangThai == "Tạm dừng";
+                    var isDaDong = item.TrangThai == "Đã đóng";
 
-            <!-- CARD 2 (Urgent O-) -->
-            <article class="bg-surface-container-lowest rounded-2xl shadow-[0_4px_20px_-2px_rgba(198,40,61,0.05),0_2px_6px_-1px_rgba(0,0,0,0.04)] hover:shadow-[0_12px_28px_-3px_rgba(198,40,61,0.12)] hover:-translate-y-1 transition-all duration-200 flex flex-col justify-between overflow-hidden group">
-                <div>
-                    <div class="relative h-48 w-full overflow-hidden bg-surface-container">
-                        <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://images.unsplash.com/photo-1579154204601-01588f351e67?auto=format&fit=crop&w=600&q=80" alt="Trái Tim Đỏ">
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
-                        <div class="absolute top-3.5 left-3.5 right-3.5 flex items-center justify-between">
-                            <span class="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full font-label-sm text-label-sm font-bold shadow-sm">
-                                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                                <span>ĐANG MỞ</span>
-                            </span>
-                            <span class="inline-flex items-center gap-1 bg-error-container text-on-error-container px-2.5 py-1 rounded-full font-label-sm text-label-sm font-bold shadow-sm animate-pulse">
-                                <span class="material-symbols-outlined text-[14px]">emergency</span>
-                                <span>Khẩn cấp O-</span>
-                            </span>
-                        </div>
-                        <div class="absolute bottom-3 left-3.5 right-3.5">
-                            <div class="inline-flex items-center gap-1.5 text-on-primary font-label-sm text-label-sm drop-shadow">
-                                <span class="material-symbols-outlined text-[16px]">local_hospital</span>
-                                <span class="truncate">UNETI Minh Khai &amp; BV Chợ Rẫy</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="p-5">
-                        <h2 class="font-headline-sm text-headline-sm text-on-surface font-bold leading-tight group-hover:text-primary transition-colors mb-2.5 line-clamp-1">
-                            Trái Tim Đỏ – Chung Tay Vì Người Bệnh
-                        </h2>
-                        <div class="space-y-2 mb-4">
-                            <div class="flex items-start gap-2 text-on-surface-variant font-body-sm text-body-sm">
-                                <span class="material-symbols-outlined text-primary text-[18px] shrink-0 mt-0.5">date_range</span>
-                                <span><strong>18/11/2026</strong> - <strong>28/11/2026</strong> (07:00 - 16:00)</span>
-                            </div>
-                            <div class="flex items-start gap-2 text-on-surface-variant font-body-sm text-body-sm">
-                                <span class="material-symbols-outlined text-secondary text-[18px] shrink-0 mt-0.5">pin_drop</span>
-                                <span class="line-clamp-1">456 Minh Khai, Hai Bà Trưng, Hà Nội</span>
-                            </div>
-                        </div>
-                        <div class="flex flex-wrap items-center gap-1.5 mb-4">
-                            <span class="font-label-sm text-label-sm text-secondary uppercase">Ưu tiên:</span>
-                            <span class="px-2 py-0.5 bg-error text-on-error rounded-md font-label-sm text-label-sm font-bold">O- (Khẩn cấp)</span>
-                            <span class="px-2 py-0.5 bg-primary-fixed text-on-primary-fixed-variant rounded-md font-label-sm text-label-sm font-bold">O+</span>
-                            <span class="px-2 py-0.5 bg-primary-fixed text-on-primary-fixed-variant rounded-md font-label-sm text-label-sm font-bold">AB</span>
-                            <span class="ml-auto text-on-surface-variant font-label-sm text-label-sm bg-surface-container px-2 py-0.5 rounded-md">≥ 45kg</span>
-                        </div>
-                        <div class="bg-surface-container-low p-3 rounded-xl mb-2">
-                            <div class="flex items-center justify-between font-label-sm text-label-sm mb-1.5">
-                                <span class="text-on-surface-variant">Chỉ tiêu tiếp nhận</span>
-                                <span class="font-bold text-primary">88/150 đơn vị (58%)</span>
-                            </div>
-                            <div class="w-full h-2 bg-surface-container rounded-full overflow-hidden">
-                                <div class="bg-gradient-to-r from-primary to-primary-container h-full rounded-full transition-all" style="width: 58%"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="p-5 pt-0 flex items-center gap-2">
-                    <a asp-controller="DotHienMau" asp-action="Details" asp-route-id="2" class="flex-1 text-center py-2.5 rounded-xl font-label-md text-label-md text-on-surface-variant hover:text-primary hover:bg-surface-container transition-all">
-                        Xem chi tiết
-                    </a>
-                    <a asp-controller="DotHienMau" asp-action="Details" asp-route-id="2" class="flex-1 inline-flex items-center justify-center gap-1.5 py-2.5 rounded-xl font-label-md text-label-md bg-gradient-to-r from-primary to-primary-container text-on-primary shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
-                        <span class="material-symbols-outlined text-[16px]">favorite</span>
-                        <span>Đăng ký ngay</span>
-                    </a>
-                </div>
-            </article>
+                    var cardImage = "https://images.unsplash.com/photo-1615461066841-6116e61058f4?auto=format&fit=crop&w=600&q=80";
+                    if (item.MaDot % 3 == 2)
+                    {
+                        cardImage = "https://images.unsplash.com/photo-1579154204601-01588f351e67?auto=format&fit=crop&w=600&q=80";
+                    }
+                    else if (item.MaDot % 3 == 0)
+                    {
+                        cardImage = "https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=600&q=80";
+                    }
 
-            <!-- CARD 3 -->
-            <article class="bg-surface-container-lowest rounded-2xl shadow-[0_4px_20px_-2px_rgba(198,40,61,0.05),0_2px_6px_-1px_rgba(0,0,0,0.04)] hover:shadow-[0_12px_28px_-3px_rgba(198,40,61,0.12)] hover:-translate-y-1 transition-all duration-200 flex flex-col justify-between overflow-hidden group">
-                <div>
-                    <div class="relative h-48 w-full overflow-hidden bg-surface-container">
-                        <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="https://images.unsplash.com/photo-1584515979956-d9f6e5d09982?auto=format&fit=crop&w=600&q=80" alt="Nắng Hồng Yêu Thương">
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
-                        <div class="absolute top-3.5 left-3.5 right-3.5 flex items-center justify-between">
-                            <span class="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full font-label-sm text-label-sm font-bold shadow-sm">
-                                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                                <span>ĐANG MỞ</span>
-                            </span>
-                            <span class="inline-flex items-center gap-1 bg-surface-container-lowest/95 backdrop-blur-sm text-on-surface px-2.5 py-1 rounded-full font-label-sm text-label-sm font-semibold shadow-sm">
-                                <span class="material-symbols-outlined text-primary text-[15px]">event</span>
-                                <span>Sắp đầy 78%</span>
-                            </span>
-                        </div>
-                        <div class="absolute bottom-3 left-3.5 right-3.5">
-                            <div class="inline-flex items-center gap-1.5 text-on-primary font-label-sm text-label-sm drop-shadow">
-                                <span class="material-symbols-outlined text-[16px]">school</span>
-                                <span class="truncate">UNETI Nam Định &amp; Chữ Thập Đỏ</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="p-5">
-                        <h2 class="font-headline-sm text-headline-sm text-on-surface font-bold leading-tight group-hover:text-primary transition-colors mb-2.5 line-clamp-1">
-                            Nắng Hồng Yêu Thương – Cơ sở Nam Định
-                        </h2>
-                        <div class="space-y-2 mb-4">
-                            <div class="flex items-start gap-2 text-on-surface-variant font-body-sm text-body-sm">
-                                <span class="material-symbols-outlined text-primary text-[18px] shrink-0 mt-0.5">date_range</span>
-                                <span><strong>22/11/2026</strong> - <strong>30/11/2026</strong> (08:00 - 17:00)</span>
-                            </div>
-                            <div class="flex items-start gap-2 text-on-surface-variant font-body-sm text-body-sm">
-                                <span class="material-symbols-outlined text-secondary text-[18px] shrink-0 mt-0.5">pin_drop</span>
-                                <span class="line-clamp-1">353 Trần Hưng Đạo, TP. Nam Định</span>
-                            </div>
-                        </div>
-                        <div class="flex flex-wrap items-center gap-1.5 mb-4">
-                            <span class="font-label-sm text-label-sm text-secondary uppercase">Ưu tiên:</span>
-                            <span class="px-2.5 py-0.5 bg-secondary-fixed text-on-secondary-fixed-variant rounded-md font-label-sm text-label-sm font-bold">Tất cả nhóm máu</span>
-                            <span class="ml-auto text-on-surface-variant font-label-sm text-label-sm bg-surface-container px-2 py-0.5 rounded-md">≥ 45kg</span>
-                        </div>
-                        <div class="bg-surface-container-low p-3 rounded-xl mb-2">
-                            <div class="flex items-center justify-between font-label-sm text-label-sm mb-1.5">
-                                <span class="text-on-surface-variant">Chỉ tiêu tiếp nhận</span>
-                                <span class="font-bold text-primary">195/250 đơn vị (78%)</span>
-                            </div>
-                            <div class="w-full h-2 bg-surface-container rounded-full overflow-hidden">
-                                <div class="bg-gradient-to-r from-primary to-primary-container h-full rounded-full transition-all" style="width: 78%"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="p-5 pt-0 flex items-center gap-2">
-                    <a asp-controller="DotHienMau" asp-action="Details" asp-route-id="3" class="flex-1 text-center py-2.5 rounded-xl font-label-md text-label-md text-on-surface-variant hover:text-primary hover:bg-surface-container transition-all">
-                        Xem chi tiết
-                    </a>
-                    <a asp-controller="DotHienMau" asp-action="Details" asp-route-id="3" class="flex-1 inline-flex items-center justify-center gap-1.5 py-2.5 rounded-xl font-label-md text-label-md bg-gradient-to-r from-primary to-primary-container text-on-primary shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
-                        <span class="material-symbols-outlined text-[16px]">favorite</span>
-                        <span>Đăng ký ngay</span>
-                    </a>
-                </div>
-            </article>
-        </div>
+                    <article class="bg-surface-container-lowest rounded-2xl shadow-[0_4px_20px_-2px_rgba(198,40,61,0.05),0_2px_6px_-1px_rgba(0,0,0,0.04)] hover:shadow-[0_12px_28px_-3px_rgba(198,40,61,0.12)] hover:-translate-y-1 transition-all duration-200 flex flex-col justify-between overflow-hidden group">
+                        <div>
+                            <div class="relative h-48 w-full overflow-hidden bg-surface-container">
+                                <img class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" src="@cardImage" alt="@item.TenDot">
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+                                <div class="absolute top-3.5 left-3.5 right-3.5 flex items-center justify-between">
+                                    @if (isDangMo)
+                                    {
+                                        <span class="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full font-label-sm text-label-sm font-bold shadow-sm">
+                                            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                                            <span>ĐANG MỞ</span>
+                                        </span>
+                                    }
+                                    else if (isChuaMo)
+                                    {
+                                        <span class="inline-flex items-center gap-1.5 bg-blue-50 text-blue-700 px-3 py-1 rounded-full font-label-sm text-label-sm font-bold shadow-sm">
+                                            <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+                                            <span>CHƯA MỞ</span>
+                                        </span>
+                                    }
+                                    else if (isTamDung)
+                                    {
+                                        <span class="inline-flex items-center gap-1.5 bg-amber-50 text-amber-700 px-3 py-1 rounded-full font-label-sm text-label-sm font-bold shadow-sm">
+                                            <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                                            <span>TẠM DỪNG</span>
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="inline-flex items-center gap-1.5 bg-gray-100 text-gray-700 px-3 py-1 rounded-full font-label-sm text-label-sm font-bold shadow-sm">
+                                            <span class="w-2 h-2 rounded-full bg-gray-400"></span>
+                                            <span>ĐÃ ĐÓNG</span>
+                                        </span>
+                                    }
 
-        <!-- Pagination Section -->
-        <div class="mt-12 mb-16 flex flex-col md:flex-row items-center justify-between gap-4 p-5 bg-surface-container-lowest rounded-2xl shadow-[0_4px_16px_-2px_rgba(0,0,0,0.03)]">
-            <div class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-2">
-                <span class="material-symbols-outlined text-primary text-[18px]">view_list</span>
-                <span>Hiển thị <strong>1 - 3</strong> trong số <strong>48</strong> đợt hiến máu</span>
-                <span class="text-outline-variant">•</span>
-                <span class="font-semibold text-on-surface">Trang 1 / 8</span>
+                                    <span class="inline-flex items-center gap-1 bg-surface-container-lowest/95 backdrop-blur-sm text-on-surface px-2.5 py-1 rounded-full font-label-sm text-label-sm font-semibold shadow-sm">
+                                        <span class="material-symbols-outlined text-primary text-[15px]">event</span>
+                                        <span>Hạn: @item.HanDangKy.ToString("dd/MM/yyyy")</span>
+                                    </span>
+                                </div>
+                                <div class="absolute bottom-3 left-3.5 right-3.5">
+                                    <div class="inline-flex items-center gap-1.5 text-on-primary font-label-sm text-label-sm drop-shadow">
+                                        <span class="material-symbols-outlined text-[16px]">account_balance</span>
+                                        <span class="truncate">@(item.DonViToChuc?.TenDonViToChuc ?? "UNETI")</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-5">
+                                <h2 class="font-headline-sm text-headline-sm text-on-surface font-bold leading-tight group-hover:text-primary transition-colors mb-2.5 line-clamp-1">
+                                    @item.TenDot
+                                </h2>
+                                <div class="space-y-2 mb-4">
+                                    <div class="flex items-start gap-2 text-on-surface-variant font-body-sm text-body-sm">
+                                        <span class="material-symbols-outlined text-primary text-[18px] shrink-0 mt-0.5">date_range</span>
+                                        <span><strong>@item.NgayBatDauDangKy.ToString("dd/MM/yyyy")</strong> - <strong>@item.HanDangKy.ToString("dd/MM/yyyy")</strong></span>
+                                    </div>
+                                    <div class="flex items-start gap-2 text-on-surface-variant font-body-sm text-body-sm">
+                                        <span class="material-symbols-outlined text-secondary text-[18px] shrink-0 mt-0.5">pin_drop</span>
+                                        <span class="line-clamp-1">@(string.IsNullOrEmpty(item.MoTaDot) ? "Cơ sở UNETI Hà Nội / Nam Định" : item.MoTaDot)</span>
+                                    </div>
+                                </div>
+                                <div class="flex flex-wrap items-center gap-1.5 mb-4">
+                                    <span class="font-label-sm text-label-sm text-secondary uppercase">Ưu tiên:</span>
+                                    @if (!string.IsNullOrWhiteSpace(item.NhomMauUuTien))
+                                    {
+                                        var groups = item.NhomMauUuTien.Split(',', StringSplitOptions.RemoveEmptyEntries);
+                                        foreach (var g in groups)
+                                        {
+                                            <span class="px-2 py-0.5 bg-primary-fixed text-on-primary-fixed-variant rounded-md font-label-sm text-label-sm font-bold">@g.Trim()</span>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <span class="px-2 py-0.5 bg-secondary-fixed text-on-secondary-fixed-variant rounded-md font-label-sm text-label-sm font-bold">Tất cả nhóm máu</span>
+                                    }
+                                    <span class="ml-auto text-on-surface-variant font-label-sm text-label-sm bg-surface-container px-2 py-0.5 rounded-md">≥ @item.CanNangToiThieu kg</span>
+                                </div>
+                                <div class="bg-surface-container-low p-3 rounded-xl mb-2">
+                                    <div class="flex items-center justify-between font-label-sm text-label-sm mb-1.5">
+                                        <span class="text-on-surface-variant">Chỉ tiêu tiếp nhận</span>
+                                        <span class="font-bold text-primary">@item.ChiTieuDonViMau đơn vị</span>
+                                    </div>
+                                    <div class="w-full h-2 bg-surface-container rounded-full overflow-hidden">
+                                        <div class="bg-gradient-to-r from-primary to-primary-container h-full rounded-full transition-all" style="width: 75%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-5 pt-0 flex items-center gap-2">
+                            <a asp-controller="DotHienMau" asp-action="Details" asp-route-id="@item.MaDot" class="flex-1 text-center py-2.5 rounded-xl font-label-md text-label-md text-on-surface-variant hover:text-primary hover:bg-surface-container transition-all">
+                                Xem chi tiết
+                            </a>
+                            <a asp-controller="DotHienMau" asp-action="Details" asp-route-id="@item.MaDot" class="flex-1 inline-flex items-center justify-center gap-1.5 py-2.5 rounded-xl font-label-md text-label-md bg-gradient-to-r from-primary to-primary-container text-on-primary shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
+                                <span class="material-symbols-outlined text-[16px]">favorite</span>
+                                <span>Đăng ký ngay</span>
+                            </a>
+                        </div>
+                    </article>
+                }
             </div>
-            <nav aria-label="Pagination Navigation" class="flex items-center gap-1.5">
-                <button class="inline-flex items-center gap-1 px-3 py-2 rounded-xl text-on-surface-variant opacity-40 cursor-not-allowed font-label-md text-label-md" disabled="">
-                    <span class="material-symbols-outlined text-[18px]">chevron_left</span>
-                    <span class="hidden sm:inline">Trang trước</span>
-                </button>
-                <div class="flex items-center gap-1">
-                    <button class="w-10 h-10 rounded-xl font-label-md text-label-md bg-primary text-on-primary font-bold shadow-md shadow-primary/20">
-                        1
-                    </button>
-                    <button class="w-10 h-10 rounded-xl font-label-md text-label-md text-on-surface hover:bg-surface-container transition-colors">
-                        2
-                    </button>
-                    <button class="w-10 h-10 rounded-xl font-label-md text-label-md text-on-surface hover:bg-surface-container transition-colors">
-                        3
-                    </button>
-                    <span class="w-8 text-center text-on-surface-variant font-bold">...</span>
-                    <button class="w-10 h-10 rounded-xl font-label-md text-label-md text-on-surface hover:bg-surface-container transition-colors">
-                        8
-                    </button>
+        }
+        else
+        {
+            <div class="bg-surface-container-lowest rounded-3xl p-12 text-center shadow-sm max-w-2xl mx-auto my-8">
+                <div class="w-16 h-16 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto mb-4">
+                    <span class="material-symbols-outlined text-[32px]">search_off</span>
                 </div>
-                <button class="inline-flex items-center gap-1 px-3.5 py-2 rounded-xl text-on-surface-variant hover:text-primary hover:bg-surface-container font-label-md text-label-md transition-colors">
-                    <span class="hidden sm:inline">Trang sau</span>
-                    <span class="material-symbols-outlined text-[18px]">chevron_right</span>
-                </button>
-            </nav>
-        </div>
+                <h3 class="font-headline-sm text-headline-sm font-bold text-on-surface mb-2">Không tìm thấy đợt hiến máu phù hợp</h3>
+                <p class="font-body-md text-body-md text-on-surface-variant mb-6">
+                    Không có kết quả nào phù hợp với điều kiện tìm kiếm hoặc bộ lọc hiện tại. Vui lòng thử tìm với từ khóa khác hoặc đặt lại bộ lọc.
+                </p>
+                <a asp-controller="DotHienMau" asp-action="Index" class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-on-primary font-label-md text-label-md font-bold shadow-md hover:bg-primary-container transition-all">
+                    <span class="material-symbols-outlined text-[18px]">restart_alt</span>
+                    <span>Xem tất cả đợt hiến máu</span>
+                </a>
+            </div>
+        }
 
         <!-- Quick Guidance Banner: Chưa biết nhóm máu -->
-        <div class="relative overflow-hidden bg-gradient-to-r from-primary-fixed to-surface-container-high rounded-3xl p-8 lg:p-10 mb-10 shadow-[0_10px_30px_-5px_rgba(198,40,61,0.08)]">
+        <div class="relative overflow-hidden bg-gradient-to-r from-primary-fixed to-surface-container-high rounded-3xl p-8 lg:p-10 my-10 shadow-[0_10px_30px_-5px_rgba(198,40,61,0.08)]">
             <div class="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                 <div class="flex items-start gap-5 max-w-2xl">
                     <div class="w-14 h-14 rounded-2xl bg-primary text-on-primary flex items-center justify-center shrink-0 shadow-lg shadow-primary/25">

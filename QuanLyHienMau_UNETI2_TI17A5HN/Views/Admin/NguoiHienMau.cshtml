@@ -1,6 +1,28 @@
+@model IEnumerable<QuanLyHienMau_UNETI2_TI17A5HN.Models.NguoiHienMau>
 @{
+    // Module 3: Quản lý người hiến máu & phân loại nhóm máu hiếm
     Layout = "_AdminLayout";
     ViewData["Title"] = "Quản lý người hiến máu & phân loại nhóm máu hiếm";
+    
+    var tongNguoiHien = (int)(ViewBag.TongNguoiHien ?? 0);
+    var tongMauHiem = (int)(ViewBag.TongMauHiem ?? 0);
+    var oAm = (int)(ViewBag.OAm ?? 0);
+    var aAm = (int)(ViewBag.AAm ?? 0);
+    var bAm = (int)(ViewBag.BAm ?? 0);
+    var abAm = (int)(ViewBag.ABAm ?? 0);
+    var duDieuKienCount = (int)(ViewBag.DuDieuKienCount ?? 0);
+    var hienTichCucCount = (int)(ViewBag.HienTichCucCount ?? 0);
+
+    var totalItems = (int)(ViewBag.TotalItems ?? 0);
+    var currentPage = (int)(ViewBag.CurrentPage ?? 1);
+    var totalPages = (int)(ViewBag.TotalPages ?? 1);
+    var pageSize = (int)(ViewBag.PageSize ?? 10);
+
+    var currentSearch = (string?)ViewBag.CurrentSearch ?? "";
+    var currentNhomMau = (string?)ViewBag.CurrentNhomMau ?? "";
+    var currentRhGroup = (string?)ViewBag.CurrentRhGroup ?? "";
+    var currentStatus = (string?)ViewBag.CurrentStatus ?? "";
+    var currentTier = (string?)ViewBag.CurrentTier ?? "";
 }
 
 <div class="flex flex-col w-full">
@@ -24,7 +46,7 @@
                     <span class="px-2.5 py-0.5 rounded-full bg-primary/10 text-primary font-label-sm text-label-sm tracking-wide uppercase font-bold">ISBT 128 / VNeID v2</span>
                 </h1>
                 <p class="font-body-md text-body-md text-secondary max-w-4xl">
-                    Quản lý hồ sơ định danh 380,450 tình nguyện viên toàn quốc, phân loại nhóm máu hiếm Rh(-), Bombay, Kell, theo dõi chu kỳ an toàn 84 ngày và kích hoạt điều phối khẩn cấp 24/7.
+                    Quản lý hồ sơ định danh tình nguyện viên toàn hệ thống, phân loại nhóm máu hiếm Rh(-), Bombay, Kell, theo dõi chu kỳ an toàn 84 ngày và kích hoạt điều phối khẩn cấp 24/7.
                 </p>
             </div>
             <!-- Action Buttons -->
@@ -37,10 +59,10 @@
                     <span class="material-symbols-outlined text-[18px] animate-pulse">crisis_alert</span>
                     <span>Kêu Gọi Khẩn Cấp</span>
                 </button>
-                <button class="h-10 px-5 rounded-xl bg-primary text-on-primary shadow-md hover:bg-primary-container transition-all flex items-center gap-2 font-label-md text-label-md font-bold" type="button" onclick="alert('Mở form tiếp nhận đăng ký hồ sơ người hiến máu mới!')">
+                <a asp-controller="DangKy" asp-action="Create" class="h-10 px-5 rounded-xl bg-primary text-on-primary shadow-md hover:bg-primary-container transition-all flex items-center gap-2 font-label-md text-label-md font-bold">
                     <span class="material-symbols-outlined text-[18px]">person_add</span>
                     <span>Thêm Hồ Sơ Mới</span>
-                </button>
+                </a>
             </div>
         </div>
 
@@ -57,18 +79,18 @@
                 </div>
                 <div class="space-y-1">
                     <div class="flex items-baseline gap-2">
-                        <span class="font-headline-lg text-headline-lg font-bold text-on-surface">380,450</span>
+                        <span class="font-headline-lg text-headline-lg font-bold text-on-surface">@tongNguoiHien.ToString("N0")</span>
                         <span class="font-label-sm text-label-sm text-emerald-600 font-semibold flex items-center gap-0.5">
-                            <span class="material-symbols-outlined text-[14px]">arrow_upward</span> +1,240
+                            <span class="material-symbols-outlined text-[14px]">verified</span> Đã xác thực
                         </span>
                     </div>
                     <p class="font-body-sm text-body-sm text-secondary flex items-center gap-1.5">
                         <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                        VNeID Mức 2 đạt <strong class="text-on-surface font-semibold">94.6%</strong>
+                        Đã liên thông cơ sở dữ liệu quốc gia
                     </p>
                 </div>
                 <div class="w-full bg-surface-container rounded-full h-1.5 overflow-hidden">
-                    <div class="bg-primary h-full rounded-full" style="width: 94.6%;"></div>
+                    <div class="bg-primary h-full rounded-full" style="width: 100%;"></div>
                 </div>
             </div>
 
@@ -86,19 +108,19 @@
                 </div>
                 <div class="space-y-1">
                     <div class="flex items-baseline gap-2">
-                        <span class="font-headline-lg text-headline-lg font-bold text-tertiary">1,485</span>
+                        <span class="font-headline-lg text-headline-lg font-bold text-tertiary">@tongMauHiem.ToString("N0")</span>
                         <span class="font-label-sm text-label-sm text-secondary">Tình nguyện viên</span>
                     </div>
                     <div class="flex flex-wrap gap-1.5 pt-1">
-                        <span class="px-1.5 py-0.5 rounded bg-surface-container font-label-sm text-label-sm text-on-surface font-mono">O-: 742</span>
-                        <span class="px-1.5 py-0.5 rounded bg-surface-container font-label-sm text-label-sm text-on-surface font-mono">A-: 388</span>
-                        <span class="px-1.5 py-0.5 rounded bg-surface-container font-label-sm text-label-sm text-on-surface font-mono">B-: 265</span>
-                        <span class="px-1.5 py-0.5 rounded bg-surface-container font-label-sm text-label-sm text-on-surface font-mono">AB-: 90</span>
+                        <span class="px-1.5 py-0.5 rounded bg-surface-container font-label-sm text-label-sm text-on-surface font-mono">O-: @oAm</span>
+                        <span class="px-1.5 py-0.5 rounded bg-surface-container font-label-sm text-label-sm text-on-surface font-mono">A-: @aAm</span>
+                        <span class="px-1.5 py-0.5 rounded bg-surface-container font-label-sm text-label-sm text-on-surface font-mono">B-: @bAm</span>
+                        <span class="px-1.5 py-0.5 rounded bg-surface-container font-label-sm text-label-sm text-on-surface font-mono">AB-: @abAm</span>
                     </div>
                 </div>
                 <p class="font-body-sm text-body-sm text-emerald-700 bg-emerald-50 px-2 py-1 rounded-lg flex items-center gap-1 font-medium">
                     <span class="material-symbols-outlined text-[15px]">timer</span>
-                    <strong>320 người</strong> sẵn sàng gọi khẩn trong 30p
+                    <strong>@oAm người O Rh(-)</strong> sẵn sàng điều phối
                 </p>
             </div>
 
@@ -113,16 +135,16 @@
                 </div>
                 <div class="space-y-1">
                     <div class="flex items-baseline gap-2">
-                        <span class="font-headline-lg text-headline-lg font-bold text-on-surface">142,680</span>
-                        <span class="font-label-sm text-label-sm text-emerald-600 font-semibold">37.5%</span>
+                        <span class="font-headline-lg text-headline-lg font-bold text-on-surface">@duDieuKienCount.ToString("N0")</span>
+                        <span class="font-label-sm text-label-sm text-emerald-600 font-semibold">@(tongNguoiHien > 0 ? (duDieuKienCount * 100.0 / tongNguoiHien).ToString("0.0") : "0")%</span>
                     </div>
                     <p class="font-body-sm text-body-sm text-secondary">
-                        Đã qua chu kỳ hồi phục <strong class="text-on-surface">&ge; 84 ngày</strong>
+                        Đã qua chu kỳ an toàn <strong class="text-on-surface">&ge; 84 ngày</strong>
                     </p>
                 </div>
                 <div class="flex items-center justify-between text-secondary font-label-sm text-label-sm pt-2 bg-surface-container-low px-2.5 py-1.5 rounded-lg">
                     <span>Chiến dịch tuần này:</span>
-                    <span class="font-semibold text-primary">Sẵn sàng điều phối</span>
+                    <span class="font-semibold text-primary">Sẵn sàng tiếp nhận</span>
                 </div>
             </div>
 
@@ -137,15 +159,15 @@
                 </div>
                 <div class="space-y-1">
                     <div class="flex items-baseline gap-2">
-                        <span class="font-headline-lg text-headline-lg font-bold text-on-surface">18,920</span>
-                        <span class="font-label-sm text-label-sm text-amber-700 font-semibold bg-amber-50 px-2 py-0.5 rounded-md">Vàng &amp; Kim Cương</span>
+                        <span class="font-headline-lg text-headline-lg font-bold text-on-surface">@hienTichCucCount.ToString("N0")</span>
+                        <span class="font-label-sm text-label-sm text-amber-700 font-semibold bg-amber-50 px-2 py-0.5 rounded-md">Bạc &bull; Vàng &bull; Kim Cương</span>
                     </div>
                     <p class="font-body-sm text-body-sm text-secondary">
-                        Đã hiến &ge; 5 lần; tỷ lệ hiến nhắc lại <strong class="text-on-surface font-semibold">68.4%</strong>
+                        Đã hiến &ge; 5 lần; tỷ lệ cống hiến cao
                     </p>
                 </div>
                 <div class="w-full bg-surface-container rounded-full h-1.5 overflow-hidden">
-                    <div class="bg-amber-500 h-full rounded-full" style="width: 68.4%;"></div>
+                    <div class="bg-amber-500 h-full rounded-full" style="width: @(tongNguoiHien > 0 ? (hienTichCucCount * 100.0 / tongNguoiHien).ToString("0.0") : "0")%;"></div>
                 </div>
             </div>
         </div>
@@ -166,16 +188,16 @@
                         CẢNH BÁO THIẾU HỤT TỒN KHO NHÓM MÁU HIẾM O Rh(-) VÀ B Rh(-)
                     </h2>
                     <p class="font-body-md text-body-md text-white/90">
-                        Yêu cầu khẩn: Cần <strong>15 đơn vị O Rh(-)</strong> phục vụ 2 ca phẫu thuật đa chấn thương sọ não. Bán kính quét tìm kiếm đã định vị <strong>48 người hiến O Rh(-) đủ điều kiện trong vòng 15km quanh Hà Nội</strong>.
+                        Yêu cầu khẩn: Cần <strong>15 đơn vị O Rh(-)</strong> phục vụ 2 ca phẫu thuật đa chấn thương sọ não. Hệ thống ghi nhận <strong>@oAm tình nguyện viên O Rh(-)</strong> trong cơ sở dữ liệu toàn quốc.
                     </p>
                     <div class="flex items-center gap-4 pt-1 font-label-md text-label-md">
                         <span class="flex items-center gap-1 text-white">
                             <span class="material-symbols-outlined text-[18px] text-emerald-300">check_circle</span>
-                            <strong>12 người</strong> đang di chuyển đến viện
+                            <strong>@duDieuKienCount người</strong> đủ điều kiện hiến ngay
                         </span>
                         <span class="flex items-center gap-1 text-white">
                             <span class="material-symbols-outlined text-[18px] text-amber-300">hourglass_top</span>
-                            <strong>6 người</strong> đang trong phòng lấy máu
+                            <strong>@tongMauHiem người</strong> thuộc CLB Máu hiếm
                         </span>
                     </div>
                 </div>
@@ -186,14 +208,14 @@
                         <div class="flex items-center justify-between bg-white/10 px-3 py-2 rounded-xl text-white">
                             <div class="flex items-center gap-2">
                                 <span class="px-2 py-0.5 rounded bg-tertiary font-bold font-mono text-sm">O Rh(-)</span>
-                                <span class="text-body-sm font-medium">Bán kính &le; 15 km</span>
+                                <span class="text-body-sm font-medium">Bán kính toàn quốc</span>
                             </div>
-                            <span class="font-label-sm text-label-sm font-semibold text-amber-300">48 sẵn sàng</span>
+                            <span class="font-label-sm text-label-sm font-semibold text-amber-300">@oAm sẵn sàng</span>
                         </div>
                     </div>
                     <button class="w-full py-2.5 px-4 rounded-xl bg-white text-primary font-label-md text-label-md font-bold shadow-md hover:bg-surface-bright transition-all flex items-center justify-center gap-2" type="button" onclick="openEmergencyModal()">
                         <span class="material-symbols-outlined text-[18px]">send</span>
-                        <span>Phát Lệnh SMS &amp; VNeID (48)</span>
+                        <span>Phát Lệnh SMS &amp; VNeID (@oAm)</span>
                     </button>
                     <button class="w-full py-2 px-3 rounded-xl bg-white/15 text-white hover:bg-white/20 transition-all font-label-sm text-label-sm flex items-center justify-center gap-1.5 font-semibold" type="button" onclick="alert('Kíp trực khẩn cấp: BS. Trần Mai Linh, ĐD. Nguyễn Bích Ngọc, KTV. Lê Thảo Trang.')">
                         <span class="material-symbols-outlined text-[16px]">support_agent</span>
@@ -204,41 +226,55 @@
         </div>
 
         <!-- 4. Advanced Multi-dimensional Filter Bar -->
-        <div class="bg-surface-container-lowest rounded-2xl p-space-lg shadow-sm space-y-space-md">
+        <form method="get" asp-controller="Admin" asp-action="NguoiHienMau" class="bg-surface-container-lowest rounded-2xl p-space-lg shadow-sm space-y-space-md">
+            <input type="hidden" name="nhomMau" value="@currentNhomMau" />
+            <input type="hidden" name="rhGroup" value="@currentRhGroup" />
+            <input type="hidden" name="status" value="@currentStatus" />
+
             <!-- Search Input & Quick Actions -->
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-space-md">
                 <div class="lg:col-span-6 relative">
                     <span class="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-secondary text-[20px]">search</span>
-                    <input class="w-full h-12 pl-11 pr-4 rounded-xl bg-surface-container-low font-body-md text-body-md text-on-surface placeholder:text-secondary/70 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:bg-surface-container-lowest transition-all" id="donorSearchInput" placeholder="Tìm theo Họ tên, CCCD/VNeID (12 số), Số điện thoại, Mã định danh (VD: DONOR-09821)..." type="text">
+                    <input class="w-full h-12 pl-11 pr-4 rounded-xl bg-surface-container-low font-body-md text-body-md text-on-surface placeholder:text-secondary/70 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:bg-surface-container-lowest transition-all" 
+                           id="donorSearchInput" 
+                           name="search" 
+                           value="@currentSearch"
+                           placeholder="Tìm theo Họ tên, CCCD/Tài khoản, Số điện thoại, Địa chỉ, Mã ID..." 
+                           type="text">
                 </div>
                 <div class="lg:col-span-3">
                     <div class="relative">
-                        <select class="w-full h-12 px-4 rounded-xl bg-surface-container-low font-body-md text-body-md text-on-surface appearance-none focus:outline-none focus:ring-2 focus:ring-primary/20" id="filterLocation">
-                            <option value="">Toàn quốc / Tất cả Tỉnh Thành</option>
-                            <option selected="" value="HN">Hà Nội (Trung tâm &amp; Bệnh viện TW)</option>
-                            <option value="HCM">TP. Hồ Chí Minh</option>
-                            <option value="DN">Đà Nẵng</option>
-                            <option value="HP">Hải Phòng</option>
-                            <option value="TN">Thái Nguyên</option>
-                            <option value="CT">Cần Thơ</option>
+                        <select class="w-full h-12 px-4 rounded-xl bg-surface-container-low font-body-md text-body-md text-on-surface appearance-none focus:outline-none focus:ring-2 focus:ring-primary/20" 
+                                name="statusSelect" 
+                                onchange="location.href='@Url.Action("NguoiHienMau", "Admin", new { search = currentSearch, nhomMau = currentNhomMau, rhGroup = currentRhGroup, tier = currentTier })&status=' + this.value;">
+                            <option value="" selected="@(string.IsNullOrEmpty(currentStatus))">Tất cả trạng thái hồ sơ</option>
+                            <option value="hoatdong" selected="@(currentStatus == "hoatdong")">Đang hoạt động</option>
+                            <option value="dudieukien" selected="@(currentStatus == "dudieukien")">Đủ điều kiện hiến ngay (≥ 84 ngày)</option>
+                            <option value="tamhoan" selected="@(currentStatus == "tamhoan")">Tạm hoãn y khoa</option>
                         </select>
                         <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-secondary pointer-events-none text-[20px]">expand_more</span>
                     </div>
                 </div>
                 <div class="lg:col-span-3 flex items-center gap-space-sm">
                     <div class="relative flex-1">
-                        <select class="w-full h-12 px-4 rounded-xl bg-surface-container-low font-body-md text-body-md text-on-surface appearance-none focus:outline-none focus:ring-2 focus:ring-primary/20" id="filterTier">
-                            <option value="">Tất cả phân hạng cống hiến</option>
-                            <option value="diamond">Kim Cương (&ge; 20 lần)</option>
-                            <option value="gold">Vàng (10 - 19 lần)</option>
-                            <option value="silver">Bạc (5 - 9 lần)</option>
-                            <option value="bronze">Đồng (1 - 4 lần)</option>
+                        <select class="w-full h-12 px-4 rounded-xl bg-surface-container-low font-body-md text-body-md text-on-surface appearance-none focus:outline-none focus:ring-2 focus:ring-primary/20" 
+                                name="tier" 
+                                onchange="this.form.submit()">
+                            <option value="" selected="@(string.IsNullOrEmpty(currentTier))">Tất cả phân hạng cống hiến</option>
+                            <option value="diamond" selected="@(currentTier == "diamond")">Kim Cương (≥ 20 lần)</option>
+                            <option value="gold" selected="@(currentTier == "gold")">Vàng (10 - 19 lần)</option>
+                            <option value="silver" selected="@(currentTier == "silver")">Bạc (5 - 9 lần)</option>
+                            <option value="bronze" selected="@(currentTier == "bronze")">Đồng (1 - 4 lần)</option>
                         </select>
                         <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-secondary pointer-events-none text-[20px]">expand_more</span>
                     </div>
-                    <button class="h-12 w-12 rounded-xl bg-surface-container-low text-secondary hover:text-primary hover:bg-surface-container flex items-center justify-center shrink-0 transition-colors" title="Làm mới bộ lọc" type="button" onclick="document.getElementById('donorSearchInput').value=''; document.querySelectorAll('tbody tr').forEach(r => r.style.display='');">
-                        <span class="material-symbols-outlined text-[20px]">refresh</span>
+                    <button class="h-12 px-4 rounded-xl bg-primary text-on-primary font-label-md text-label-md font-bold shadow-xs hover:bg-primary-container transition-all flex items-center gap-1.5" type="submit">
+                        <span class="material-symbols-outlined text-[18px]">filter_list</span>
+                        <span>Lọc</span>
                     </button>
+                    <a asp-controller="Admin" asp-action="NguoiHienMau" class="h-12 w-12 rounded-xl bg-surface-container-low text-secondary hover:text-primary hover:bg-surface-container flex items-center justify-center shrink-0 transition-colors" title="Làm mới bộ lọc">
+                        <span class="material-symbols-outlined text-[20px]">refresh</span>
+                    </a>
                 </div>
             </div>
 
@@ -247,30 +283,51 @@
                 <!-- ABO Groups -->
                 <div class="flex items-center gap-2 flex-wrap">
                     <span class="font-label-sm text-label-sm text-secondary uppercase tracking-wider font-semibold mr-1">Nhóm máu ABO:</span>
-                    <button class="px-3 py-1.5 rounded-lg bg-primary text-on-primary font-label-sm text-label-sm font-semibold shadow-xs" type="button">Tất cả</button>
-                    <button class="px-3 py-1.5 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-sm text-label-sm font-semibold transition-colors" type="button">Nhóm O</button>
-                    <button class="px-3 py-1.5 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-sm text-label-sm font-semibold transition-colors" type="button">Nhóm A</button>
-                    <button class="px-3 py-1.5 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-sm text-label-sm font-semibold transition-colors" type="button">Nhóm B</button>
-                    <button class="px-3 py-1.5 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-sm text-label-sm font-semibold transition-colors" type="button">Nhóm AB</button>
+                    <a asp-action="NguoiHienMau" asp-route-search="@currentSearch" asp-route-nhomMau="" asp-route-rhGroup="@currentRhGroup" asp-route-status="@currentStatus" asp-route-tier="@currentTier"
+                       class="px-3 py-1.5 rounded-lg @(string.IsNullOrEmpty(currentNhomMau) ? "bg-primary text-on-primary font-bold shadow-xs" : "bg-surface-container-low hover:bg-surface-container text-on-surface") font-label-sm text-label-sm font-semibold transition-colors">
+                        Tất cả
+                    </a>
+                    <a asp-action="NguoiHienMau" asp-route-search="@currentSearch" asp-route-nhomMau="O" asp-route-rhGroup="@currentRhGroup" asp-route-status="@currentStatus" asp-route-tier="@currentTier"
+                       class="px-3 py-1.5 rounded-lg @(currentNhomMau == "O" ? "bg-primary text-on-primary font-bold shadow-xs" : "bg-surface-container-low hover:bg-surface-container text-on-surface") font-label-sm text-label-sm font-semibold transition-colors">
+                        Nhóm O
+                    </a>
+                    <a asp-action="NguoiHienMau" asp-route-search="@currentSearch" asp-route-nhomMau="A" asp-route-rhGroup="@currentRhGroup" asp-route-status="@currentStatus" asp-route-tier="@currentTier"
+                       class="px-3 py-1.5 rounded-lg @(currentNhomMau == "A" ? "bg-primary text-on-primary font-bold shadow-xs" : "bg-surface-container-low hover:bg-surface-container text-on-surface") font-label-sm text-label-sm font-semibold transition-colors">
+                        Nhóm A
+                    </a>
+                    <a asp-action="NguoiHienMau" asp-route-search="@currentSearch" asp-route-nhomMau="B" asp-route-rhGroup="@currentRhGroup" asp-route-status="@currentStatus" asp-route-tier="@currentTier"
+                       class="px-3 py-1.5 rounded-lg @(currentNhomMau == "B" ? "bg-primary text-on-primary font-bold shadow-xs" : "bg-surface-container-low hover:bg-surface-container text-on-surface") font-label-sm text-label-sm font-semibold transition-colors">
+                        Nhóm B
+                    </a>
+                    <a asp-action="NguoiHienMau" asp-route-search="@currentSearch" asp-route-nhomMau="AB" asp-route-rhGroup="@currentRhGroup" asp-route-status="@currentStatus" asp-route-tier="@currentTier"
+                       class="px-3 py-1.5 rounded-lg @(currentNhomMau == "AB" ? "bg-primary text-on-primary font-bold shadow-xs" : "bg-surface-container-low hover:bg-surface-container text-on-surface") font-label-sm text-label-sm font-semibold transition-colors">
+                        Nhóm AB
+                    </a>
                 </div>
                 <!-- Rh and Rare Status -->
                 <div class="flex items-center gap-2 flex-wrap">
                     <span class="font-label-sm text-label-sm text-secondary uppercase tracking-wider font-semibold mr-1">Yếu tố Rh &amp; CLB:</span>
-                    <button class="px-3 py-1.5 rounded-lg bg-tertiary-fixed text-tertiary font-label-sm text-label-sm font-bold flex items-center gap-1 shadow-xs hover:bg-tertiary hover:text-on-tertiary transition-all" type="button">
+                    <a asp-action="NguoiHienMau" asp-route-search="@currentSearch" asp-route-nhomMau="@currentNhomMau" asp-route-rhGroup="@(currentRhGroup == "rh_am" ? "" : "rh_am")" asp-route-status="@currentStatus" asp-route-tier="@currentTier"
+                       class="px-3 py-1.5 rounded-lg @(currentRhGroup == "rh_am" ? "bg-tertiary text-on-tertiary font-bold ring-2 ring-tertiary/40" : "bg-tertiary-fixed text-tertiary") font-label-sm text-label-sm font-bold flex items-center gap-1 shadow-xs transition-all">
                         <span class="material-symbols-outlined text-[16px]">emergency</span>
                         Rh(-) Âm tính (Máu Hiếm)
-                    </button>
-                    <button class="px-3 py-1.5 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-sm text-label-sm font-semibold transition-colors" type="button">Rh(+) Dương tính</button>
-                    <button class="px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-800 font-label-sm text-label-sm font-semibold hover:bg-emerald-100 transition-colors flex items-center gap-1" type="button">
-                        <span class="w-2 h-2 rounded-full bg-emerald-600"></span>
-                        Đủ điều kiện hiến ngay (&ge; 84 ngày)
-                    </button>
-                    <button class="px-3 py-1.5 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-sm text-label-sm font-semibold transition-colors" type="button">
+                    </a>
+                    <a asp-action="NguoiHienMau" asp-route-search="@currentSearch" asp-route-nhomMau="@currentNhomMau" asp-route-rhGroup="@(currentRhGroup == "rh_duong" ? "" : "rh_duong")" asp-route-status="@currentStatus" asp-route-tier="@currentTier"
+                       class="px-3 py-1.5 rounded-lg @(currentRhGroup == "rh_duong" ? "bg-primary text-on-primary font-bold" : "bg-surface-container-low hover:bg-surface-container text-on-surface") font-label-sm text-label-sm font-semibold transition-colors">
+                        Rh(+) Dương tính
+                    </a>
+                    <a asp-action="NguoiHienMau" asp-route-search="@currentSearch" asp-route-nhomMau="@currentNhomMau" asp-route-rhGroup="@currentRhGroup" asp-route-status="@(currentStatus == "dudieukien" ? "" : "dudieukien")" asp-route-tier="@currentTier"
+                       class="px-3 py-1.5 rounded-lg @(currentStatus == "dudieukien" ? "bg-emerald-600 text-white font-bold" : "bg-emerald-50 text-emerald-800 hover:bg-emerald-100") font-label-sm text-label-sm font-semibold transition-colors flex items-center gap-1">
+                        <span class="w-2 h-2 rounded-full @(currentStatus == "dudieukien" ? "bg-white" : "bg-emerald-600")"></span>
+                        Đủ điều kiện hiến ngay (≥ 84 ngày)
+                    </a>
+                    <a asp-action="NguoiHienMau" asp-route-search="@currentSearch" asp-route-nhomMau="@currentNhomMau" asp-route-rhGroup="@currentRhGroup" asp-route-status="@(currentStatus == "tamhoan" ? "" : "tamhoan")" asp-route-tier="@currentTier"
+                       class="px-3 py-1.5 rounded-lg @(currentStatus == "tamhoan" ? "bg-error text-on-error font-bold" : "bg-surface-container-low hover:bg-surface-container text-on-surface") font-label-sm text-label-sm font-semibold transition-colors">
                         Tạm hoãn y khoa
-                    </button>
+                    </a>
                 </div>
             </div>
-        </div>
+        </form>
 
         <!-- 5. Detailed Donors Data Table (ISBT 128 / VNeID Standard) -->
         <div class="bg-surface-container-lowest rounded-2xl shadow-sm overflow-hidden">
@@ -278,12 +335,12 @@
             <div class="px-space-lg py-space-md bg-surface-container-low/50 flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm">
                 <div class="flex items-center gap-2">
                     <span class="font-label-md text-label-md font-semibold text-on-surface">Danh sách hồ sơ lâm sàng &amp; lịch sử hiến</span>
-                    <span class="px-2 py-0.5 rounded-full bg-surface-container-highest text-secondary font-label-sm text-label-sm font-semibold">380,450 bản ghi</span>
+                    <span class="px-2 py-0.5 rounded-full bg-surface-container-highest text-secondary font-label-sm text-label-sm font-semibold">@totalItems bản ghi</span>
                 </div>
                 <div class="flex items-center gap-space-md text-secondary font-body-sm text-body-sm">
                     <span class="flex items-center gap-1">
                         <span class="material-symbols-outlined text-[16px] text-emerald-600">verified</span>
-                        VNeID Mức 2 (Đã liên thông BCA)
+                        Cơ sở dữ liệu Y tế số
                     </span>
                     <span class="flex items-center gap-1">
                         <span class="material-symbols-outlined text-[16px] text-primary">bloodtype</span>
@@ -306,527 +363,291 @@
                             <th class="py-3.5 px-4 font-bold text-center" scope="col">Thao Tác</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y-0 text-on-surface font-body-md text-body-md">
-                        <!-- Row 1: Nguyễn Hoàng Nam -->
-                        <tr class="hover:bg-surface-container-low/70 transition-colors">
-                            <td class="py-4 px-4">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shrink-0">
-                                        NH
-                                    </div>
-                                    <div class="flex flex-col min-w-0">
-                                        <div class="flex items-center gap-1.5">
-                                            <span class="font-label-md text-label-md font-bold text-on-surface truncate">Nguyễn Hoàng Nam</span>
-                                            <span class="material-symbols-outlined text-[16px] text-emerald-600" title="VNeID Định danh Mức 2 đã xác thực">verified</span>
+                    <tbody class="divide-y divide-surface-container/50 text-on-surface font-body-md text-body-md">
+                        @if (Model == null || !Model.Any())
+                        {
+                            <tr>
+                                <td colspan="7" class="py-12 px-4 text-center">
+                                    <div class="flex flex-col items-center justify-center space-y-3">
+                                        <div class="w-16 h-16 rounded-full bg-surface-container flex items-center justify-center text-secondary">
+                                            <span class="material-symbols-outlined text-[36px]">search_off</span>
                                         </div>
-                                        <span class="font-body-sm text-body-sm text-secondary">
-                                            Nam • 27 tuổi • CCCD: <span class="font-mono">0010****8891</span>
-                                        </span>
-                                        <span class="font-mono text-label-sm text-label-sm text-secondary/70">ID: DONOR-2023-09821</span>
+                                        <h4 class="font-headline-sm text-headline-sm font-bold text-on-surface">Không tìm thấy người hiến máu phù hợp</h4>
+                                        <p class="font-body-sm text-body-sm text-secondary max-w-md">
+                                            Không có hồ sơ nào khớp với từ khóa tìm kiếm hoặc bộ lọc hiện tại. Vui lòng thử từ khóa khác hoặc làm mới bộ lọc.
+                                        </p>
+                                        <a asp-controller="Admin" asp-action="NguoiHienMau" class="px-4 py-2 rounded-xl bg-primary text-on-primary font-label-md text-label-md font-semibold">
+                                            Xem tất cả người hiến
+                                        </a>
                                     </div>
-                                </div>
-                            </td>
-                            <td class="py-4 px-4">
-                                <div class="flex flex-col items-start gap-1">
-                                    <span class="px-2.5 py-1 rounded-lg bg-surface-container-high text-on-surface font-bold font-mono text-sm tracking-wide">
-                                        O Rh(+)
-                                    </span>
-                                    <span class="font-body-sm text-body-sm text-secondary">Kháng thể bất thường: Âm tính</span>
-                                </div>
-                            </td>
-                            <td class="py-4 px-4">
-                                <div class="flex flex-col gap-1">
-                                    <div class="flex items-center gap-1.5">
-                                        <span class="px-2 py-0.5 rounded bg-surface-container text-secondary font-label-sm text-label-sm font-semibold">
-                                            4 lần
-                                        </span>
-                                        <span class="px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-label-sm text-label-sm font-semibold">
-                                            Hạng Bạc
-                                        </span>
-                                    </div>
-                                    <span class="font-body-sm text-body-sm text-secondary">Tổng hiến: <strong class="text-on-surface">1,300 mL</strong></span>
-                                </div>
-                            </td>
-                            <td class="py-4 px-4">
-                                <div class="flex flex-col gap-1.5 max-w-xs">
-                                    <div class="flex items-center justify-between text-body-sm">
-                                        <span class="text-secondary">Gần nhất: <strong>15/11/2025</strong></span>
-                                        <span class="font-label-sm text-label-sm text-amber-700 font-semibold">Còn 72 ngày</span>
-                                    </div>
-                                    <div class="w-36 bg-surface-container rounded-full h-1.5 overflow-hidden">
-                                        <div class="bg-amber-500 h-full rounded-full" style="width: 15%;"></div>
-                                    </div>
-                                    <span class="font-body-sm text-body-sm text-secondary">Dự kiến đủ điều kiện: 07/02/2026</span>
-                                </div>
-                            </td>
-                            <td class="py-4 px-4">
-                                <div class="flex flex-col gap-0.5 font-body-sm text-body-sm">
-                                    <span>Hb: <strong class="text-on-surface">13.8 g/dL</strong> (Đạt chuẩn)</span>
-                                    <span>Huyết áp: <span class="font-mono">120/80 mmHg</span></span>
-                                    <span class="text-emerald-700 font-medium flex items-center gap-0.5">
-                                        <span class="material-symbols-outlined text-[14px]">check</span> NAT Test: An toàn
-                                    </span>
-                                </div>
-                            </td>
-                            <td class="py-4 px-4">
-                                <div class="flex flex-col gap-0.5 font-body-sm text-body-sm">
-                                    <span class="font-medium text-on-surface flex items-center gap-1">
-                                        <span class="material-symbols-outlined text-[14px] text-secondary">phone</span> 0988.234.***
-                                    </span>
-                                    <span class="text-secondary">Q. Cầu Giấy, Hà Nội</span>
-                                    <span class="font-label-sm text-label-sm text-emerald-700">Trực điện thoại giờ hành chính</span>
-                                </div>
-                            </td>
-                            <td class="py-4 px-4 text-center">
-                                <div class="flex items-center justify-center gap-1">
-                                    <a asp-controller="Admin" asp-action="HoSoBenhSu" class="p-1.5 rounded-lg text-secondary hover:text-primary hover:bg-surface-container transition-colors" title="Xem bệnh sử &amp; hồ sơ lâm sàng">
-                                        <span class="material-symbols-outlined text-[20px]">assignment_ind</span>
-                                    </a>
-                                    <button class="p-1.5 rounded-lg text-secondary hover:text-primary hover:bg-surface-container transition-colors" title="Gửi tin nhắn thông báo điều phối" type="button" onclick="alert('Đã mở cổng gửi SMS/Zalo ZNS tới người hiến Nguyễn Hoàng Nam!')">
-                                        <span class="material-symbols-outlined text-[20px]">sms</span>
-                                    </button>
-                                    <button class="p-1.5 rounded-lg text-secondary hover:text-primary hover:bg-surface-container transition-colors" title="Lịch sử cấp GCN &amp; Quà tặng" type="button" onclick="alert('Xem giấy chứng nhận hiến máu điện tử.')">
-                                        <span class="material-symbols-outlined text-[20px]">workspace_premium</span>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var donor in Model)
+                            {
+                                var isRare = donor.NhomMau != null && (donor.NhomMau.Contains("-") || donor.NhomMau.Contains("Rh(-)") || donor.NhomMau.Contains("Rh-"));
+                                var soLanHien = donor.PhieuDangKyHienMaus.Count(p => p.TrangThai == "Hiến máu thành công" || p.KetQuaHienMau != null);
+                                var tongLuongMau = soLanHien * 350;
 
-                        <!-- Row 2 (Máu Hiếm Đặc Biệt): ThS. Trần Phương Thảo -->
-                        <tr class="bg-tertiary-fixed/20 hover:bg-tertiary-fixed/30 transition-colors">
-                            <td class="py-4 px-4">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 rounded-full bg-tertiary text-on-tertiary flex items-center justify-center font-bold text-sm shrink-0">
-                                        TT
-                                    </div>
-                                    <div class="flex flex-col min-w-0">
-                                        <div class="flex items-center gap-1.5">
-                                            <span class="font-label-md text-label-md font-bold text-tertiary truncate">ThS. Trần Phương Thảo</span>
-                                            <span class="material-symbols-outlined text-[16px] text-emerald-600" title="VNeID Mức 2">verified</span>
-                                            <span class="px-1.5 py-0.5 rounded bg-tertiary text-on-tertiary font-label-sm text-[10px] uppercase font-bold tracking-wider">CLB MÁU HIẾM</span>
-                                        </div>
-                                        <span class="font-body-sm text-body-sm text-secondary">
-                                            Nữ • 32 tuổi • CCCD: <span class="font-mono">0011****3412</span>
-                                        </span>
-                                        <span class="font-mono text-label-sm text-label-sm text-tertiary font-semibold">ID: RH-DONOR-0012</span>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="py-4 px-4">
-                                <div class="flex flex-col items-start gap-1">
-                                    <span class="px-2.5 py-1 rounded-lg bg-tertiary text-on-tertiary font-bold font-mono text-sm tracking-wide flex items-center gap-1">
-                                        <span class="material-symbols-outlined text-[14px] text-amber-300">emergency</span>
-                                        O Rh(-)
-                                    </span>
-                                    <span class="font-label-sm text-label-sm text-tertiary font-bold">Rất Hiếm (0.08% DS)</span>
-                                </div>
-                            </td>
-                            <td class="py-4 px-4">
-                                <div class="flex flex-col gap-1">
-                                    <div class="flex items-center gap-1.5">
-                                        <span class="px-2 py-0.5 rounded bg-tertiary-fixed text-tertiary font-label-sm text-label-sm font-bold">
-                                            18 lần
-                                        </span>
-                                        <span class="px-2 py-0.5 rounded bg-amber-100 text-amber-800 font-label-sm text-label-sm font-bold">
-                                            Hạng Vàng
-                                        </span>
-                                    </div>
-                                    <span class="font-body-sm text-body-sm text-secondary">Tổng hiến: <strong class="text-on-surface">6,300 mL</strong></span>
-                                </div>
-                            </td>
-                            <td class="py-4 px-4">
-                                <div class="flex flex-col gap-1 max-w-xs">
-                                    <div class="flex items-center gap-1.5">
-                                        <span class="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 font-label-sm text-label-sm font-bold flex items-center gap-1">
-                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse"></span>
-                                            ĐỦ ĐIỀU KIỆN HIẾN NGAY
-                                        </span>
-                                    </div>
-                                    <span class="font-body-sm text-body-sm text-secondary">Lần cuối: 12/06/2025 (&gt; 180 ngày)</span>
-                                    <span class="font-label-sm text-label-sm text-emerald-700 font-semibold">Sẵn sàng gọi cấp cứu 24/7</span>
-                                </div>
-                            </td>
-                            <td class="py-4 px-4">
-                                <div class="flex flex-col gap-0.5 font-body-sm text-body-sm">
-                                    <span>Hb: <strong class="text-on-surface">13.5 g/dL</strong> (Lý tưởng)</span>
-                                    <span>Huyết áp: <span class="font-mono">115/75 mmHg</span></span>
-                                    <span class="text-emerald-700 font-medium flex items-center gap-0.5">
-                                        <span class="material-symbols-outlined text-[14px]">check</span> Kháng nguyên Kell: (-)
-                                    </span>
-                                </div>
-                            </td>
-                            <td class="py-4 px-4">
-                                <div class="flex flex-col gap-0.5 font-body-sm text-body-sm">
-                                    <span class="font-medium text-on-surface flex items-center gap-1">
-                                        <span class="material-symbols-outlined text-[14px] text-tertiary">call</span> 0912.445.***
-                                    </span>
-                                    <span class="text-secondary">Q. Đống Đa, Hà Nội (&lt; 4km BV Đức)</span>
-                                    <span class="font-label-sm text-label-sm text-emerald-700 font-bold flex items-center gap-1">
-                                        <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Đã xác nhận trực tuyến
-                                    </span>
-                                </div>
-                            </td>
-                            <td class="py-4 px-4 text-center">
-                                <div class="flex items-center justify-center gap-1">
-                                    <button class="p-1.5 rounded-lg bg-tertiary text-on-tertiary hover:opacity-90 transition-opacity" title="Gọi khẩn cấp điều phối" type="button" onclick="alert('Đang kết nối điện thoại Hotline khẩn cấp tới tình nguyện viên máu hiếm ThS. Trần Phương Thảo...')">
-                                        <span class="material-symbols-outlined text-[20px]">phone_in_talk</span>
-                                    </button>
-                                    <a asp-controller="Admin" asp-action="HoSoBenhSu" class="p-1.5 rounded-lg text-secondary hover:text-primary hover:bg-surface-container transition-colors" title="Xem chi tiết hồ sơ bệnh sử">
-                                        <span class="material-symbols-outlined text-[20px]">assignment_ind</span>
-                                    </a>
-                                    <button class="p-1.5 rounded-lg text-secondary hover:text-primary hover:bg-surface-container transition-colors" title="Đặt lịch hẹn hiến" type="button" onclick="alert('Mở lịch hẹn gạn tách tiểu cầu / hiến máu khẩn cấp!')">
-                                        <span class="material-symbols-outlined text-[20px]">calendar_today</span>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
+                                string tierName = "Chưa hiến";
+                                string tierBadgeClass = "bg-surface-container text-secondary";
+                                if (soLanHien >= 20) { tierName = "Kim Cương"; tierBadgeClass = "bg-purple-100 text-purple-900 font-bold"; }
+                                else if (soLanHien >= 10) { tierName = "Hạng Vàng"; tierBadgeClass = "bg-amber-100 text-amber-800 font-bold"; }
+                                else if (soLanHien >= 5) { tierName = "Hạng Bạc"; tierBadgeClass = "bg-slate-100 text-slate-700 font-semibold"; }
+                                else if (soLanHien >= 1) { tierName = "Hạng Đồng"; tierBadgeClass = "bg-amber-50 text-amber-900 font-semibold"; }
 
-                        <!-- Row 3: Lê Minh Tuấn (Máu Hiếm Kim Cương) -->
-                        <tr class="hover:bg-surface-container-low/70 transition-colors">
-                            <td class="py-4 px-4">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shrink-0">
-                                        LT
-                                    </div>
-                                    <div class="flex flex-col min-w-0">
-                                        <div class="flex items-center gap-1.5">
-                                            <span class="font-label-md text-label-md font-bold text-on-surface truncate">Lê Minh Tuấn</span>
-                                            <span class="material-symbols-outlined text-[16px] text-emerald-600" title="VNeID Đã duyệt">verified</span>
-                                        </div>
-                                        <span class="font-body-sm text-body-sm text-secondary">
-                                            Nam • 41 tuổi • CCCD: <span class="font-mono">0340****1928</span>
-                                        </span>
-                                        <span class="font-mono text-label-sm text-label-sm text-secondary/70">ID: DONOR-2019-01204</span>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="py-4 px-4">
-                                <div class="flex flex-col items-start gap-1">
-                                    <span class="px-2.5 py-1 rounded-lg bg-tertiary-container text-on-tertiary font-bold font-mono text-sm tracking-wide">
-                                        B Rh(-)
-                                    </span>
-                                    <span class="font-label-sm text-label-sm text-tertiary font-bold">Máu hiếm quốc gia</span>
-                                </div>
-                            </td>
-                            <td class="py-4 px-4">
-                                <div class="flex flex-col gap-1">
-                                    <div class="flex items-center gap-1.5">
-                                        <span class="px-2 py-0.5 rounded bg-purple-100 text-purple-900 font-label-sm text-label-sm font-bold">
-                                            25 lần
-                                        </span>
-                                        <span class="px-2 py-0.5 rounded bg-cyan-100 text-cyan-900 font-label-sm text-label-sm font-bold">
-                                            Kim Cương
-                                        </span>
-                                    </div>
-                                    <span class="font-body-sm text-body-sm text-secondary">Tổng hiến: <strong class="text-on-surface">8,750 mL</strong></span>
-                                </div>
-                            </td>
-                            <td class="py-4 px-4">
-                                <div class="flex flex-col gap-1 max-w-xs">
-                                    <span class="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-label-sm text-label-sm font-semibold inline-block w-fit">
-                                        ĐỦ ĐIỀU KIỆN HIẾN NGAY
-                                    </span>
-                                    <span class="font-body-sm text-body-sm text-secondary">Lần cuối: 20/08/2025</span>
-                                    <span class="font-body-sm text-body-sm text-emerald-700">Đã qua 120 ngày an toàn</span>
-                                </div>
-                            </td>
-                            <td class="py-4 px-4">
-                                <div class="flex flex-col gap-0.5 font-body-sm text-body-sm">
-                                    <span>Hb: <strong class="text-on-surface">14.6 g/dL</strong></span>
-                                    <span>Huyết áp: <span class="font-mono">125/82 mmHg</span></span>
-                                    <span class="text-emerald-700 font-medium">NAT Test: Âm tính 5 bệnh</span>
-                                </div>
-                            </td>
-                            <td class="py-4 px-4">
-                                <div class="flex flex-col gap-0.5 font-body-sm text-body-sm">
-                                    <span class="font-medium text-on-surface">0903.882.***</span>
-                                    <span class="text-secondary">Q. Ba Đình, Hà Nội</span>
-                                    <span class="font-label-sm text-label-sm text-emerald-700 font-semibold">Tự túc phương tiện đến viện</span>
-                                </div>
-                            </td>
-                            <td class="py-4 px-4 text-center">
-                                <div class="flex items-center justify-center gap-1">
-                                    <a asp-controller="Admin" asp-action="HoSoBenhSu" class="p-1.5 rounded-lg text-secondary hover:text-primary hover:bg-surface-container transition-colors" title="Xem hồ sơ bệnh sử">
-                                        <span class="material-symbols-outlined text-[20px]">assignment_ind</span>
-                                    </a>
-                                    <button class="p-1.5 rounded-lg text-secondary hover:text-primary hover:bg-surface-container transition-colors" title="Gửi SMS điều phối" type="button" onclick="alert('Gửi SMS mời hiến máu tới Lê Minh Tuấn.')">
-                                        <span class="material-symbols-outlined text-[20px]">sms</span>
-                                    </button>
-                                    <button class="p-1.5 rounded-lg text-secondary hover:text-primary hover:bg-surface-container transition-colors" title="Lịch sử huy chương &amp; bằng khen" type="button" onclick="alert('Đã trao tặng Huân chương Người hiến máu tiêu biểu cấp quốc gia.')">
-                                        <span class="material-symbols-outlined text-[20px]">military_tech</span>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
+                                var lastPhieu = donor.PhieuDangKyHienMaus
+                                    .Where(p => p.TrangThai == "Hiến máu thành công" || p.KetQuaHienMau != null)
+                                    .OrderByDescending(p => p.NgayXuLy ?? p.NgayNop)
+                                    .FirstOrDefault();
 
-                        <!-- Row 4: BS. Đặng Thu Hà -->
-                        <tr class="hover:bg-surface-container-low/70 transition-colors">
-                            <td class="py-4 px-4">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-sm shrink-0">
-                                        DH
-                                    </div>
-                                    <div class="flex flex-col min-w-0">
-                                        <div class="flex items-center gap-1.5">
-                                            <span class="font-label-md text-label-md font-bold text-on-surface truncate">BS. Đặng Thu Hà</span>
-                                            <span class="material-symbols-outlined text-[16px] text-emerald-600" title="VNeID Đã xác thực">verified</span>
-                                        </div>
-                                        <span class="font-body-sm text-body-sm text-secondary">
-                                            Nữ • 29 tuổi • CCCD: <span class="font-mono">0251****7781</span>
-                                        </span>
-                                        <span class="font-mono text-label-sm text-label-sm text-secondary/70">ID: DONOR-2021-04419</span>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="py-4 px-4">
-                                <div class="flex flex-col items-start gap-1">
-                                    <span class="px-2.5 py-1 rounded-lg bg-sky-100 text-sky-900 font-bold font-mono text-sm tracking-wide">
-                                        A Rh(+)
-                                    </span>
-                                    <span class="font-body-sm text-body-sm text-secondary">Phổ thông (21% DS)</span>
-                                </div>
-                            </td>
-                            <td class="py-4 px-4">
-                                <div class="flex flex-col gap-1">
-                                    <div class="flex items-center gap-1.5">
-                                        <span class="px-2 py-0.5 rounded bg-surface-container text-secondary font-label-sm text-label-sm font-semibold">
-                                            7 lần
-                                        </span>
-                                        <span class="px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-label-sm text-label-sm font-semibold">
-                                            Hạng Bạc
-                                        </span>
-                                    </div>
-                                    <span class="font-body-sm text-body-sm text-secondary">Tổng hiến: <strong class="text-on-surface">2,450 mL</strong></span>
-                                </div>
-                            </td>
-                            <td class="py-4 px-4">
-                                <div class="flex flex-col gap-1.5 max-w-xs">
-                                    <div class="flex items-center justify-between text-body-sm">
-                                        <span class="text-secondary">Lần cuối: 10/10/2025</span>
-                                        <span class="font-label-sm text-label-sm text-amber-700 font-semibold">Còn 38 ngày</span>
-                                    </div>
-                                    <div class="w-36 bg-surface-container rounded-full h-1.5 overflow-hidden">
-                                        <div class="bg-amber-500 h-full rounded-full" style="width: 55%;"></div>
-                                    </div>
-                                    <span class="font-body-sm text-body-sm text-secondary">Dự kiến: 03/01/2026</span>
-                                </div>
-                            </td>
-                            <td class="py-4 px-4">
-                                <div class="flex flex-col gap-0.5 font-body-sm text-body-sm">
-                                    <span>Hb: <strong class="text-on-surface">12.9 g/dL</strong></span>
-                                    <span>Huyết áp: <span class="font-mono">118/78 mmHg</span></span>
-                                    <span class="text-emerald-700 font-medium">Đạt điều kiện sức khỏe</span>
-                                </div>
-                            </td>
-                            <td class="py-4 px-4">
-                                <div class="flex flex-col gap-0.5 font-body-sm text-body-sm">
-                                    <span class="font-medium text-on-surface">0976.512.***</span>
-                                    <span class="text-secondary">Q. Nam Từ Liêm, Hà Nội</span>
-                                    <span class="font-label-sm text-label-sm text-secondary">Bác sĩ Bệnh viện E</span>
-                                </div>
-                            </td>
-                            <td class="py-4 px-4 text-center">
-                                <div class="flex items-center justify-center gap-1">
-                                    <a asp-controller="Admin" asp-action="HoSoBenhSu" class="p-1.5 rounded-lg text-secondary hover:text-primary hover:bg-surface-container transition-colors" title="Xem bệnh sử">
-                                        <span class="material-symbols-outlined text-[20px]">assignment_ind</span>
-                                    </a>
-                                    <button class="p-1.5 rounded-lg text-secondary hover:text-primary hover:bg-surface-container transition-colors" title="Nhắc lịch hẹn hiến tới" type="button" onclick="alert('Đã thiết lập thông báo nhắc lịch hiến máu!')">
-                                        <span class="material-symbols-outlined text-[20px]">notifications_active</span>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
+                                var initials = string.Join("", (donor.HoTen ?? "N H").Split(' ', StringSplitOptions.RemoveEmptyEntries).TakeLast(2).Select(s => s[0]));
+                                int age = 0;
+                                if (donor.NgaySinh.HasValue)
+                                {
+                                    age = DateTime.Today.Year - donor.NgaySinh.Value.Year;
+                                    if (donor.NgaySinh.Value.Date > DateTime.Today.AddYears(-age)) age--;
+                                }
 
-                        <!-- Row 5: Vũ Đình Trọng (AB Rh- Rất Hiếm) -->
-                        <tr class="hover:bg-surface-container-low/70 transition-colors">
-                            <td class="py-4 px-4">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 rounded-full bg-tertiary-fixed text-tertiary flex items-center justify-center font-bold text-sm shrink-0">
-                                        VT
-                                    </div>
-                                    <div class="flex flex-col min-w-0">
-                                        <div class="flex items-center gap-1.5">
-                                            <span class="font-label-md text-label-md font-bold text-on-surface truncate">Vũ Đình Trọng</span>
-                                            <span class="material-symbols-outlined text-[16px] text-emerald-600" title="VNeID Đã xác thực">verified</span>
-                                            <span class="px-1.5 py-0.5 rounded bg-tertiary-fixed-dim text-tertiary font-label-sm text-[10px] uppercase font-bold">Máu Hiếm</span>
+                                <tr class="@(isRare ? "bg-tertiary-fixed/15 hover:bg-tertiary-fixed/25" : "hover:bg-surface-container-low/70") transition-colors">
+                                    <!-- Cột 1: Mã định danh & Họ tên -->
+                                    <td class="py-4 px-4">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-10 h-10 rounded-full @(isRare ? "bg-tertiary text-on-tertiary" : "bg-primary/10 text-primary") flex items-center justify-center font-bold text-sm shrink-0">
+                                                @initials.ToUpper()
+                                            </div>
+                                            <div class="flex flex-col min-w-0">
+                                                <div class="flex items-center gap-1.5 flex-wrap">
+                                                    <span class="font-label-md text-label-md font-bold @(isRare ? "text-tertiary" : "text-on-surface") truncate">@donor.HoTen</span>
+                                                    <span class="material-symbols-outlined text-[16px] text-emerald-600" title="Hồ sơ đã định danh">verified</span>
+                                                    @if (isRare)
+                                                    {
+                                                        <span class="px-1.5 py-0.5 rounded bg-tertiary text-on-tertiary font-label-sm text-[10px] uppercase font-bold tracking-wider">CLB MÁU HIẾM</span>
+                                                    }
+                                                </div>
+                                                <span class="font-body-sm text-body-sm text-secondary">
+                                                    @(donor.GioiTinh ?? "Chưa rõ") • @(age > 0 ? $"{age} tuổi" : "Chưa rõ tuổi") • CCCD: <span class="font-mono">@(donor.TaiKhoan != null ? donor.TaiKhoan.TenDangNhap : $"00{donor.MaNguoiHien:D4}****")</span>
+                                                </span>
+                                                <span class="font-mono text-label-sm text-label-sm @(isRare ? "text-tertiary font-semibold" : "text-secondary/70")">ID: DONOR-@donor.MaNguoiHien.ToString("D5")</span>
+                                            </div>
                                         </div>
-                                        <span class="font-body-sm text-body-sm text-secondary">
-                                            Nam • 35 tuổi • CCCD: <span class="font-mono">0010****4523</span>
-                                        </span>
-                                        <span class="font-mono text-label-sm text-label-sm text-secondary/70">ID: RH-DONOR-0090</span>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="py-4 px-4">
-                                <div class="flex flex-col items-start gap-1">
-                                    <span class="px-2.5 py-1 rounded-lg bg-tertiary text-on-tertiary font-bold font-mono text-sm tracking-wide">
-                                        AB Rh(-)
-                                    </span>
-                                    <span class="font-label-sm text-label-sm text-tertiary font-bold">Cực Hiếm (0.02% DS)</span>
-                                </div>
-                            </td>
-                            <td class="py-4 px-4">
-                                <div class="flex flex-col gap-1">
-                                    <div class="flex items-center gap-1.5">
-                                        <span class="px-2 py-0.5 rounded bg-tertiary-fixed text-tertiary font-label-sm text-label-sm font-bold">
-                                            12 lần
-                                        </span>
-                                        <span class="px-2 py-0.5 rounded bg-amber-100 text-amber-800 font-label-sm text-label-sm font-bold">
-                                            Hạng Vàng
-                                        </span>
-                                    </div>
-                                    <span class="font-body-sm text-body-sm text-secondary">Tổng hiến: <strong class="text-on-surface">4,200 mL</strong></span>
-                                </div>
-                            </td>
-                            <td class="py-4 px-4">
-                                <div class="flex flex-col gap-1 max-w-xs">
-                                    <span class="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-label-sm text-label-sm font-bold inline-block w-fit">
-                                        ĐỦ ĐIỀU KIỆN HIẾN NGAY
-                                    </span>
-                                    <span class="font-body-sm text-body-sm text-secondary">Lần cuối: 05/04/2025</span>
-                                    <span class="font-label-sm text-label-sm text-emerald-700 font-semibold">Ưu tiên lưu kho đông lạnh</span>
-                                </div>
-                            </td>
-                            <td class="py-4 px-4">
-                                <div class="flex flex-col gap-0.5 font-body-sm text-body-sm">
-                                    <span>Hb: <strong class="text-on-surface">14.1 g/dL</strong></span>
-                                    <span>Huyết áp: <span class="font-mono">120/80 mmHg</span></span>
-                                    <span class="text-emerald-700 font-medium">NAT Test: Âm tính 5 tác nhân</span>
-                                </div>
-                            </td>
-                            <td class="py-4 px-4">
-                                <div class="flex flex-col gap-0.5 font-body-sm text-body-sm">
-                                    <span class="font-medium text-on-surface">0934.198.***</span>
-                                    <span class="text-secondary">Q. Hai Bà Trưng, Hà Nội</span>
-                                    <span class="font-label-sm text-label-sm text-secondary">Thời gian di chuyển &asymp; 15 phút</span>
-                                </div>
-                            </td>
-                            <td class="py-4 px-4 text-center">
-                                <div class="flex items-center justify-center gap-1">
-                                    <button class="p-1.5 rounded-lg text-tertiary hover:bg-tertiary-fixed transition-colors" title="Liên hệ khẩn" type="button" onclick="alert('Đang kết nối liên lạc khẩn cấp!')">
-                                        <span class="material-symbols-outlined text-[20px]">phone_enabled</span>
-                                    </button>
-                                    <a asp-controller="Admin" asp-action="HoSoBenhSu" class="p-1.5 rounded-lg text-secondary hover:text-primary hover:bg-surface-container transition-colors" title="Xem chi tiết">
-                                        <span class="material-symbols-outlined text-[20px]">assignment_ind</span>
-                                    </a>
-                                    <button class="p-1.5 rounded-lg text-secondary hover:text-primary hover:bg-surface-container transition-colors" title="Lên lịch gạn tách" type="button" onclick="alert('Lên lịch gạn tách thành phần máu!')">
-                                        <span class="material-symbols-outlined text-[20px]">event_repeat</span>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
+                                    </td>
 
-                        <!-- Row 6: Hoàng Thùy Linh (Tạm hoãn y khoa) -->
-                        <tr class="hover:bg-surface-container-low/70 transition-colors opacity-85">
-                            <td class="py-4 px-4">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 rounded-full bg-surface-container-high text-secondary flex items-center justify-center font-bold text-sm shrink-0">
-                                        HL
-                                    </div>
-                                    <div class="flex flex-col min-w-0">
-                                        <div class="flex items-center gap-1.5">
-                                            <span class="font-label-md text-label-md font-bold text-on-surface truncate">Hoàng Thùy Linh</span>
-                                            <span class="material-symbols-outlined text-[16px] text-emerald-600" title="VNeID Đã xác thực">verified</span>
+                                    <!-- Cột 2: Nhóm máu -->
+                                    <td class="py-4 px-4">
+                                        <div class="flex flex-col items-start gap-1">
+                                            <span class="px-2.5 py-1 rounded-lg @(isRare ? "bg-tertiary text-on-tertiary font-bold" : "bg-surface-container-high text-on-surface font-bold") font-mono text-sm tracking-wide flex items-center gap-1">
+                                                @if (isRare)
+                                                {
+                                                    <span class="material-symbols-outlined text-[14px] text-amber-300">emergency</span>
+                                                }
+                                                @(string.IsNullOrEmpty(donor.NhomMau) ? "Chưa rõ" : donor.NhomMau)
+                                            </span>
+                                            <span class="font-label-sm text-label-sm @(isRare ? "text-tertiary font-bold" : "text-secondary")">
+                                                @(isRare ? "Máu hiếm quốc gia" : "Nhóm máu phổ thông")
+                                            </span>
                                         </div>
-                                        <span class="font-body-sm text-body-sm text-secondary">
-                                            Nữ • 22 tuổi • CCCD: <span class="font-mono">0191****8892</span>
-                                        </span>
-                                        <span class="font-mono text-label-sm text-label-sm text-secondary/70">ID: DONOR-2024-11002</span>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="py-4 px-4">
-                                <div class="flex flex-col items-start gap-1">
-                                    <span class="px-2.5 py-1 rounded-lg bg-surface-container-high text-on-surface font-bold font-mono text-sm tracking-wide">
-                                        B Rh(+)
-                                    </span>
-                                    <span class="font-body-sm text-body-sm text-secondary">Phổ thông (30% DS)</span>
-                                </div>
-                            </td>
-                            <td class="py-4 px-4">
-                                <div class="flex flex-col gap-1">
-                                    <div class="flex items-center gap-1.5">
-                                        <span class="px-2 py-0.5 rounded bg-surface-container text-secondary font-label-sm text-label-sm font-semibold">
-                                            2 lần
-                                        </span>
-                                        <span class="px-2 py-0.5 rounded bg-amber-50 text-amber-900 font-label-sm text-label-sm font-semibold">
-                                            Hạng Đồng
-                                        </span>
-                                    </div>
-                                    <span class="font-body-sm text-body-sm text-secondary">Tổng hiến: <strong class="text-on-surface">700 mL</strong></span>
-                                </div>
-                            </td>
-                            <td class="py-4 px-4">
-                                <div class="flex flex-col gap-1 max-w-xs">
-                                    <span class="px-2.5 py-0.5 rounded-full bg-error-container text-on-error-container font-label-sm text-label-sm font-bold flex items-center gap-1 w-fit">
-                                        <span class="material-symbols-outlined text-[14px]">block</span> TẠM HOÃN Y KHOA
-                                    </span>
-                                    <span class="font-body-sm text-body-sm text-secondary">Lý do: Kháng sinh đường uống</span>
-                                    <span class="font-body-sm text-body-sm text-secondary">Tạm hoãn đến: <strong class="text-on-surface">25/12/2025</strong></span>
-                                </div>
-                            </td>
-                            <td class="py-4 px-4">
-                                <div class="flex flex-col gap-0.5 font-body-sm text-body-sm">
-                                    <span>Hb: <strong class="text-on-surface">12.1 g/dL</strong></span>
-                                    <span>Huyết áp: <span class="font-mono">110/70 mmHg</span></span>
-                                    <span class="text-secondary">Theo dõi sau điều trị viêm họng</span>
-                                </div>
-                            </td>
-                            <td class="py-4 px-4">
-                                <div class="flex flex-col gap-0.5 font-body-sm text-body-sm">
-                                    <span class="font-medium text-on-surface">0965.889.***</span>
-                                    <span class="text-secondary">Q. Thanh Xuân, Hà Nội</span>
-                                    <span class="font-label-sm text-label-sm text-secondary">Sinh viên ĐHQG Hà Nội</span>
-                                </div>
-                            </td>
-                            <td class="py-4 px-4 text-center">
-                                <div class="flex items-center justify-center gap-1">
-                                    <button class="p-1.5 rounded-lg text-secondary hover:text-error hover:bg-error-container/20 transition-colors" title="Xem lý do tạm hoãn y khoa" type="button" onclick="alert('Lý do tạm hoãn: Đang trong đợt điều trị kháng sinh Cefuroxime 500mg.')">
-                                        <span class="material-symbols-outlined text-[20px]">medical_services</span>
-                                    </button>
-                                    <button class="p-1.5 rounded-lg text-secondary hover:text-primary hover:bg-surface-container transition-colors" title="Cập nhật tình trạng sức khỏe" type="button" onclick="alert('Mở form cập nhật trạng thái sức khỏe!')">
-                                        <span class="material-symbols-outlined text-[20px]">edit_note</span>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
+                                    </td>
+
+                                    <!-- Cột 3: Tần suất & Phân hạng -->
+                                    <td class="py-4 px-4">
+                                        <div class="flex flex-col gap-1">
+                                            <div class="flex items-center gap-1.5">
+                                                <span class="px-2 py-0.5 rounded bg-surface-container text-secondary font-label-sm text-label-sm font-semibold">
+                                                    @soLanHien lần
+                                                </span>
+                                                <span class="px-2 py-0.5 rounded @tierBadgeClass font-label-sm text-label-sm">
+                                                    @tierName
+                                                </span>
+                                            </div>
+                                            <span class="font-body-sm text-body-sm text-secondary">Tổng hiến: <strong class="text-on-surface">@tongLuongMau.ToString("N0") mL</strong></span>
+                                        </div>
+                                    </td>
+
+                                    <!-- Cột 4: Lần hiến cuối & Chu kỳ 84 ngày -->
+                                    <td class="py-4 px-4">
+                                        <div class="flex flex-col gap-1 max-w-xs">
+                                            @if (donor.TrangThai != "Hoạt động" && !string.IsNullOrEmpty(donor.TrangThai))
+                                            {
+                                                <span class="px-2.5 py-0.5 rounded-full bg-error-container text-on-error-container font-label-sm text-label-sm font-bold flex items-center gap-1 w-fit">
+                                                    <span class="material-symbols-outlined text-[14px]">block</span> TẠM HOÃN Y KHOA
+                                                </span>
+                                                <span class="font-body-sm text-body-sm text-secondary">Trạng thái: @donor.TrangThai</span>
+                                            }
+                                            else if (lastPhieu != null)
+                                            {
+                                                var ngayHien = lastPhieu.NgayXuLy ?? lastPhieu.NgayNop;
+                                                var daysPassed = (int)(DateTime.Now - ngayHien).TotalDays;
+                                                if (daysPassed >= 84)
+                                                {
+                                                    <span class="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 font-label-sm text-label-sm font-bold flex items-center gap-1 w-fit">
+                                                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse"></span>
+                                                        ĐỦ ĐIỀU KIỆN HIẾN NGAY
+                                                    </span>
+                                                    <span class="font-body-sm text-body-sm text-secondary">Lần cuối: @ngayHien.ToString("dd/MM/yyyy") (@daysPassed ngày)</span>
+                                                }
+                                                else
+                                                {
+                                                    var remaining = 84 - daysPassed;
+                                                    var pct = Math.Min(100, Math.Max(5, (daysPassed * 100) / 84));
+                                                    <div class="flex items-center justify-between text-body-sm">
+                                                        <span class="text-secondary">Lần cuối: <strong>@ngayHien.ToString("dd/MM/yyyy")</strong></span>
+                                                        <span class="font-label-sm text-label-sm text-amber-700 font-semibold">Còn @remaining ngày</span>
+                                                    </div>
+                                                    <div class="w-36 bg-surface-container rounded-full h-1.5 overflow-hidden">
+                                                        <div class="bg-amber-500 h-full rounded-full" style="width: @pct%;"></div>
+                                                    </div>
+                                                    <span class="font-body-sm text-body-sm text-secondary">Dự kiến: @ngayHien.AddDays(84).ToString("dd/MM/yyyy")</span>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <span class="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 font-label-sm text-label-sm font-bold flex items-center gap-1 w-fit">
+                                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                                                    SẴN SÀNG HIẾN LẦN ĐẦU
+                                                </span>
+                                                <span class="font-body-sm text-body-sm text-secondary">Chưa có lịch sử hiến</span>
+                                            }
+                                        </div>
+                                    </td>
+
+                                    <!-- Cột 5: Chỉ số lâm sàng -->
+                                    <td class="py-4 px-4">
+                                        <div class="flex flex-col gap-0.5 font-body-sm text-body-sm">
+                                            <span>Cân nặng: <strong class="text-on-surface">@(donor.CanNang.HasValue ? $"{donor.CanNang.Value:0.#} kg" : "-- kg")</strong></span>
+                                            <span>Nghề nghiệp: <span class="text-secondary">@(donor.NgheNghiep ?? "Tự do")</span></span>
+                                            <span class="text-emerald-700 font-medium flex items-center gap-0.5 truncate max-w-[180px]" title="@(donor.GhiChuSucKhoe ?? "Sức khỏe tốt")">
+                                                <span class="material-symbols-outlined text-[14px]">check</span> @(donor.GhiChuSucKhoe ?? "Sức khỏe tốt")
+                                            </span>
+                                        </div>
+                                    </td>
+
+                                    <!-- Cột 6: Khu vực & Liên lạc -->
+                                    <td class="py-4 px-4">
+                                        <div class="flex flex-col gap-0.5 font-body-sm text-body-sm">
+                                            <span class="font-medium text-on-surface flex items-center gap-1">
+                                                <span class="material-symbols-outlined text-[14px] text-secondary">phone</span> @(donor.SoDienThoai ?? "--")
+                                            </span>
+                                            <span class="text-secondary truncate max-w-[200px]" title="@donor.DiaChi">@(donor.DiaChi ?? "Chưa cập nhật địa chỉ")</span>
+                                            <span class="font-label-sm text-label-sm text-secondary truncate max-w-[200px]">@(donor.Email ?? donor.TaiKhoan?.Email ?? "--")</span>
+                                        </div>
+                                    </td>
+
+                                    <!-- Cột 7: Thao tác -->
+                                    <td class="py-4 px-4 text-center">
+                                        <div class="flex items-center justify-center gap-1">
+                                            @if (isRare)
+                                            {
+                                                <button class="p-1.5 rounded-lg bg-tertiary text-on-tertiary hover:opacity-90 transition-opacity" title="Gọi khẩn cấp tình nguyện viên máu hiếm" type="button" onclick="alert('Đang kết nối liên lạc khẩn cấp tới @donor.HoTen (@donor.SoDienThoai)...')">
+                                                    <span class="material-symbols-outlined text-[20px]">phone_in_talk</span>
+                                                </button>
+                                            }
+                                            <a asp-controller="Admin" asp-action="PhieuDangKy" asp-route-search="@donor.HoTen" class="p-1.5 rounded-lg text-secondary hover:text-primary hover:bg-surface-container transition-colors" title="Xem các phiếu đăng ký của người này">
+                                                <span class="material-symbols-outlined text-[20px]">assignment_ind</span>
+                                            </a>
+                                            <button class="p-1.5 rounded-lg text-secondary hover:text-primary hover:bg-surface-container transition-colors" title="Gửi SMS thông báo" type="button" onclick="alert('Mở cổng gửi tin nhắn điều phối tới: @donor.HoTen (@donor.SoDienThoai)')">
+                                                <span class="material-symbols-outlined text-[20px]">sms</span>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
                     </tbody>
                 </table>
             </div>
 
-            <!-- 7. Professional Pagination Footer -->
+            <!-- 7. Professional Dynamic Pagination Footer -->
             <div class="px-space-lg py-space-md bg-surface-container-low/50 flex flex-col md:flex-row items-center justify-between gap-space-md border-t border-surface-container">
                 <div class="flex items-center gap-space-md text-secondary font-body-sm text-body-sm">
-                    <span>Hiển thị <strong>1 - 6</strong> trong tổng số <strong>380,450</strong> người hiến máu</span>
+                    @if (totalItems > 0)
+                    {
+                        var fromRecord = ((currentPage - 1) * pageSize) + 1;
+                        var toRecord = Math.Min(currentPage * pageSize, totalItems);
+                        <span>Hiển thị <strong>@fromRecord - @toRecord</strong> trong tổng số <strong>@totalItems</strong> người hiến máu</span>
+                    }
+                    else
+                    {
+                        <span>Không có dữ liệu</span>
+                    }
                     <div class="flex items-center gap-2">
                         <span>Bản ghi / trang:</span>
-                        <select class="h-8 px-2 rounded-lg bg-surface-container-lowest font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-1 focus:ring-primary/20">
-                            <option selected="" value="6">6</option>
-                            <option value="20">20</option>
-                            <option value="50">50</option>
-                            <option value="100">100</option>
+                        <select class="h-8 px-2 rounded-lg bg-surface-container-lowest font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-1 focus:ring-primary/20"
+                                onchange="location.href='@Url.Action("NguoiHienMau", "Admin", new { search = currentSearch, nhomMau = currentNhomMau, rhGroup = currentRhGroup, status = currentStatus, tier = currentTier, page = 1 })&pageSize=' + this.value;">
+                            <option value="6" selected="@(pageSize == 6)">6</option>
+                            <option value="10" selected="@(pageSize == 10)">10</option>
+                            <option value="20" selected="@(pageSize == 20)">20</option>
+                            <option value="50" selected="@(pageSize == 50)">50</option>
                         </select>
                     </div>
                 </div>
-                <div class="flex items-center gap-1">
-                    <button class="h-9 w-9 rounded-lg bg-surface-container-lowest text-secondary opacity-40 flex items-center justify-center cursor-not-allowed" disabled="" type="button">
-                        <span class="material-symbols-outlined text-[18px]">first_page</span>
-                    </button>
-                    <button class="h-9 w-9 rounded-lg bg-surface-container-lowest text-secondary opacity-40 flex items-center justify-center cursor-not-allowed" disabled="" type="button">
-                        <span class="material-symbols-outlined text-[18px]">chevron_left</span>
-                    </button>
-                    <button class="h-9 w-9 rounded-lg bg-primary text-on-primary font-label-md text-label-md font-bold shadow-xs" type="button">1</button>
-                    <button class="h-9 w-9 rounded-lg bg-surface-container-lowest hover:bg-surface-container text-on-surface font-label-md text-label-md transition-colors" type="button">2</button>
-                    <button class="h-9 w-9 rounded-lg bg-surface-container-lowest hover:bg-surface-container text-on-surface font-label-md text-label-md transition-colors" type="button">3</button>
-                    <span class="px-2 text-secondary font-bold">...</span>
-                    <button class="h-9 px-2.5 rounded-lg bg-surface-container-lowest hover:bg-surface-container text-on-surface font-label-md text-label-md transition-colors" type="button">63,408</button>
-                    <button class="h-9 w-9 rounded-lg bg-surface-container-lowest hover:bg-surface-container text-on-surface flex items-center justify-center transition-colors" type="button">
-                        <span class="material-symbols-outlined text-[18px]">chevron_right</span>
-                    </button>
-                    <button class="h-9 w-9 rounded-lg bg-surface-container-lowest hover:bg-surface-container text-on-surface flex items-center justify-center transition-colors" type="button">
-                        <span class="material-symbols-outlined text-[18px]">last_page</span>
-                    </button>
-                </div>
+
+                @if (totalPages > 1)
+                {
+                    <div class="flex items-center gap-1">
+                        <!-- First Page -->
+                        @if (currentPage > 1)
+                        {
+                            <a asp-action="NguoiHienMau" asp-route-page="1" asp-route-pageSize="@pageSize" asp-route-search="@currentSearch" asp-route-nhomMau="@currentNhomMau" asp-route-rhGroup="@currentRhGroup" asp-route-status="@currentStatus" asp-route-tier="@currentTier"
+                               class="h-9 w-9 rounded-lg bg-surface-container-lowest hover:bg-surface-container text-on-surface flex items-center justify-center transition-colors">
+                                <span class="material-symbols-outlined text-[18px]">first_page</span>
+                            </a>
+                            <a asp-action="NguoiHienMau" asp-route-page="@(currentPage - 1)" asp-route-pageSize="@pageSize" asp-route-search="@currentSearch" asp-route-nhomMau="@currentNhomMau" asp-route-rhGroup="@currentRhGroup" asp-route-status="@currentStatus" asp-route-tier="@currentTier"
+                               class="h-9 w-9 rounded-lg bg-surface-container-lowest hover:bg-surface-container text-on-surface flex items-center justify-center transition-colors">
+                                <span class="material-symbols-outlined text-[18px]">chevron_left</span>
+                            </a>
+                        }
+                        else
+                        {
+                            <button class="h-9 w-9 rounded-lg bg-surface-container-lowest text-secondary opacity-40 flex items-center justify-center cursor-not-allowed" disabled type="button">
+                                <span class="material-symbols-outlined text-[18px]">first_page</span>
+                            </button>
+                            <button class="h-9 w-9 rounded-lg bg-surface-container-lowest text-secondary opacity-40 flex items-center justify-center cursor-not-allowed" disabled type="button">
+                                <span class="material-symbols-outlined text-[18px]">chevron_left</span>
+                            </button>
+                        }
+
+                        <!-- Page Numbers -->
+                        @for (int p = Math.Max(1, currentPage - 2); p <= Math.Min(totalPages, currentPage + 2); p++)
+                        {
+                            if (p == currentPage)
+                            {
+                                <span class="h-9 w-9 rounded-lg bg-primary text-on-primary font-label-md text-label-md font-bold shadow-xs flex items-center justify-center">@p</span>
+                            }
+                            else
+                            {
+                                <a asp-action="NguoiHienMau" asp-route-page="@p" asp-route-pageSize="@pageSize" asp-route-search="@currentSearch" asp-route-nhomMau="@currentNhomMau" asp-route-rhGroup="@currentRhGroup" asp-route-status="@currentStatus" asp-route-tier="@currentTier"
+                                   class="h-9 w-9 rounded-lg bg-surface-container-lowest hover:bg-surface-container text-on-surface font-label-md text-label-md flex items-center justify-center transition-colors">
+                                    @p
+                                </a>
+                            }
+                        }
+
+                        <!-- Next & Last Page -->
+                        @if (currentPage < totalPages)
+                        {
+                            <a asp-action="NguoiHienMau" asp-route-page="@(currentPage + 1)" asp-route-pageSize="@pageSize" asp-route-search="@currentSearch" asp-route-nhomMau="@currentNhomMau" asp-route-rhGroup="@currentRhGroup" asp-route-status="@currentStatus" asp-route-tier="@currentTier"
+                               class="h-9 w-9 rounded-lg bg-surface-container-lowest hover:bg-surface-container text-on-surface flex items-center justify-center transition-colors">
+                                <span class="material-symbols-outlined text-[18px]">chevron_right</span>
+                            </a>
+                            <a asp-action="NguoiHienMau" asp-route-page="@totalPages" asp-route-pageSize="@pageSize" asp-route-search="@currentSearch" asp-route-nhomMau="@currentNhomMau" asp-route-rhGroup="@currentRhGroup" asp-route-status="@currentStatus" asp-route-tier="@currentTier"
+                               class="h-9 w-9 rounded-lg bg-surface-container-lowest hover:bg-surface-container text-on-surface flex items-center justify-center transition-colors">
+                                <span class="material-symbols-outlined text-[18px]">last_page</span>
+                            </a>
+                        }
+                        else
+                        {
+                            <button class="h-9 w-9 rounded-lg bg-surface-container-lowest text-secondary opacity-40 flex items-center justify-center cursor-not-allowed" disabled type="button">
+                                <span class="material-symbols-outlined text-[18px]">chevron_right</span>
+                            </button>
+                            <button class="h-9 w-9 rounded-lg bg-surface-container-lowest text-secondary opacity-40 flex items-center justify-center cursor-not-allowed" disabled type="button">
+                                <span class="material-symbols-outlined text-[18px]">last_page</span>
+                            </button>
+                        }
+                    </div>
+                }
             </div>
         </div>
 

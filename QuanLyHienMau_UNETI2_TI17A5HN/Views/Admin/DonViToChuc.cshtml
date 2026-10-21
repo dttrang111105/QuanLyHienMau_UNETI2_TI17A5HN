@@ -1,9 +1,38 @@
+@model IEnumerable<QuanLyHienMau_UNETI2_TI17A5HN.Models.DonViToChuc>
+
 @{
     ViewData["Title"] = "Quản lý đơn vị tổ chức & Điểm hiến máu lưu động";
     Layout = "_AdminLayout";
+    var currentSearch = ViewBag.CurrentSearch as string;
+    var currentStatus = ViewBag.CurrentStatus as string;
+    var totalCount = Model?.Count() ?? 0;
+    var activeCount = Model?.Count(d => d.TrangThai == "Hoạt động") ?? 0;
+    var inactiveCount = totalCount - activeCount;
 }
 
 <div class="p-space-lg space-y-space-lg max-w-[1600px] mx-auto w-full">
+    <!-- Notifications -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-emerald-600">check_circle</span>
+                <span class="font-body-md text-body-md font-medium">@TempData["SuccessMessage"]</span>
+            </div>
+            <button onclick="this.parentElement.remove()" class="text-emerald-600 hover:text-emerald-900"><span class="material-symbols-outlined">close</span></button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="p-4 rounded-xl bg-error-container/40 border border-error text-error flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-error">error</span>
+                <span class="font-body-md text-body-md font-medium">@TempData["ErrorMessage"]</span>
+            </div>
+            <button onclick="this.parentElement.remove()" class="text-error hover:text-red-900"><span class="material-symbols-outlined">close</span></button>
+        </div>
+    }
+
     <!-- 1. Page Header & Medical Breadcrumb & Actions -->
     <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-space-md">
         <div class="space-y-1">
@@ -22,19 +51,11 @@
                 </span>
             </div>
             <p class="font-body-md text-body-md text-on-surface-variant max-w-4xl">
-                Điều phối 48 đơn vị đối tác liên kết, 14 điểm lấy máu cố định/ngoại viện và đội xe hiến máu chuyên dụng đạt chuẩn bảo quản lạnh ISBT 128.
+                Điều phối các đơn vị đối tác liên kết, điểm lấy máu cố định/ngoại viện của hệ thống Đại học UNETI.
             </p>
         </div>
         <div class="flex flex-wrap items-center gap-3">
-            <button class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-surface-container-lowest text-on-surface shadow-sm hover:bg-surface-container-low transition-all font-label-md text-label-md" type="button" onclick="alert('Đang trích xuất báo cáo đối tác & điểm lưu động (Excel)...')">
-                <span class="material-symbols-outlined text-[18px] text-on-surface-variant">file_download</span>
-                <span>Xuất Báo Cáo (Excel)</span>
-            </button>
-            <button class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-surface-container text-primary font-label-md text-label-md hover:bg-primary-fixed transition-all" type="button" onclick="alert('Mở mô-đun lập kế hoạch điểm hiến máu lưu động.')">
-                <span class="material-symbols-outlined text-[18px]">calendar_month</span>
-                <span>Lập Kế Hoạch Đợt Lưu Động</span>
-            </button>
-            <button class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-on-primary font-label-md text-label-md shadow-md shadow-primary/20 hover:bg-primary-container transition-all" type="button" onclick="alert('Mở biểu mẫu tạo đơn vị đối tác liên kết mới.')">
+            <button class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-on-primary font-label-md text-label-md shadow-md shadow-primary/20 hover:bg-primary-container transition-all cursor-pointer" type="button" onclick="openCreateModal()">
                 <span class="material-symbols-outlined text-[18px]">add_business</span>
                 <span>+ Thêm Đơn Vị Đối Tác Mới</span>
             </button>
@@ -49,7 +70,7 @@
             <div class="flex items-start justify-between">
                 <div>
                     <p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Tổng đối tác liên kết</p>
-                    <h3 class="font-display-hero text-display-hero text-on-surface mt-1 leading-none font-bold">48 <span class="font-title-md text-title-md font-medium text-on-surface-variant">Đơn vị</span></h3>
+                    <h3 class="font-display-hero text-display-hero text-on-surface mt-1 leading-none font-bold">@totalCount <span class="font-title-md text-title-md font-medium text-on-surface-variant">Đơn vị</span></h3>
                 </div>
                 <div class="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
                     <span class="material-symbols-outlined text-[24px]">corporate_fare</span>
@@ -58,9 +79,9 @@
             <div class="pt-4 flex items-center justify-between text-on-surface-variant">
                 <div class="flex items-center gap-1.5 font-label-sm text-label-sm text-primary font-semibold">
                     <span class="material-symbols-outlined text-[16px]">trending_up</span>
-                    <span>+4 đối tác quý này</span>
+                    <span>Đang quản lý</span>
                 </div>
-                <span class="font-label-sm text-label-sm">22 ĐH • 16 KCN • 10 CQ</span>
+                <span class="font-label-sm text-label-sm">UNETI &amp; Đối tác Y tế</span>
             </div>
         </div>
 
@@ -69,19 +90,19 @@
             <div class="absolute right-0 top-0 w-24 h-24 bg-gradient-to-bl from-emerald-500/10 via-transparent to-transparent rounded-bl-full pointer-events-none"></div>
             <div class="flex items-start justify-between">
                 <div>
-                    <p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Điểm hiến máu hoạt động</p>
-                    <h3 class="font-display-hero text-display-hero text-on-surface mt-1 leading-none font-bold">08 <span class="font-title-md text-title-md font-medium text-on-surface-variant">Điểm trực tiếp</span></h3>
+                    <p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Đơn vị đang hoạt động</p>
+                    <h3 class="font-display-hero text-display-hero text-on-surface mt-1 leading-none font-bold">@activeCount <span class="font-title-md text-title-md font-medium text-on-surface-variant">Đơn vị</span></h3>
                 </div>
                 <div class="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center">
-                    <span class="material-symbols-outlined text-[24px]">pin_drop</span>
+                    <span class="material-symbols-outlined text-[24px]">verified</span>
                 </div>
             </div>
             <div class="pt-4 flex items-center justify-between">
                 <div class="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-label-sm text-label-sm font-semibold">
                     <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                    <span>Live Realtime</span>
+                    <span>Hoạt động bình thường</span>
                 </div>
-                <span class="font-label-sm text-label-sm text-on-surface-variant">03 Cố định • 05 Ngoại viện</span>
+                <span class="font-label-sm text-label-sm text-on-surface-variant">Sẵn sàng điều phối</span>
             </div>
         </div>
 
@@ -90,16 +111,16 @@
             <div class="absolute right-0 top-0 w-24 h-24 bg-gradient-to-bl from-blue-500/10 via-transparent to-transparent rounded-bl-full pointer-events-none"></div>
             <div class="flex items-start justify-between">
                 <div>
-                    <p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Xe lấy máu chuyên dụng</p>
-                    <h3 class="font-display-hero text-display-hero text-on-surface mt-1 leading-none font-bold">6 <span class="font-title-md text-title-md font-medium text-on-surface-variant">/ 8 Xe xuất kích</span></h3>
+                    <p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Tổng đợt hiến máu</p>
+                    <h3 class="font-display-hero text-display-hero text-on-surface mt-1 leading-none font-bold">@(Model?.Sum(d => d.DotHienMaus?.Count ?? 0) ?? 0) <span class="font-title-md text-title-md font-medium text-on-surface-variant">Đợt</span></h3>
                 </div>
                 <div class="w-12 h-12 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center">
-                    <span class="material-symbols-outlined text-[24px]">directions_bus</span>
+                    <span class="material-symbols-outlined text-[24px]">event_note</span>
                 </div>
             </div>
             <div class="pt-4 flex items-center justify-between">
-                <span class="font-label-sm text-label-sm text-on-surface-variant">2 xe bảo dưỡng kỹ thuật</span>
-                <span class="px-2 py-0.5 rounded bg-surface-container text-on-surface font-label-sm text-label-sm font-medium">ISBT 128 Lạnh 2-6°C</span>
+                <span class="font-label-sm text-label-sm text-on-surface-variant">Toàn hệ thống</span>
+                <span class="px-2 py-0.5 rounded bg-surface-container text-on-surface font-label-sm text-label-sm font-medium">Chiến dịch UNETI</span>
             </div>
         </div>
 
@@ -108,714 +129,144 @@
             <div class="absolute right-0 top-0 w-24 h-24 bg-gradient-to-bl from-primary/10 via-transparent to-transparent rounded-bl-full pointer-events-none"></div>
             <div class="flex items-start justify-between">
                 <div>
-                    <p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Hiệu suất đạt chỉ tiêu ngày</p>
-                    <h3 class="font-display-hero text-display-hero text-primary mt-1 leading-none font-bold">106.4%</h3>
+                    <p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Trạng thái tạm dừng</p>
+                    <h3 class="font-display-hero text-display-hero text-primary mt-1 leading-none font-bold">@inactiveCount <span class="font-title-md text-title-md font-medium text-on-surface-variant">Đơn vị</span></h3>
                 </div>
                 <div class="w-12 h-12 rounded-xl bg-primary-fixed text-primary flex items-center justify-center">
-                    <span class="material-symbols-outlined text-[24px]">bloodtype</span>
+                    <span class="material-symbols-outlined text-[24px]">pause_circle</span>
                 </div>
             </div>
             <div class="pt-4 flex items-center justify-between">
-                <div class="w-full bg-surface-container rounded-full h-2 mr-3 overflow-hidden">
-                    <div class="bg-primary h-2 rounded-full" style="width: 86%;"></div>
-                </div>
-                <span class="font-label-sm text-label-sm font-bold text-on-surface shrink-0">1,942 / 1,825 ĐV</span>
+                <span class="font-label-sm text-label-sm text-on-surface-variant">Đang bảo trì / cập nhật</span>
+                <span class="font-label-sm text-label-sm font-bold text-on-surface">SQL Server Live</span>
             </div>
         </div>
     </div>
 
-    <!-- 3. Split Layout: Interactive Tactical Map & Live Mobile Fleet -->
-    <div class="grid grid-cols-1 xl:grid-cols-12 gap-space-lg">
-        <!-- Map & Geolocation Radar (8 cols / ~66%) -->
-        <div class="xl:col-span-8 bg-surface-container-lowest rounded-2xl p-space-lg shadow-sm flex flex-col">
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm mb-space-md">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-primary text-on-primary flex items-center justify-center shadow-sm">
-                        <span class="material-symbols-outlined text-[20px]">map</span>
-                    </div>
-                    <div>
-                        <h2 class="font-headline-sm text-headline-sm text-on-surface">Bản Đồ Phân Bố &amp; Trạng Thái Điểm Hiến Máu Thời Gian Thực</h2>
-                        <p class="font-body-sm text-body-sm text-on-surface-variant">Giám sát tải tiếp nhận máu, vị trí GPS đội xe cơ động và chỉ tiêu thực địa</p>
-                    </div>
-                </div>
-                <!-- Quick Filters -->
-                <div class="flex items-center gap-1.5 p-1 bg-surface-container rounded-xl overflow-x-auto text-nowrap">
-                    <button class="px-3 py-1.5 rounded-lg bg-surface-container-lowest text-primary font-label-sm text-label-sm font-bold shadow-sm" type="button">Tất cả (14)</button>
-                    <button class="px-3 py-1.5 rounded-lg text-on-surface-variant hover:text-on-surface font-label-sm text-label-sm" type="button">Đang lấy máu (5)</button>
-                    <button class="px-3 py-1.5 rounded-lg text-on-surface-variant hover:text-on-surface font-label-sm text-label-sm" type="button">Chuẩn bị (3)</button>
-                    <button class="px-3 py-1.5 rounded-lg text-on-surface-variant hover:text-on-surface font-label-sm text-label-sm" type="button">Cố định (3)</button>
-                </div>
-            </div>
-
-            <!-- Custom Styled Tactical Geolocation Canvas -->
-            <div class="relative w-full h-[460px] bg-slate-900 rounded-xl overflow-hidden shadow-inner flex items-center justify-center">
-                <!-- Stylized Medical Grid / Vector map overlay -->
-                <svg class="absolute inset-0 w-full h-full opacity-25" xmlns="http://www.w3.org/2000/svg">
-                    <defs>
-                        <pattern height="40" id="grid-pattern" patternUnits="userSpaceOnUse" width="40">
-                            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#60a5fa" stroke-dasharray="2 4" stroke-width="0.5"></path>
-                        </pattern>
-                    </defs>
-                    <rect fill="url(#grid-pattern)" height="100%" width="100%"></rect>
-                    <!-- Simulated River / Arteries -->
-                    <path d="M -50,150 Q 200,90 450,220 T 950,280 T 1400,200" fill="none" opacity="0.35" stroke="#38bdf8" stroke-width="6"></path>
-                    <path d="M 120,460 Q 300,320 600,380 T 1200,420" fill="none" opacity="0.25" stroke="#38bdf8" stroke-width="3"></path>
-                </svg>
-                <!-- Real Map Location Reference Provider (Static API ready) -->
-                <div class="absolute inset-0 opacity-20 pointer-events-none bg-cover bg-center" data-alt="Dark tinted satellite aerial medical navigation map of Hanoi showing roads and transit lines" data-location="Hanoi, Vietnam" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDRC8N552Um7TaOXpnB7DY-ZqxEV69SPFMlgYYNU007HocOCSkn2B4aeM1qlPO98hademav_Za7y0GWQnberP670zP74zSn3pdZfA2khCwKxslVyG4SYa-oSgZLmNI7tdZp1GWKgYA1rzfiMciZwM8ZEyadhqhBAGjfL3wPXAq-uh3j5VQxRJl5NULEcpEZVWu-1eTFXf3T7Kty8m1VH09IUdC3rYGHwSFtVqDP6MooHkMB_16T_ikNGg')"></div>
-                <!-- Radar Pulsing Circle & HUD overlay -->
-                <div class="absolute top-4 left-4 flex items-center gap-2 bg-inverse-surface/80 backdrop-blur-md px-3 py-1.5 rounded-lg text-inverse-on-surface font-label-sm text-label-sm border border-slate-700">
-                    <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                    <span>Hệ Thống Viễn Thông Y Tế Tele-Blood: <strong class="text-white">Trực Tuyến</strong></span>
-                </div>
-                <div class="absolute top-4 right-4 flex items-center gap-2 bg-inverse-surface/80 backdrop-blur-md px-3 py-1.5 rounded-lg text-slate-300 font-label-sm text-label-sm border border-slate-700">
-                    <span class="material-symbols-outlined text-[16px] text-amber-400">thermostat</span>
-                    <span>Nhiệt độ bảo quản tb: <strong class="text-emerald-300">3.4°C</strong></span>
-                </div>
-
-                <!-- PIN 1: ĐH Bách Khoa Hà Nội (Active pulsing red) -->
-                <div class="absolute top-[38%] left-[44%] -translate-x-1/2 -translate-y-1/2 group cursor-pointer z-20">
-                    <div class="relative flex items-center justify-center">
-                        <span class="animate-ping absolute inline-flex h-9 w-9 rounded-full bg-primary opacity-75"></span>
-                        <div class="relative w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-lg border-2 border-white">
-                            <span class="material-symbols-outlined text-[16px]">bloodtype</span>
-                        </div>
-                    </div>
-                    <!-- Tooltip Card -->
-                    <div class="absolute left-1/2 -translate-x-1/2 bottom-10 w-64 bg-inverse-surface text-inverse-on-surface p-3 rounded-xl shadow-xl text-left pointer-events-none group-hover:pointer-events-auto transition-all duration-200 opacity-95">
-                        <div class="flex items-center justify-between mb-1">
-                            <span class="font-label-sm text-label-sm text-primary-fixed uppercase font-bold">Điểm Ngoại Viện • Đang Lấy</span>
-                            <span class="px-1.5 py-0.2 bg-emerald-500/20 text-emerald-300 rounded font-label-sm text-[10px]">Xe 02 &amp; 05</span>
-                        </div>
-                        <p class="font-label-md text-label-md font-bold text-white">ĐH Bách Khoa Hà Nội (Hội trường C2)</p>
-                        <div class="mt-2 text-slate-300 font-body-sm text-body-sm space-y-1">
-                            <div class="flex justify-between">
-                                <span>Tiến độ thu:</span>
-                                <span class="text-emerald-400 font-bold">342 / 450 ĐV (76%)</span>
-                            </div>
-                            <div class="w-full bg-slate-700 h-1.5 rounded-full overflow-hidden">
-                                <div class="bg-emerald-400 h-1.5 rounded-full" style="width: 76%"></div>
-                            </div>
-                            <p class="font-label-sm text-[11px] text-slate-400 pt-1">Bác sĩ phụ trách: BS. Đỗ Thùy Trang</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- PIN 2: KCN Thăng Long (Canon) -->
-                <div class="absolute top-[22%] left-[68%] -translate-x-1/2 -translate-y-1/2 group cursor-pointer z-20">
-                    <div class="relative flex items-center justify-center">
-                        <span class="animate-ping absolute inline-flex h-9 w-9 rounded-full bg-primary opacity-75"></span>
-                        <div class="relative w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center shadow-lg border-2 border-white">
-                            <span class="material-symbols-outlined text-[16px]">factory</span>
-                        </div>
-                    </div>
-                    <!-- Tooltip Card -->
-                    <div class="absolute left-1/2 -translate-x-1/2 bottom-10 w-64 bg-inverse-surface text-inverse-on-surface p-3 rounded-xl shadow-xl text-left pointer-events-none group-hover:pointer-events-auto transition-all duration-200 opacity-95">
-                        <div class="flex items-center justify-between mb-1">
-                            <span class="font-label-sm text-label-sm text-primary-fixed uppercase font-bold">KCN Trọng Điểm</span>
-                            <span class="px-1.5 py-0.2 bg-emerald-500/20 text-emerald-300 rounded font-label-sm text-[10px]">Xe 01 &amp; 03</span>
-                        </div>
-                        <p class="font-label-md text-label-md font-bold text-white">Canon Việt Nam (KCN Thăng Long)</p>
-                        <div class="mt-2 text-slate-300 font-body-sm text-body-sm space-y-1">
-                            <div class="flex justify-between">
-                                <span>Tiến độ thu:</span>
-                                <span class="text-emerald-400 font-bold">410 / 600 ĐV (68%)</span>
-                            </div>
-                            <div class="w-full bg-slate-700 h-1.5 rounded-full overflow-hidden">
-                                <div class="bg-primary h-1.5 rounded-full" style="width: 68%"></div>
-                            </div>
-                            <p class="font-label-sm text-[11px] text-slate-400 pt-1">Bác sĩ phụ trách: BS. Lê Quốc Tuấn</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- PIN 3: Điểm cố định Viện Huyết học TW (Green Anchor) -->
-                <div class="absolute top-[52%] left-[32%] -translate-x-1/2 -translate-y-1/2 group cursor-pointer z-20">
-                    <div class="relative flex items-center justify-center">
-                        <div class="relative w-9 h-9 rounded-full bg-emerald-600 text-white flex items-center justify-center shadow-lg border-2 border-white">
-                            <span class="material-symbols-outlined text-[18px]">local_hospital</span>
-                        </div>
-                    </div>
-                    <div class="absolute left-1/2 -translate-x-1/2 bottom-11 w-60 bg-inverse-surface text-inverse-on-surface p-3 rounded-xl shadow-xl text-left pointer-events-none group-hover:pointer-events-auto transition-all duration-200 opacity-95">
-                        <span class="font-label-sm text-label-sm text-emerald-400 uppercase font-bold">Điểm Cố Định • Phòng 102</span>
-                        <p class="font-label-md text-label-md font-bold text-white">Viện Huyết Học - Truyền Máu TW</p>
-                        <p class="font-body-sm text-body-sm text-slate-300 mt-1">Đã tiếp nhận trong ngày: <strong class="text-emerald-400">185 ĐV</strong></p>
-                        <span class="font-label-sm text-[11px] text-slate-400">Tiếp nhận đến 20:00 hàng ngày</span>
-                    </div>
-                </div>
-
-                <!-- PIN 4: ĐH Quốc Gia Hòa Lạc (Amber setup) -->
-                <div class="absolute top-[68%] left-[20%] -translate-x-1/2 -translate-y-1/2 group cursor-pointer z-10">
-                    <div class="relative flex items-center justify-center">
-                        <div class="relative w-7 h-7 rounded-full bg-amber-500 text-white flex items-center justify-center shadow border-2 border-white">
-                            <span class="material-symbols-outlined text-[14px]">engineering</span>
-                        </div>
-                    </div>
-                    <div class="absolute left-1/2 -translate-x-1/2 bottom-9 w-56 bg-inverse-surface text-inverse-on-surface p-2.5 rounded-xl shadow-xl text-left pointer-events-none group-hover:pointer-events-auto transition-all duration-200">
-                        <span class="font-label-sm text-label-sm text-amber-300 font-bold">Đang Chuẩn Bị (Ca Chiều)</span>
-                        <p class="font-label-md text-label-md text-white font-semibold">ĐHQGHN (Hòa Lạc Campus)</p>
-                        <p class="font-label-sm text-[11px] text-slate-300">Dự kiến tiếp nhận lúc 13:30</p>
-                    </div>
-                </div>
-
-                <!-- PIN 5: Bưu điện VN VNPost (Blue Done) -->
-                <div class="absolute top-[48%] left-[58%] -translate-x-1/2 -translate-y-1/2 group cursor-pointer z-10">
-                    <div class="relative flex items-center justify-center">
-                        <div class="relative w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center shadow border-2 border-white">
-                            <span class="material-symbols-outlined text-[14px]">check</span>
-                        </div>
-                    </div>
-                    <div class="absolute left-1/2 -translate-x-1/2 bottom-9 w-52 bg-inverse-surface text-inverse-on-surface p-2.5 rounded-xl shadow-xl text-left pointer-events-none group-hover:pointer-events-auto transition-all duration-200">
-                        <span class="font-label-sm text-label-sm text-blue-300 font-bold">Hoàn Thành Ca Sáng</span>
-                        <p class="font-label-md text-label-md text-white font-semibold">VNPost Hà Nội</p>
-                        <p class="font-label-sm text-[11px] text-slate-300">Tổng thu: 215 ĐV (Đạt 107%)</p>
-                    </div>
-                </div>
-
-                <!-- Floating Hotspot Card bottom-left -->
-                <div class="absolute bottom-4 left-4 bg-inverse-surface/90 backdrop-blur-md border border-slate-700 text-inverse-on-surface p-3.5 rounded-xl shadow-lg max-w-sm flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-lg bg-primary/20 text-primary-fixed flex items-center justify-center shrink-0">
-                        <span class="material-symbols-outlined text-[20px]">local_fire_department</span>
-                    </div>
-                    <div>
-                        <p class="font-label-sm text-label-sm text-primary-fixed font-bold uppercase">Điểm tiếp nhận đông nhất hôm nay</p>
-                        <h4 class="font-label-md text-label-md font-bold text-white">Canon Việt Nam (KCN Thăng Long)</h4>
-                        <p class="font-body-sm text-body-sm text-slate-300 text-xs">Dự báo chạm 690 đơn vị (+115% kế hoạch ban đầu)</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Right Column: Mobile Fleet Status (4 cols / ~34%) -->
-        <div class="xl:col-span-4 bg-surface-container-lowest rounded-2xl p-space-lg shadow-sm flex flex-col justify-between">
-            <div class="space-y-space-md">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-2.5">
-                        <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center">
-                            <span class="material-symbols-outlined text-[22px]">airport_shuttle</span>
-                        </div>
-                        <div>
-                            <h3 class="font-headline-sm text-headline-sm text-on-surface">Đội Xe Chuyên Dụng</h3>
-                            <p class="font-body-sm text-body-sm text-on-surface-variant">Giám sát xe hiến máu lưu động</p>
-                        </div>
-                    </div>
-                    <span class="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 font-label-sm text-label-sm font-bold">6 Sẵn Sàng</span>
-                </div>
-
-                <!-- Bus List -->
-                <div class="space-y-3">
-                    <!-- Bus 1 -->
-                    <div class="p-3 rounded-xl bg-surface-container-low hover:bg-surface-container transition-all">
-                        <div class="flex items-center justify-between mb-2">
-                            <div class="flex items-center gap-2">
-                                <span class="font-label-md text-label-md font-bold text-on-surface">Xe 01</span>
-                                <span class="px-2 py-0.5 rounded bg-surface-container-highest text-on-surface-variant font-label-sm text-[11px] font-semibold">29A-582.11</span>
-                            </div>
-                            <span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-label-sm text-[11px] font-bold">Đang lấy máu</span>
-                        </div>
-                        <p class="font-label-sm text-label-sm text-on-surface font-semibold truncate">Vị trí: KCN Thăng Long (Canon)</p>
-                        <div class="grid grid-cols-3 gap-2 mt-2 pt-2 border-t border-surface-container font-label-sm text-label-sm">
-                            <div>
-                                <span class="text-on-surface-variant text-[11px] block">Quy mô</span>
-                                <span class="font-bold text-on-surface">6 Bàn lấy</span>
-                            </div>
-                            <div>
-                                <span class="text-on-surface-variant text-[11px] block">Nhiệt độ khoang</span>
-                                <span class="font-bold text-emerald-700">22.0°C</span>
-                            </div>
-                            <div>
-                                <span class="text-on-surface-variant text-[11px] block">Thùng lạnh máu</span>
-                                <span class="font-bold text-primary">3.5°C</span>
-                            </div>
-                        </div>
-                        <p class="font-body-sm text-[12px] text-on-surface-variant mt-1.5 flex items-center gap-1">
-                            <span class="material-symbols-outlined text-[14px]">person</span> Kíp trưởng: BS. Lê Quốc Tuấn
-                        </p>
-                    </div>
-
-                    <!-- Bus 2 -->
-                    <div class="p-3 rounded-xl bg-surface-container-low hover:bg-surface-container transition-all">
-                        <div class="flex items-center justify-between mb-2">
-                            <div class="flex items-center gap-2">
-                                <span class="font-label-md text-label-md font-bold text-on-surface">Xe 02</span>
-                                <span class="px-2 py-0.5 rounded bg-surface-container-highest text-on-surface-variant font-label-sm text-[11px] font-semibold">29B-994.25</span>
-                            </div>
-                            <span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-label-sm text-[11px] font-bold">Đang lấy máu</span>
-                        </div>
-                        <p class="font-label-sm text-label-sm text-on-surface font-semibold truncate">Vị trí: ĐH Bách Khoa (Hội trường C2)</p>
-                        <div class="grid grid-cols-3 gap-2 mt-2 pt-2 border-t border-surface-container font-label-sm text-label-sm">
-                            <div>
-                                <span class="text-on-surface-variant text-[11px] block">Quy mô</span>
-                                <span class="font-bold text-on-surface">8 Bàn lấy</span>
-                            </div>
-                            <div>
-                                <span class="text-on-surface-variant text-[11px] block">Đã thu nhận</span>
-                                <span class="font-bold text-on-surface">180 túi</span>
-                            </div>
-                            <div>
-                                <span class="text-on-surface-variant text-[11px] block">Thùng lạnh máu</span>
-                                <span class="font-bold text-primary">3.2°C</span>
-                            </div>
-                        </div>
-                        <p class="font-body-sm text-[12px] text-on-surface-variant mt-1.5 flex items-center gap-1">
-                            <span class="material-symbols-outlined text-[14px]">person</span> Kíp trưởng: BS. Đỗ Thùy Trang
-                        </p>
-                    </div>
-
-                    <!-- Bus 3 - Standby Code Red -->
-                    <div class="p-3 rounded-xl bg-primary-fixed/30 hover:bg-primary-fixed/50 transition-all">
-                        <div class="flex items-center justify-between mb-1">
-                            <div class="flex items-center gap-2">
-                                <span class="font-label-md text-label-md font-bold text-primary">Xe 04 (Code Red)</span>
-                                <span class="px-2 py-0.5 rounded bg-surface-container-lowest text-on-surface font-label-sm text-[11px] font-semibold">29A-688.99</span>
-                            </div>
-                            <span class="px-2 py-0.5 rounded-full bg-primary text-on-primary font-label-sm text-[11px] font-bold">Trực Khẩn Cấp</span>
-                        </div>
-                        <p class="font-body-sm text-body-sm text-on-surface-variant">Túc trực tại Viện Huyết học TW • Sẵn sàng chi viện cấp cứu thảm họa và điều chuyển chế phẩm máu khẩn cấp.</p>
-                    </div>
-
-                    <!-- Bus 4 - Maintenance -->
-                    <div class="p-3 rounded-xl bg-surface-container-high/60 transition-all opacity-85">
-                        <div class="flex items-center justify-between mb-1">
-                            <div class="flex items-center gap-2">
-                                <span class="font-label-md text-label-md font-bold text-on-surface">Xe 06</span>
-                                <span class="px-2 py-0.5 rounded bg-surface-container text-on-surface-variant font-label-sm text-[11px]">29B-312.44</span>
-                            </div>
-                            <span class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 font-label-sm text-[11px] font-bold">Bảo Dưỡng &amp; Tiệt Trùng</span>
-                        </div>
-                        <p class="font-body-sm text-body-sm text-on-surface-variant">Khử khuẩn UV chu kỳ &amp; hiệu chuẩn máy đo huyết áp tự động tại Xưởng Viện TW.</p>
-                    </div>
-                </div>
-            </div>
-
-            <button class="w-full mt-4 py-2.5 rounded-xl bg-surface-container text-on-surface font-label-md text-label-md hover:bg-surface-container-highest transition-all flex items-center justify-center gap-2" type="button" onclick="alert('Mở sơ đồ điều phối lịch trực xe cơ động...')">
-                <span class="material-symbols-outlined text-[18px]">tune</span>
-                <span>Điều Phối Lịch Trực Xe Cơ Động</span>
-            </button>
-        </div>
-    </div>
-
-    <!-- 4. SOP Readiness Checklist Banner / Interactive Guidance -->
-    <div class="bg-gradient-to-r from-surface-container-low via-surface-container to-surface-container-lowest p-space-md rounded-2xl shadow-sm flex flex-col lg:flex-row lg:items-center justify-between gap-space-md">
-        <div class="flex items-start sm:items-center gap-3">
-            <div class="w-12 h-12 rounded-xl bg-primary text-on-primary flex items-center justify-center shrink-0 shadow-sm">
-                <span class="material-symbols-outlined text-[24px]">verified_user</span>
-            </div>
-            <div>
-                <h4 class="font-label-lg text-label-lg font-bold text-on-surface">Tiêu Chuẩn Thẩm Định Điểm Lấy Máu Ngoại Viện (Mobile SOP Checklist)</h4>
-                <p class="font-body-sm text-body-sm text-on-surface-variant">Bắt buộc xác nhận trước khi điều động kíp y tế và xe lưu động tiếp cận hiện trường:</p>
-            </div>
-        </div>
-        <div class="flex flex-wrap items-center gap-3 font-label-sm text-label-sm">
-            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-surface-container-lowest text-on-surface shadow-xs">
-                <span class="material-symbols-outlined text-emerald-600 text-[18px]">check_circle</span> Diện tích &gt; 120m² thông gió
-            </span>
-            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-surface-container-lowest text-on-surface shadow-xs">
-                <span class="material-symbols-outlined text-emerald-600 text-[18px]">check_circle</span> Nguồn điện tải 220V ổn định
-            </span>
-            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-surface-container-lowest text-on-surface shadow-xs">
-                <span class="material-symbols-outlined text-emerald-600 text-[18px]">check_circle</span> Đường truyền VNeID Live Sync
-            </span>
-            <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-surface-container-lowest text-on-surface shadow-xs">
-                <span class="material-symbols-outlined text-emerald-600 text-[18px]">check_circle</span> Bãi đỗ xe chuyên dụng 5-10T
-            </span>
-        </div>
-    </div>
-
-    <!-- 5. Partner Organizations Directory & Tiered Management Table (Bottom Section) -->
+    <!-- 5. Partner Organizations Directory & Tiered Management Table -->
     <div class="bg-surface-container-lowest rounded-2xl shadow-sm p-space-lg space-y-space-md">
         <!-- Table Header & Controls -->
         <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md">
             <div>
                 <div class="flex items-center gap-3">
-                    <h2 class="font-headline-sm text-headline-sm text-on-surface">Danh Mục Đơn Vị Tổ Chức &amp; Thỏa Thuận Hiến Máu (MOU)</h2>
-                    <span class="px-2.5 py-0.5 rounded-full bg-primary/10 text-primary font-label-sm text-label-sm font-bold">48 Đơn Vị</span>
+                    <h2 class="font-headline-sm text-headline-sm text-on-surface">Danh Mục Đơn Vị Tổ Chức</h2>
+                    <span class="px-2.5 py-0.5 rounded-full bg-primary/10 text-primary font-label-sm text-label-sm font-bold">@totalCount Đơn Vị</span>
                 </div>
-                <p class="font-body-sm text-body-sm text-on-surface-variant">Phân hạng Kim Cương, Vàng, Bạc dựa trên quy mô người hiến và lịch sử tiếp nhận an toàn</p>
+                <p class="font-body-sm text-body-sm text-on-surface-variant">Dữ liệu đơn vị tổ chức được truy xuất trực tiếp từ cơ sở dữ liệu</p>
             </div>
-            <!-- Filter tabs -->
+            <!-- Filter buttons -->
             <div class="flex flex-wrap items-center gap-2">
-                <button class="px-3.5 py-2 rounded-xl bg-primary text-on-primary font-label-md text-label-md font-semibold shadow-xs" type="button">Tất cả (48)</button>
-                <button class="px-3.5 py-2 rounded-xl bg-surface-container text-on-surface hover:bg-surface-container-high transition-all font-label-md text-label-md" type="button">Kim Cương (&gt;1,000 ĐV)</button>
-                <button class="px-3.5 py-2 rounded-xl bg-surface-container text-on-surface hover:bg-surface-container-high transition-all font-label-md text-label-md" type="button">Khối FDI / Doanh Nghiệp</button>
-                <button class="px-3.5 py-2 rounded-xl bg-surface-container text-on-surface hover:bg-surface-container-high transition-all font-label-md text-label-md" type="button">Đại Học / Cao Đẳng</button>
-                <button class="px-3.5 py-2 rounded-xl bg-error-container text-error font-label-md text-label-md font-semibold flex items-center gap-1" type="button">
-                    <span class="w-1.5 h-1.5 rounded-full bg-error"></span>
-                    Cần Tái Ký MOU (3)
-                </button>
+                <a asp-action="DonViToChuc" asp-route-status="all" class="px-3.5 py-2 rounded-xl @(string.IsNullOrEmpty(currentStatus) || currentStatus == "all" ? "bg-primary text-on-primary font-semibold" : "bg-surface-container text-on-surface hover:bg-surface-container-high") font-label-md text-label-md transition-all">Tất cả (@totalCount)</a>
+                <a asp-action="DonViToChuc" asp-route-status="Hoạt động" class="px-3.5 py-2 rounded-xl @(currentStatus == "Hoạt động" ? "bg-primary text-on-primary font-semibold" : "bg-surface-container text-on-surface hover:bg-surface-container-high") font-label-md text-label-md transition-all">Hoạt động (@activeCount)</a>
+                <a asp-action="DonViToChuc" asp-route-status="Tạm dừng" class="px-3.5 py-2 rounded-xl @(currentStatus == "Tạm dừng" ? "bg-primary text-on-primary font-semibold" : "bg-surface-container text-on-surface hover:bg-surface-container-high") font-label-md text-label-md transition-all">Tạm dừng (@inactiveCount)</a>
             </div>
         </div>
 
         <!-- Advanced Search and Selector Bar -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-3 bg-surface-container-low p-3 rounded-xl">
-            <div class="relative md:col-span-2">
+        <form method="get" asp-controller="Admin" asp-action="DonViToChuc" class="grid grid-cols-1 md:grid-cols-4 gap-3 bg-surface-container-low p-3 rounded-xl">
+            <div class="relative md:col-span-3">
                 <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">search</span>
-                <input class="w-full h-10 pl-10 pr-4 bg-surface-container-lowest rounded-xl font-body-sm text-body-sm text-on-surface placeholder:text-on-surface-variant/70 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all shadow-xs" placeholder="Tìm tên trường, tập đoàn, đầu mối phụ trách, số điện thoại..." type="text">
+                <input name="search" value="@currentSearch" class="w-full h-10 pl-10 pr-4 bg-surface-container-lowest rounded-xl font-body-sm text-body-sm text-on-surface placeholder:text-on-surface-variant/70 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all shadow-xs" placeholder="Tìm kiếm tên đơn vị, email liên hệ, mô tả..." type="text">
             </div>
-            <div>
-                <select class="w-full h-10 px-3 bg-surface-container-lowest rounded-xl font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-xs">
-                    <option>Tất cả địa bàn (Hà Nội, KCN phụ cận)</option>
-                    <option>Hà Nội (Trung tâm &amp; Hòa Lạc)</option>
-                    <option>Bắc Ninh (KCN Yên Phong / Quế Võ)</option>
-                    <option>Thái Nguyên (Tổ hợp SEVT)</option>
-                    <option>Vĩnh Phúc / Hưng Yên</option>
+            <div class="flex gap-2">
+                <select name="status" onchange="this.form.submit()" class="w-full h-10 px-3 bg-surface-container-lowest rounded-xl font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-xs">
+                    <option value="all" selected="@(string.IsNullOrEmpty(currentStatus) || currentStatus == "all")">Tất cả trạng thái</option>
+                    <option value="Hoạt động" selected="@(currentStatus == "Hoạt động")">Hoạt động</option>
+                    <option value="Tạm dừng" selected="@(currentStatus == "Tạm dừng")">Tạm dừng</option>
                 </select>
+                <button type="submit" class="px-4 h-10 rounded-xl bg-primary text-on-primary font-label-md text-label-md hover:bg-primary-container transition-all shrink-0 cursor-pointer">
+                    Tìm
+                </button>
             </div>
-            <div>
-                <select class="w-full h-10 px-3 bg-surface-container-lowest rounded-xl font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-xs">
-                    <option>Hạng đối tác &amp; Cam kết</option>
-                    <option>Hạng Kim Cương (&gt;1,000 ĐV/năm)</option>
-                    <option>Hạng Vàng (500 - 1,000 ĐV/năm)</option>
-                    <option>Hạng Bạc (200 - 500 ĐV/năm)</option>
-                    <option>Đối tác mới / Tiềm năng</option>
-                </select>
-            </div>
-        </div>
+        </form>
 
         <!-- Table Section -->
         <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse">
                 <thead>
                     <tr class="bg-surface-container font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">
-                        <th class="py-3 px-4 rounded-l-xl">Đơn Vị Đối Tác &amp; Đầu Mối</th>
-                        <th class="py-3 px-4">Loại Hình &amp; Địa Bàn</th>
-                        <th class="py-3 px-4">Đóng Góp Tích Lũy</th>
-                        <th class="py-3 px-4">Đợt Gần Nhất / Kế Tiếp</th>
-                        <th class="py-3 px-4">Mặt Bằng &amp; Hạ Tầng</th>
-                        <th class="py-3 px-4">Thỏa Thuận (MOU)</th>
+                        <th class="py-3 px-4 rounded-l-xl">Mã &amp; Đơn Vị Tổ Chức</th>
+                        <th class="py-3 px-4">Email Liên Hệ</th>
+                        <th class="py-3 px-4">Mô Tả / Địa Điểm</th>
+                        <th class="py-3 px-4">Số Đợt Hiến Máu</th>
+                        <th class="py-3 px-4">Trạng Thái</th>
                         <th class="py-3 px-4 text-right rounded-r-xl">Thao Tác</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-surface-container font-body-sm text-body-sm text-on-surface">
-                    <!-- Row 1: ĐH Bách Khoa -->
-                    <tr class="hover:bg-surface-container-low/60 transition-colors">
-                        <td class="py-4 px-4">
-                            <div class="flex items-center gap-3">
-                                <div class="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-headline-sm font-bold shrink-0">
-                                    BK
-                                </div>
-                                <div>
-                                    <div class="flex items-center gap-2">
-                                        <span class="font-label-md text-label-md font-bold text-on-surface hover:text-primary cursor-pointer">Đại Học Bách Khoa Hà Nội</span>
-                                        <span class="px-2 py-0.5 rounded-full bg-primary-fixed text-primary font-label-sm text-[10px] font-bold">KIM CƯƠNG</span>
-                                    </div>
-                                    <p class="font-body-sm text-[12px] text-on-surface-variant">Phụ trách Đoàn TN: <strong class="text-on-surface font-semibold">ThS. Vũ Đình Trọng</strong> • 0912.845.xxx</p>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="py-4 px-4">
-                            <span class="px-2.5 py-1 rounded-lg bg-surface-container font-label-sm text-label-sm text-on-surface font-medium">Trường Đại học</span>
-                            <p class="text-on-surface-variant text-[12px] mt-1">Hai Bà Trưng, Hà Nội</p>
-                        </td>
-                        <td class="py-4 px-4">
-                            <div class="font-label-md text-label-md font-bold text-primary">6,450 Đơn vị</div>
-                            <p class="text-on-surface-variant text-[12px]">16 đợt hiến máu (4 năm)</p>
-                        </td>
-                        <td class="py-4 px-4">
-                            <div class="flex items-center gap-1.5 text-emerald-700 font-semibold font-label-sm text-label-sm">
-                                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                                <span>Đang diễn ra (Hôm nay)</span>
-                            </div>
-                            <p class="text-on-surface-variant text-[12px] mt-0.5">Tiếp theo: 15/11/2025</p>
-                        </td>
-                        <td class="py-4 px-4">
-                            <div class="flex items-center gap-1.5 text-on-surface font-label-sm text-label-sm">
-                                <span class="material-symbols-outlined text-emerald-600 text-[16px]">check</span>
-                                <span>Hội trường C2 (350m²)</span>
-                            </div>
-                            <p class="text-on-surface-variant text-[11px]">Bãi xe 10T • Điện 3 pha</p>
-                        </td>
-                        <td class="py-4 px-4">
-                            <span class="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 font-label-sm text-[11px] font-bold">Hiệu Lực 2026</span>
-                            <p class="text-on-surface-variant text-[11px] mt-1">MOU-2023-DHBK</p>
-                        </td>
-                        <td class="py-4 px-4 text-right">
-                            <div class="flex items-center justify-end gap-1">
-                                <button class="p-2 text-on-surface-variant hover:text-primary hover:bg-surface-container rounded-lg transition-colors" title="Lên lịch đợt mới" type="button">
-                                    <span class="material-symbols-outlined text-[18px]">calendar_add_on</span>
-                                </button>
-                                <button class="p-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-lg transition-colors" title="Hồ sơ chi tiết" type="button">
-                                    <span class="material-symbols-outlined text-[18px]">visibility</span>
-                                </button>
-                                <button class="p-2 text-on-surface-variant hover:text-primary hover:bg-surface-container rounded-lg transition-colors" title="Gửi thư tri ân" type="button">
-                                    <span class="material-symbols-outlined text-[18px]">card_membership</span>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var item in Model)
+                        {
+                            var initials = string.Join("", item.TenDonViToChuc.Split(' ', StringSplitOptions.RemoveEmptyEntries).Select(w => w[0])).ToUpper();
+                            if (initials.Length > 2) { initials = initials.Substring(0, 2); }
 
-                    <!-- Row 2: Canon Việt Nam -->
-                    <tr class="hover:bg-surface-container-low/60 transition-colors">
-                        <td class="py-4 px-4">
-                            <div class="flex items-center gap-3">
-                                <div class="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-headline-sm font-bold shrink-0">
-                                    CN
-                                </div>
-                                <div>
-                                    <div class="flex items-center gap-2">
-                                        <span class="font-label-md text-label-md font-bold text-on-surface hover:text-primary cursor-pointer">Công Ty TNHH Canon Việt Nam</span>
-                                        <span class="px-2 py-0.5 rounded-full bg-primary-fixed text-primary font-label-sm text-[10px] font-bold">KIM CƯƠNG</span>
+                            <tr class="hover:bg-surface-container-low/60 transition-colors">
+                                <td class="py-4 px-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-headline-sm font-bold shrink-0">
+                                            @initials
+                                        </div>
+                                        <div>
+                                            <div class="flex items-center gap-2">
+                                                <span class="font-label-md text-label-md font-bold text-on-surface">@item.TenDonViToChuc</span>
+                                                <span class="px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant font-label-sm text-[10px]">#@item.MaDonViToChuc</span>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <p class="font-body-sm text-[12px] text-on-surface-variant">Trưởng phòng CSR: <strong class="text-on-surface font-semibold">Bà Nguyễn Thu Nga</strong> • 0988.223.xxx</p>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="py-4 px-4">
-                            <span class="px-2.5 py-1 rounded-lg bg-surface-container font-label-sm text-label-sm text-on-surface font-medium">Doanh nghiệp FDI</span>
-                            <p class="text-on-surface-variant text-[12px] mt-1">KCN Thăng Long, Đông Anh</p>
-                        </td>
-                        <td class="py-4 px-4">
-                            <div class="font-label-md text-label-md font-bold text-primary">5,120 Đơn vị</div>
-                            <p class="text-on-surface-variant text-[12px]">12 đợt hiến máu (3 năm)</p>
-                        </td>
-                        <td class="py-4 px-4">
-                            <div class="flex items-center gap-1.5 text-emerald-700 font-semibold font-label-sm text-label-sm">
-                                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                                <span>Đang diễn ra (Hôm nay)</span>
-                            </div>
-                            <p class="text-on-surface-variant text-[12px] mt-0.5">Tiếp theo: 20/12/2025</p>
-                        </td>
-                        <td class="py-4 px-4">
-                            <div class="flex items-center gap-1.5 text-on-surface font-label-sm text-label-sm">
-                                <span class="material-symbols-outlined text-emerald-600 text-[16px]">check</span>
-                                <span>Nhà ăn TT &amp; Sảnh lớn</span>
-                            </div>
-                            <p class="text-on-surface-variant text-[11px]">Điều hòa tổng • Ramp xe bus</p>
-                        </td>
-                        <td class="py-4 px-4">
-                            <span class="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 font-label-sm text-[11px] font-bold">Hiệu Lực 2027</span>
-                            <p class="text-on-surface-variant text-[11px] mt-1">MOU-2024-CANON</p>
-                        </td>
-                        <td class="py-4 px-4 text-right">
-                            <div class="flex items-center justify-end gap-1">
-                                <button class="p-2 text-on-surface-variant hover:text-primary hover:bg-surface-container rounded-lg transition-colors" title="Lên lịch đợt mới" type="button">
-                                    <span class="material-symbols-outlined text-[18px]">calendar_add_on</span>
-                                </button>
-                                <button class="p-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-lg transition-colors" title="Hồ sơ chi tiết" type="button">
-                                    <span class="material-symbols-outlined text-[18px]">visibility</span>
-                                </button>
-                                <button class="p-2 text-on-surface-variant hover:text-primary hover:bg-surface-container rounded-lg transition-colors" title="Gửi thư tri ân" type="button">
-                                    <span class="material-symbols-outlined text-[18px]">card_membership</span>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-
-                    <!-- Row 3: Samsung Thái Nguyên -->
-                    <tr class="hover:bg-surface-container-low/60 transition-colors">
-                        <td class="py-4 px-4">
-                            <div class="flex items-center gap-3">
-                                <div class="w-12 h-12 rounded-xl bg-blue-100 text-blue-800 flex items-center justify-center font-headline-sm font-bold shrink-0">
-                                    SS
-                                </div>
-                                <div>
-                                    <div class="flex items-center gap-2">
-                                        <span class="font-label-md text-label-md font-bold text-on-surface hover:text-primary cursor-pointer">Tổ Hợp Samsung Electronics Thái Nguyên (SEVT)</span>
-                                        <span class="px-2 py-0.5 rounded-full bg-primary-fixed text-primary font-label-sm text-[10px] font-bold">KIM CƯƠNG</span>
+                                </td>
+                                <td class="py-4 px-4">
+                                    <div class="flex items-center gap-1.5 text-on-surface font-body-sm">
+                                        <span class="material-symbols-outlined text-[16px] text-primary">email</span>
+                                        <span>@(string.IsNullOrEmpty(item.EmailLienHe) ? "Chưa cập nhật" : item.EmailLienHe)</span>
                                     </div>
-                                    <p class="font-body-sm text-[12px] text-on-surface-variant">Trung tâm Y tế: <strong class="text-on-surface font-semibold">BS. Park Sung-min &amp; ThS. Hoàng Mai</strong></p>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="py-4 px-4">
-                            <span class="px-2.5 py-1 rounded-lg bg-surface-container font-label-sm text-label-sm text-on-surface font-medium">Khu công nghiệp FDI</span>
-                            <p class="text-on-surface-variant text-[12px] mt-1">KCN Yên Bình, Phổ Yên, TN</p>
-                        </td>
-                        <td class="py-4 px-4">
-                            <div class="font-label-md text-label-md font-bold text-primary">7,200 Đơn vị</div>
-                            <p class="text-on-surface-variant text-[12px]">14 đợt chiến dịch lớn</p>
-                        </td>
-                        <td class="py-4 px-4">
-                            <div class="font-label-sm text-label-sm text-on-surface font-semibold">12/09/2024 (Đã xong)</div>
-                            <p class="text-primary font-label-sm text-[12px] mt-0.5 font-bold">Đợt tới: 24/11/2024</p>
-                        </td>
-                        <td class="py-4 px-4">
-                            <div class="flex items-center gap-1.5 text-on-surface font-label-sm text-label-sm">
-                                <span class="material-symbols-outlined text-emerald-600 text-[16px]">check</span>
-                                <span>Trung tâm Huấn luyện (600m²)</span>
-                            </div>
-                            <p class="text-on-surface-variant text-[11px]">Trạm xá riêng • Sức chứa 12 giường</p>
-                        </td>
-                        <td class="py-4 px-4">
-                            <span class="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 font-label-sm text-[11px] font-bold">Hiệu Lực 2028</span>
-                            <p class="text-on-surface-variant text-[11px] mt-1">MOU-SEVT-VIP</p>
-                        </td>
-                        <td class="py-4 px-4 text-right">
-                            <div class="flex items-center justify-end gap-1">
-                                <button class="p-2 text-on-surface-variant hover:text-primary hover:bg-surface-container rounded-lg transition-colors" title="Lên lịch đợt mới" type="button">
-                                    <span class="material-symbols-outlined text-[18px]">calendar_add_on</span>
-                                </button>
-                                <button class="p-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-lg transition-colors" title="Hồ sơ chi tiết" type="button">
-                                    <span class="material-symbols-outlined text-[18px]">visibility</span>
-                                </button>
-                                <button class="p-2 text-on-surface-variant hover:text-primary hover:bg-surface-container rounded-lg transition-colors" title="Gửi thư tri ân" type="button">
-                                    <span class="material-symbols-outlined text-[18px]">card_membership</span>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-
-                    <!-- Row 4: ĐH Kinh Tế Quốc Dân -->
-                    <tr class="hover:bg-surface-container-low/60 transition-colors">
-                        <td class="py-4 px-4">
-                            <div class="flex items-center gap-3">
-                                <div class="w-12 h-12 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center font-headline-sm font-bold shrink-0">
-                                    KT
-                                </div>
-                                <div>
-                                    <div class="flex items-center gap-2">
-                                        <span class="font-label-md text-label-md font-bold text-on-surface hover:text-primary cursor-pointer">Trường Đại Học Kinh Tế Quốc Dân (NEU)</span>
-                                        <span class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 font-label-sm text-[10px] font-bold">HẠNG VÀNG</span>
+                                </td>
+                                <td class="py-4 px-4 max-w-xs">
+                                    <p class="line-clamp-2 text-on-surface-variant text-[13px]">
+                                        @(string.IsNullOrEmpty(item.MoTa) ? "Chưa có mô tả" : item.MoTa)
+                                    </p>
+                                </td>
+                                <td class="py-4 px-4">
+                                    <div class="font-label-md text-label-md font-bold text-primary">@(item.DotHienMaus?.Count ?? 0) Đợt</div>
+                                </td>
+                                <td class="py-4 px-4">
+                                    @if (item.TrangThai == "Hoạt động")
+                                    {
+                                        <span class="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 font-label-sm text-[11px] font-bold flex items-center gap-1 w-fit">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                                            Hoạt Động
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="px-2.5 py-1 rounded-full bg-gray-100 text-gray-700 font-label-sm text-[11px] font-bold flex items-center gap-1 w-fit">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-gray-400"></span>
+                                            Tạm Dừng
+                                        </span>
+                                    }
+                                </td>
+                                <td class="py-4 px-4 text-right">
+                                    <div class="flex items-center justify-end gap-1">
+                                        <button class="p-2 text-on-surface-variant hover:text-primary hover:bg-surface-container rounded-lg transition-colors cursor-pointer" title="Chỉnh sửa đơn vị" type="button" onclick='openEditModal(@item.MaDonViToChuc, @Html.Raw(System.Text.Json.JsonSerializer.Serialize(item.TenDonViToChuc)), @Html.Raw(System.Text.Json.JsonSerializer.Serialize(item.MoTa ?? "")), @Html.Raw(System.Text.Json.JsonSerializer.Serialize(item.EmailLienHe ?? "")), @Html.Raw(System.Text.Json.JsonSerializer.Serialize(item.TrangThai ?? "Hoạt động")))'>
+                                            <span class="material-symbols-outlined text-[18px]">edit</span>
+                                        </button>
+                                        <button class="p-2 text-on-surface-variant hover:text-error hover:bg-surface-container rounded-lg transition-colors cursor-pointer" title="Xóa đơn vị" type="button" onclick='openDeleteModal(@item.MaDonViToChuc, @Html.Raw(System.Text.Json.JsonSerializer.Serialize(item.TenDonViToChuc)))'>
+                                            <span class="material-symbols-outlined text-[18px]">delete</span>
+                                        </button>
                                     </div>
-                                    <p class="font-body-sm text-[12px] text-on-surface-variant">Chủ tịch HSV: <strong class="text-on-surface font-semibold">Đỗ Minh Quân</strong> • 0945.191.xxx</p>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="py-4 px-4">
-                            <span class="px-2.5 py-1 rounded-lg bg-surface-container font-label-sm text-label-sm text-on-surface font-medium">Trường Đại học</span>
-                            <p class="text-on-surface-variant text-[12px] mt-1">Trần Đại Nghĩa, Hà Nội</p>
-                        </td>
-                        <td class="py-4 px-4">
-                            <div class="font-label-md text-label-md font-bold text-on-surface">3,890 Đơn vị</div>
-                            <p class="text-on-surface-variant text-[12px]">10 đợt tổ chức</p>
-                        </td>
-                        <td class="py-4 px-4">
-                            <div class="font-label-sm text-label-sm text-on-surface font-semibold">05/08/2024</div>
-                            <p class="text-primary font-label-sm text-[12px] mt-0.5 font-bold">Đợt tới: 08/11/2024</p>
-                        </td>
-                        <td class="py-4 px-4">
-                            <div class="flex items-center gap-1.5 text-on-surface font-label-sm text-label-sm">
-                                <span class="material-symbols-outlined text-emerald-600 text-[16px]">check</span>
-                                <span>Nhà văn hóa NEU</span>
-                            </div>
-                            <p class="text-on-surface-variant text-[11px]">Sân rộng đỗ 2 xe bus y tế</p>
-                        </td>
-                        <td class="py-4 px-4">
-                            <span class="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 font-label-sm text-[11px] font-bold">Hiệu Lực 2025</span>
-                            <p class="text-on-surface-variant text-[11px] mt-1">MOU-NEU-2022</p>
-                        </td>
-                        <td class="py-4 px-4 text-right">
-                            <div class="flex items-center justify-end gap-1">
-                                <button class="p-2 text-on-surface-variant hover:text-primary hover:bg-surface-container rounded-lg transition-colors" title="Lên lịch đợt mới" type="button">
-                                    <span class="material-symbols-outlined text-[18px]">calendar_add_on</span>
-                                </button>
-                                <button class="p-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-lg transition-colors" title="Hồ sơ chi tiết" type="button">
-                                    <span class="material-symbols-outlined text-[18px]">visibility</span>
-                                </button>
-                                <button class="p-2 text-on-surface-variant hover:text-primary hover:bg-surface-container rounded-lg transition-colors" title="Gửi thư tri ân" type="button">
-                                    <span class="material-symbols-outlined text-[18px]">card_membership</span>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-
-                    <!-- Row 5: Viettel Telecom -->
-                    <tr class="hover:bg-surface-container-low/60 transition-colors">
-                        <td class="py-4 px-4">
-                            <div class="flex items-center gap-3">
-                                <div class="w-12 h-12 rounded-xl bg-surface-container-highest text-on-surface-variant flex items-center justify-center font-headline-sm font-bold shrink-0">
-                                    VT
-                                </div>
-                                <div>
-                                    <div class="flex items-center gap-2">
-                                        <span class="font-label-md text-label-md font-bold text-on-surface hover:text-primary cursor-pointer">Tổng Công Ty Viễn Thông Viettel (Viettel Telecom)</span>
-                                        <span class="px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 font-label-sm text-[10px] font-bold">HẠNG VÀNG</span>
-                                    </div>
-                                    <p class="font-body-sm text-[12px] text-on-surface-variant">Phụ trách Công đoàn: <strong class="text-on-surface font-semibold">Thiếu tá Lê Việt Hùng</strong></p>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="py-4 px-4">
-                            <span class="px-2.5 py-1 rounded-lg bg-surface-container font-label-sm text-label-sm text-on-surface font-medium">Doanh nghiệp Quân đội</span>
-                            <p class="text-on-surface-variant text-[12px] mt-1">Cầu Giấy, Hà Nội</p>
-                        </td>
-                        <td class="py-4 px-4">
-                            <div class="font-label-md text-label-md font-bold text-on-surface">2,750 Đơn vị</div>
-                            <p class="text-on-surface-variant text-[12px]">8 đợt hiến máu</p>
-                        </td>
-                        <td class="py-4 px-4">
-                            <div class="font-label-sm text-label-sm text-on-surface font-semibold">22/07/2024</div>
-                            <p class="text-on-surface-variant text-[12px] mt-0.5">Dự kiến: Tháng 12/2024</p>
-                        </td>
-                        <td class="py-4 px-4">
-                            <div class="flex items-center gap-1.5 text-on-surface font-label-sm text-label-sm">
-                                <span class="material-symbols-outlined text-emerald-600 text-[16px]">check</span>
-                                <span>Tòa nhà The Light Cầu Giấy</span>
-                            </div>
-                            <p class="text-on-surface-variant text-[11px]">Hầm gửi xe cao tầng</p>
-                        </td>
-                        <td class="py-4 px-4">
-                            <span class="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 font-label-sm text-[11px] font-bold">Hiệu Lực 2026</span>
-                            <p class="text-on-surface-variant text-[11px] mt-1">MOU-VTT-2023</p>
-                        </td>
-                        <td class="py-4 px-4 text-right">
-                            <div class="flex items-center justify-end gap-1">
-                                <button class="p-2 text-on-surface-variant hover:text-primary hover:bg-surface-container rounded-lg transition-colors" title="Lên lịch đợt mới" type="button">
-                                    <span class="material-symbols-outlined text-[18px]">calendar_add_on</span>
-                                </button>
-                                <button class="p-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-lg transition-colors" title="Hồ sơ chi tiết" type="button">
-                                    <span class="material-symbols-outlined text-[18px]">visibility</span>
-                                </button>
-                                <button class="p-2 text-on-surface-variant hover:text-primary hover:bg-surface-container rounded-lg transition-colors" title="Gửi thư tri ân" type="button">
-                                    <span class="material-symbols-outlined text-[18px]">card_membership</span>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-
-                    <!-- Row 6: Vietcombank Sở Giao Dịch (Needs Renewal Alert) -->
-                    <tr class="hover:bg-surface-container-low/60 transition-colors bg-error-container/10">
-                        <td class="py-4 px-4">
-                            <div class="flex items-center gap-3">
-                                <div class="w-12 h-12 rounded-xl bg-surface-container-highest text-on-surface-variant flex items-center justify-center font-headline-sm font-bold shrink-0">
-                                    VC
-                                </div>
-                                <div>
-                                    <div class="flex items-center gap-2">
-                                        <span class="font-label-md text-label-md font-bold text-on-surface hover:text-primary cursor-pointer">Ngân Hàng Ngoại Thương VN (VCB Sở Giao Dịch)</span>
-                                        <span class="px-2 py-0.5 rounded-full bg-surface-container-highest text-on-surface-variant font-label-sm text-[10px] font-bold">HẠNG BẠC</span>
-                                    </div>
-                                    <p class="font-body-sm text-[12px] text-on-surface-variant">Phụ trách Đoàn: <strong class="text-on-surface font-semibold">Ông Trần Hải Long</strong> • 0904.331.xxx</p>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="py-4 px-4">
-                            <span class="px-2.5 py-1 rounded-lg bg-surface-container font-label-sm text-label-sm text-on-surface font-medium">Tài chính - Ngân hàng</span>
-                            <p class="text-on-surface-variant text-[12px] mt-1">Quốc Tử Giám, Đống Đa</p>
-                        </td>
-                        <td class="py-4 px-4">
-                            <div class="font-label-md text-label-md font-bold text-on-surface">1,450 Đơn vị</div>
-                            <p class="text-on-surface-variant text-[12px]">4 đợt tổ chức</p>
-                        </td>
-                        <td class="py-4 px-4">
-                            <div class="font-label-sm text-label-sm text-on-surface font-semibold">14/04/2024</div>
-                            <p class="text-error font-label-sm text-[12px] mt-0.5 font-bold">Đang chờ ký phụ lục</p>
-                        </td>
-                        <td class="py-4 px-4">
-                            <div class="flex items-center gap-1.5 text-on-surface font-label-sm text-label-sm">
-                                <span class="material-symbols-outlined text-emerald-600 text-[16px]">check</span>
-                                <span>Hội trường tầng 5 (200m²)</span>
-                            </div>
-                            <p class="text-on-surface-variant text-[11px]">Thang máy chuyên dụng</p>
-                        </td>
-                        <td class="py-4 px-4">
-                            <span class="px-2.5 py-1 rounded-full bg-error-container text-error font-label-sm text-[11px] font-bold flex items-center gap-1 w-fit">
-                                <span class="material-symbols-outlined text-[13px]">warning</span>
-                                Hết Hạn (Cần Tái Ký)
-                            </span>
-                            <p class="text-error text-[11px] mt-1 font-medium">Hạn chót: 30/11/2024</p>
-                        </td>
-                        <td class="py-4 px-4 text-right">
-                            <div class="flex items-center justify-end gap-1">
-                                <button class="px-2.5 py-1.5 rounded-lg bg-error text-on-error font-label-sm text-label-sm font-semibold hover:bg-tertiary transition-colors flex items-center gap-1" title="Gửi hợp đồng tái ký" type="button">
-                                    <span class="material-symbols-outlined text-[15px]">edit_document</span> Tái Ký
-                                </button>
-                                <button class="p-2 text-on-surface-variant hover:text-on-surface hover:bg-surface-container rounded-lg transition-colors" title="Hồ sơ chi tiết" type="button">
-                                    <span class="material-symbols-outlined text-[18px]">visibility</span>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center py-8 text-on-surface-variant">
+                                <span class="material-symbols-outlined text-[32px] text-outline mb-2">inbox</span>
+                                <p>Không tìm thấy đơn vị tổ chức nào phù hợp.</p>
+                            </td>
+                        </tr>
+                    }
                 </tbody>
             </table>
         </div>
@@ -823,21 +274,139 @@
         <!-- Pagination & Table Footer -->
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm pt-space-sm border-t border-surface-container">
             <p class="font-body-sm text-body-sm text-on-surface-variant">
-                Hiển thị <strong class="text-on-surface font-semibold">1 - 6</strong> trong số <strong class="text-on-surface font-semibold">48</strong> đơn vị đối tác liên kết
+                Hiển thị <strong class="text-on-surface font-semibold">@totalCount</strong> đơn vị tổ chức
             </p>
-            <div class="flex items-center gap-1">
-                <button class="w-9 h-9 rounded-lg flex items-center justify-center text-on-surface-variant opacity-40 hover:bg-surface-container" disabled type="button">
-                    <span class="material-symbols-outlined text-[18px]">chevron_left</span>
-                </button>
-                <button class="w-9 h-9 rounded-lg bg-primary text-on-primary font-label-md text-label-md font-bold shadow-xs" type="button">1</button>
-                <button class="w-9 h-9 rounded-lg text-on-surface hover:bg-surface-container font-label-md text-label-md transition-colors" type="button">2</button>
-                <button class="w-9 h-9 rounded-lg text-on-surface hover:bg-surface-container font-label-md text-label-md transition-colors" type="button">3</button>
-                <span class="px-1 text-on-surface-variant">...</span>
-                <button class="w-9 h-9 rounded-lg text-on-surface hover:bg-surface-container font-label-md text-label-md transition-colors" type="button">8</button>
-                <button class="w-9 h-9 rounded-lg flex items-center justify-center text-on-surface hover:bg-surface-container transition-colors" type="button">
-                    <span class="material-symbols-outlined text-[18px]">chevron_right</span>
-                </button>
-            </div>
         </div>
     </div>
 </div>
+
+<!-- Modal Thêm Mới Đơn Vị Tổ Chức -->
+<div id="createModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-surface-container-lowest rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
+        <div class="flex items-center justify-between border-b border-surface-container pb-3">
+            <h3 class="font-headline-sm text-headline-sm font-bold text-on-surface flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary">add_business</span>
+                Thêm Đơn Vị Tổ Chức Mới
+            </h3>
+            <button onclick="closeCreateModal()" class="text-on-surface-variant hover:text-on-surface"><span class="material-symbols-outlined">close</span></button>
+        </div>
+        <form method="post" asp-controller="Admin" asp-action="CreateDonViToChuc" class="space-y-4">
+            @Html.AntiForgeryToken()
+            <div>
+                <label class="font-label-md text-label-md text-on-surface block mb-1">Tên Đơn Vị Tổ Chức <span class="text-error">*</span></label>
+                <input name="TenDonViToChuc" required class="w-full h-11 px-3.5 bg-surface-container-low text-on-surface rounded-xl border border-surface-container focus:outline-none focus:ring-2 focus:ring-primary/20" placeholder="VD: Đoàn Thanh Niên UNETI" />
+            </div>
+            <div>
+                <label class="font-label-md text-label-md text-on-surface block mb-1">Email Liên Hệ</label>
+                <input name="EmailLienHe" type="email" class="w-full h-11 px-3.5 bg-surface-container-low text-on-surface rounded-xl border border-surface-container focus:outline-none focus:ring-2 focus:ring-primary/20" placeholder="VD: doanthanhnien@uneti.edu.vn" />
+            </div>
+            <div>
+                <label class="font-label-md text-label-md text-on-surface block mb-1">Trạng Thái</label>
+                <select name="TrangThai" class="w-full h-11 px-3.5 bg-surface-container-low text-on-surface rounded-xl border border-surface-container focus:outline-none focus:ring-2 focus:ring-primary/20">
+                    <option value="Hoạt động">Hoạt động</option>
+                    <option value="Tạm dừng">Tạm dừng</option>
+                </select>
+            </div>
+            <div>
+                <label class="font-label-md text-label-md text-on-surface block mb-1">Mô Tả / Địa Chỉ</label>
+                <textarea name="MoTa" rows="3" class="w-full p-3 bg-surface-container-low text-on-surface rounded-xl border border-surface-container focus:outline-none focus:ring-2 focus:ring-primary/20" placeholder="Thông tin chi tiết về đơn vị, địa chỉ tổ chức..."></textarea>
+            </div>
+            <div class="flex items-center justify-end gap-3 pt-3 border-t border-surface-container">
+                <button type="button" onclick="closeCreateModal()" class="px-4 py-2.5 rounded-xl bg-surface-container text-on-surface font-label-md text-label-md hover:bg-surface-container-high transition-all">Hủy</button>
+                <button type="submit" class="px-5 py-2.5 rounded-xl bg-primary text-on-primary font-label-md text-label-md font-bold hover:bg-primary-container transition-all">Lưu Đơn Vị</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Chỉnh Sửa Đơn Vị Tổ Chức -->
+<div id="editModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-surface-container-lowest rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4">
+        <div class="flex items-center justify-between border-b border-surface-container pb-3">
+            <h3 class="font-headline-sm text-headline-sm font-bold text-on-surface flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary">edit_note</span>
+                Chỉnh Sửa Đơn Vị Tổ Chức
+            </h3>
+            <button onclick="closeEditModal()" class="text-on-surface-variant hover:text-on-surface"><span class="material-symbols-outlined">close</span></button>
+        </div>
+        <form method="post" asp-controller="Admin" asp-action="EditDonViToChuc" class="space-y-4">
+            @Html.AntiForgeryToken()
+            <input type="hidden" id="edit_id" name="MaDonViToChuc" />
+            <input type="hidden" id="edit_id_param" name="id" />
+            <div>
+                <label class="font-label-md text-label-md text-on-surface block mb-1">Tên Đơn Vị Tổ Chức <span class="text-error">*</span></label>
+                <input id="edit_ten" name="TenDonViToChuc" required class="w-full h-11 px-3.5 bg-surface-container-low text-on-surface rounded-xl border border-surface-container focus:outline-none focus:ring-2 focus:ring-primary/20" />
+            </div>
+            <div>
+                <label class="font-label-md text-label-md text-on-surface block mb-1">Email Liên Hệ</label>
+                <input id="edit_email" name="EmailLienHe" type="email" class="w-full h-11 px-3.5 bg-surface-container-low text-on-surface rounded-xl border border-surface-container focus:outline-none focus:ring-2 focus:ring-primary/20" />
+            </div>
+            <div>
+                <label class="font-label-md text-label-md text-on-surface block mb-1">Trạng Thái</label>
+                <select id="edit_trangthai" name="TrangThai" class="w-full h-11 px-3.5 bg-surface-container-low text-on-surface rounded-xl border border-surface-container focus:outline-none focus:ring-2 focus:ring-primary/20">
+                    <option value="Hoạt động">Hoạt động</option>
+                    <option value="Tạm dừng">Tạm dừng</option>
+                </select>
+            </div>
+            <div>
+                <label class="font-label-md text-label-md text-on-surface block mb-1">Mô Tả / Địa Chỉ</label>
+                <textarea id="edit_mota" name="MoTa" rows="3" class="w-full p-3 bg-surface-container-low text-on-surface rounded-xl border border-surface-container focus:outline-none focus:ring-2 focus:ring-primary/20"></textarea>
+            </div>
+            <div class="flex items-center justify-end gap-3 pt-3 border-t border-surface-container">
+                <button type="button" onclick="closeEditModal()" class="px-4 py-2.5 rounded-xl bg-surface-container text-on-surface font-label-md text-label-md hover:bg-surface-container-high transition-all">Hủy</button>
+                <button type="submit" class="px-5 py-2.5 rounded-xl bg-primary text-on-primary font-label-md text-label-md font-bold hover:bg-primary-container transition-all">Cập Nhật</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Xóa Đơn Vị Tổ Chức -->
+<div id="deleteModal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-surface-container-lowest rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+        <div class="flex items-center gap-3 text-error">
+            <span class="material-symbols-outlined text-[32px]">warning</span>
+            <h3 class="font-headline-sm text-headline-sm font-bold text-on-surface">Xác Nhận Xóa Đơn Vị</h3>
+        </div>
+        <p class="font-body-md text-body-md text-on-surface-variant">
+            Bạn có chắc chắn muốn xóa đơn vị <strong id="delete_name" class="text-on-surface font-semibold"></strong> khỏi hệ thống?
+        </p>
+        <p class="font-body-sm text-[12px] text-error">Lưu ý: Không thể xóa đơn vị nếu đang có đợt hiến máu liên kết.</p>
+        <form method="post" asp-controller="Admin" asp-action="DeleteDonViToChuc" class="flex items-center justify-end gap-3 pt-3 border-t border-surface-container">
+            @Html.AntiForgeryToken()
+            <input type="hidden" id="delete_id" name="id" />
+            <button type="button" onclick="closeDeleteModal()" class="px-4 py-2.5 rounded-xl bg-surface-container text-on-surface font-label-md text-label-md hover:bg-surface-container-high transition-all">Hủy</button>
+            <button type="submit" class="px-5 py-2.5 rounded-xl bg-error text-on-error font-label-md text-label-md font-bold hover:bg-red-700 transition-all">Xóa Đơn Vị</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openCreateModal() {
+        document.getElementById('createModal').classList.remove('hidden');
+    }
+    function closeCreateModal() {
+        document.getElementById('createModal').classList.add('hidden');
+    }
+
+    function openEditModal(id, ten, mota, email, trangthai) {
+        document.getElementById('edit_id').value = id;
+        document.getElementById('edit_id_param').value = id;
+        document.getElementById('edit_ten').value = ten || '';
+        document.getElementById('edit_mota').value = mota || '';
+        document.getElementById('edit_email').value = email || '';
+        document.getElementById('edit_trangthai').value = trangthai || 'Hoạt động';
+        document.getElementById('editModal').classList.remove('hidden');
+    }
+    function closeEditModal() {
+        document.getElementById('editModal').classList.add('hidden');
+    }
+
+    function openDeleteModal(id, ten) {
+        document.getElementById('delete_id').value = id;
+        document.getElementById('delete_name').textContent = ten;
+        document.getElementById('deleteModal').classList.remove('hidden');
+    }
+    function closeDeleteModal() {
+        document.getElementById('deleteModal').classList.add('hidden');
+    }
+</script>
