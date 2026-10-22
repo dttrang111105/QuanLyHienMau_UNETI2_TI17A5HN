@@ -1,4 +1,4 @@
-@using QuanLyHienMau_UNETI2_TI17A5HN.ViewModels
+﻿@using QuanLyHienMau_UNETI2_TI17A5HN.ViewModels
 @model DashboardVm
 @{
     Layout = "_AdminLayout";
@@ -69,13 +69,13 @@
                     <span class="material-symbols-outlined text-[18px]">biotech</span>
                     <span>Quản lý kết quả (@(hienMauThanhCong + khongDuDieuKien))</span>
                 </a>
-                <button class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md transition-all shadow-sm font-semibold" type="button" onclick="location.href='/ThongKe/Export'">
-                    <span class="material-symbols-outlined text-[18px]">download</span>
-                    <span>Xuất Báo Cáo</span>
-                </button>
-                <a asp-controller="DotHienMau" asp-action="Index" class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md shadow-md transition-all font-bold">
-                    <span class="material-symbols-outlined text-[20px]">event_available</span>
+                <a asp-controller="DotHienMau" asp-action="Index" class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md transition-all shadow-sm font-semibold">
+                    <span class="material-symbols-outlined text-[18px]">event_available</span>
                     <span>Danh Sách Đợt (@dotDangMo đợt mở)</span>
+                </a>
+                <a asp-action="PhieuDangKyHienMau" class="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md shadow-md transition-all font-bold">
+                    <span class="material-symbols-outlined text-[20px]">assignment_turned_in</span>
+                    <span>Xử Lý Phiếu Đăng Ký (@phieuChoXacNhan chờ)</span>
                 </a>
             </div>
         </div>
