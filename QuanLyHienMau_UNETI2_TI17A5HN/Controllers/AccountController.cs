@@ -111,6 +111,8 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
             };
 
             await HttpContext.SignInAsync("QuanLyHienMau.Auth", new ClaimsPrincipal(claimsIdentity), authProperties);
+            HttpContext.Session.SetInt32("MaTaiKhoan", taiKhoan.MaTaiKhoan);
+            HttpContext.Session.SetString("VaiTro", taiKhoan.VaiTro);
 
             TempData["SuccessMessage"] = $"Chào mừng {taiKhoan.HoTen} đã đăng nhập thành công!";
 
@@ -256,6 +258,8 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
             };
 
             await HttpContext.SignInAsync("QuanLyHienMau.Auth", new ClaimsPrincipal(claimsIdentity), authProperties);
+            HttpContext.Session.SetInt32("MaTaiKhoan", newAccount.MaTaiKhoan);
+            HttpContext.Session.SetString("VaiTro", newAccount.VaiTro);
 
             TempData["SuccessMessage"] = "Đăng ký tài khoản tình nguyện viên thành công! Chào mừng bạn tham gia cộng đồng.";
             return RedirectToAction("HoSoCaNhan", "NguoiHienMau");
@@ -267,6 +271,7 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
         public async Task<IActionResult> Logout()
         {
             await HttpContext.SignOutAsync("QuanLyHienMau.Auth");
+            HttpContext.Session.Clear();
             TempData["SuccessMessage"] = "Đã đăng xuất khỏi hệ thống.";
             return RedirectToAction(nameof(Login));
         }
@@ -276,6 +281,7 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
         public async Task<IActionResult> LogoutGet()
         {
             await HttpContext.SignOutAsync("QuanLyHienMau.Auth");
+            HttpContext.Session.Clear();
             TempData["SuccessMessage"] = "Đã đăng xuất khỏi hệ thống.";
             return RedirectToAction(nameof(Login));
         }

@@ -1,0 +1,20 @@
+@model KetQuaHienMau
+@{
+    var nhanVien = ViewData["LaNhanVien"] is true;
+    Layout = nhanVien ? "_AdminLayout" : "_Layout";
+    ViewData["Title"] = $"Kết quả hiến máu #{Model.MaKetQuaHienMau}";
+    var phieu = Model.PhieuDangKyHienMau;
+    var thanhCong = Model.KetQua == Module5TrangThai.Phieu.HienMauThanhCong;
+}
+<div class="m5-page">
+    <partial name="Module5/_Nav" />
+    <div class="m5-header"><div><span class="m5-kicker">Kết quả đã công bố</span><h1>Kết quả hiến máu #@Model.MaKetQuaHienMau</h1><p>@phieu?.NguoiHienMau?.HoTen · Phiếu #@phieu?.MaPhieu</p></div><a asp-action="@(nhanVien ? "Index" : "CuaToi")" class="m5-btn secondary">Quay lại danh sách</a></div>
+    <partial name="Module5/_Alerts" />
+    <div class="m5-result @(thanhCong ? "" : "failed")"><span class="material-symbols-outlined">@(thanhCong ? "verified" : "assignment_late")</span><div><h2>@Model.KetQua</h2><p>Cập nhật lúc @Model.NgayCapNhat?.ToString("HH:mm dd/MM/yyyy") · Giờ Việt Nam</p></div></div>
+    <div class="m5-card"><div class="m5-card-head"><h2>Thông tin kết quả</h2><partial name="Module5/_Badge" model="Model.KetQua" /></div><div class="m5-card-body"><dl class="m5-detail-grid">
+        <div><dt>Người hiến máu</dt><dd>@phieu?.NguoiHienMau?.HoTen</dd></div><div><dt>Phiếu đăng ký</dt><dd>#@Model.MaPhieu</dd></div>
+        <div><dt>Đợt hiến máu</dt><dd>@phieu?.DotHienMau?.TenDot</dd></div><div><dt>Đơn vị tổ chức</dt><dd>@phieu?.DotHienMau?.DonViToChuc?.TenDonViToChuc</dd></div>
+        <div><dt>Điểm đánh giá</dt><dd>@(Model.DiemDanhGia.HasValue ? Model.DiemDanhGia.Value.ToString("0.##") + " / 100" : "Không sử dụng điểm")</dd></div><div><dt>Ngày cập nhật</dt><dd>@Model.NgayCapNhat?.ToString("dd/MM/yyyy HH:mm")</dd></div>
+        <div class="m5-span-2"><dt>Nhận xét</dt><dd class="m5-note">@(string.IsNullOrWhiteSpace(Model.NhanXet) ? "Chưa có nhận xét bổ sung." : Model.NhanXet)</dd></div>
+    </dl></div></div>
+</div>

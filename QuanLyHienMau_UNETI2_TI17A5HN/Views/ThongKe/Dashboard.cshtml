@@ -1,0 +1,39 @@
+@model QuanLyHienMau_UNETI2_TI17A5HN.ViewModels.DashboardViewModel
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Dashboard hiến máu";
+    var cards = new[]
+    {
+        ("Đơn vị tổ chức", Model.TongDonViToChuc, "apartment", ""),
+        ("Đợt hiến máu", Model.TongDotHienMau, "event_available", ""),
+        ("Đợt đang mở đăng ký", Model.SoDotDangMo, "campaign", "green"),
+        ("Người hiến máu", Model.TongNguoiHienMau, "group", ""),
+        ("Phiếu đăng ký", Model.TongPhieu, "description", ""),
+        ("Phiếu chờ xác nhận", Model.SoPhieuChoXacNhan, "pending_actions", "amber"),
+        ("Phiếu đã xác nhận", Model.SoPhieuDaXacNhan, "fact_check", "green"),
+        ("Lịch khám sắp tới", Model.SoLichSapToi, "calendar_month", "amber"),
+        ("Hiến máu thành công", Model.SoPhieuThanhCong, "volunteer_activism", "green")
+    };
+}
+<div class="m5-page">
+    <partial name="Module5/_Nav" />
+    <div class="m5-header"><div><span class="m5-kicker">Vitalis Blood Community</span><h1>Dashboard hiến máu</h1><p>Tổng quan hoạt động · Cập nhật lúc @Model.ThoiDiemThongKe.ToString("HH:mm dd/MM/yyyy")</p></div><div class="m5-actions"><a asp-controller="LichKhamSangLoc" asp-action="Create" class="m5-btn"><span class="material-symbols-outlined">add</span>Lập lịch khám</a><a asp-action="Index" class="m5-btn secondary">Xem thống kê</a></div></div>
+    <partial name="Module5/_Alerts" />
+    <div class="m5-stats">
+        @foreach (var card in cards)
+        {
+            <article class="m5-kpi"><div><small>@card.Item1</small><strong>@card.Item2.ToString("N0")</strong></div><span class="m5-kpi-icon @card.Item4"><span class="material-symbols-outlined">@card.Item3</span></span></article>
+        }
+    </div>
+    @if (Model.CanhBaoChiTieu.Count > 0)
+    {
+        <div class="m5-alert warning" role="status"><span class="material-symbols-outlined">flag</span><div><strong>Đợt hiến máu đã đạt chỉ tiêu</strong>@foreach (var dot in Model.CanhBaoChiTieu) { <p>@dot.TenDot: @dot.ThanhCong / @dot.ChiTieu phiếu hiến thành công.</p> }</div></div>
+    }
+    <section class="m5-card"><div class="m5-card-head"><div><h2>Lịch khám sắp tới</h2><p>Các buổi khám gần nhất đang được lên lịch</p></div><a asp-controller="LichKhamSangLoc" asp-action="Index" class="m5-btn secondary small">Xem tất cả</a></div><div class="m5-table-wrap"><table class="m5-table"><thead><tr><th>Người hiến</th><th>Đợt hiến máu</th><th>Thời gian</th><th>Bác sĩ</th><th></th></tr></thead><tbody>
+        @if (Model.LichSapToi.Count == 0) { <tr><td colspan="5" class="m5-empty"><span class="material-symbols-outlined">calendar_today</span>Chưa có lịch khám sắp tới.</td></tr> }
+        @foreach (var lich in Model.LichSapToi)
+        {
+            <tr><td><strong>@lich.PhieuDangKyHienMau.NguoiHienMau.HoTen</strong><small>Phiếu #@lich.MaPhieu</small></td><td>@lich.PhieuDangKyHienMau.DotHienMau.TenDot</td><td><strong>@lich.ThoiGianBatDau.ToString("dd/MM/yyyy")</strong><small>@lich.ThoiGianBatDau.ToString("HH:mm") – @lich.ThoiGianKetThuc.ToString("HH:mm")</small></td><td>@lich.BacSiSangLoc</td><td><a asp-controller="LichKhamSangLoc" asp-action="Details" asp-route-id="@lich.MaLichKhamSangLoc" class="m5-btn small secondary">Chi tiết</a></td></tr>
+        }
+    </tbody></table></div></section>
+</div>

@@ -1,0 +1,53 @@
+@model LichKhamSangLoc
+@inject QuanLyHienMau_UNETI2_TI17A5HN.Services.Module5Clock Clock
+@{
+    var nhanVien = ViewData["LaNhanVien"] is true;
+    Layout = nhanVien ? "_AdminLayout" : "_Layout";
+    ViewData["Title"] = $"Lịch khám #{Model.MaLichKhamSangLoc}";
+    var phieu = Model.PhieuDangKyHienMau;
+    var dangCho = Model.TrangThai == Module5TrangThai.LichKham.DaLenLich && phieu.TrangThai == Module5TrangThai.Phieu.ChoKhamSangLoc;
+}
+<div class="m5-page">
+    <partial name="Module5/_Nav" />
+    <div class="m5-header"><div><span class="m5-kicker">Lịch khám sàng lọc</span><h1>Lịch khám #@Model.MaLichKhamSangLoc</h1><p>@phieu.NguoiHienMau.HoTen · @phieu.DotHienMau.TenDot</p></div><a asp-action="@(nhanVien ? "Index" : "CuaToi")" class="m5-btn secondary">Quay lại danh sách</a></div>
+    <partial name="Module5/_Alerts" />
+    <div class="m5-card">
+        <div class="m5-card-head"><h2>Thông tin buổi khám</h2><partial name="Module5/_Badge" model="Model.TrangThai" /></div>
+        <div class="m5-card-body">
+            <dl class="m5-detail-grid">
+                <div><dt>Người hiến máu</dt><dd>@phieu.NguoiHienMau.HoTen</dd></div>
+                <div><dt>Phiếu đăng ký</dt><dd>#@phieu.MaPhieu <partial name="Module5/_Badge" model="phieu.TrangThai" /></dd></div>
+                <div><dt>Thời gian bắt đầu</dt><dd>@Model.ThoiGianBatDau.ToString("dd/MM/yyyy HH:mm")</dd></div>
+                <div><dt>Thời gian kết thúc</dt><dd>@Model.ThoiGianKetThuc.ToString("dd/MM/yyyy HH:mm")</dd></div>
+                <div><dt>Bác sĩ sàng lọc</dt><dd>@Model.BacSiSangLoc</dd></div>
+                <div><dt>Hình thức tiếp nhận</dt><dd>@Model.HinhThucTiepNhan</dd></div>
+                <div><dt>Đợt hiến máu</dt><dd>@phieu.DotHienMau.TenDot</dd></div>
+                <div><dt>Đơn vị tổ chức</dt><dd>@phieu.DotHienMau.DonViToChuc.TenDonViToChuc</dd></div>
+                <div class="m5-span-2"><dt>Địa điểm hoặc liên kết</dt><dd>@Model.DiaDiemHoacLienKet</dd></div>
+                <div class="m5-span-2"><dt>Ghi chú</dt><dd class="m5-note">@(string.IsNullOrWhiteSpace(Model.GhiChu) ? "Chưa có ghi chú." : Model.GhiChu)</dd></div>
+            </dl>
+        </div>
+        @if (nhanVien)
+        {
+            <div class="m5-form-footer">
+                @if (dangCho)
+                {
+                    <a asp-action="Edit" asp-route-id="@Model.MaLichKhamSangLoc" class="m5-btn secondary">Điều chỉnh lịch</a>
+                    <form asp-action="Huy" asp-route-id="@Model.MaLichKhamSangLoc" method="post" onsubmit="return confirm('Hủy lịch khám này và đưa phiếu về Đã xác nhận?')"><button type="submit" class="m5-btn danger">Hủy lịch</button></form>
+                    @if (Model.ThoiGianBatDau <= Clock.Now)
+                    {
+                        <form asp-action="HoanThanh" asp-route-id="@Model.MaLichKhamSangLoc" method="post" onsubmit="return confirm('Xác nhận người hiến đã hoàn thành khám sàng lọc?')"><button type="submit" class="m5-btn success">Hoàn thành khám</button></form>
+                    }
+                }
+                @if (Model.TrangThai == Module5TrangThai.LichKham.DaHoanThanh && phieu.TrangThai == Module5TrangThai.Phieu.DaKhamSangLoc && phieu.KetQuaHienMau == null)
+                {
+                    <a asp-controller="KetQuaHienMau" asp-action="Create" asp-route-maPhieu="@Model.MaPhieu" class="m5-btn">Ghi nhận kết quả</a>
+                }
+                @if (phieu.KetQuaHienMau != null)
+                {
+                    <a asp-controller="KetQuaHienMau" asp-action="Details" asp-route-id="@phieu.KetQuaHienMau.MaKetQuaHienMau" class="m5-btn secondary">Xem kết quả hiến máu</a>
+                }
+            </div>
+        }
+    </div>
+</div>

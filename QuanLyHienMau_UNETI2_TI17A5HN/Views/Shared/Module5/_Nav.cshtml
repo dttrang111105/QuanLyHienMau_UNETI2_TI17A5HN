@@ -1,0 +1,23 @@
+@using QuanLyHienMau_UNETI2_TI17A5HN.Models
+@{
+    var controller = ViewContext.RouteData.Values["controller"]?.ToString();
+    var action = ViewContext.RouteData.Values["action"]?.ToString();
+    var taiKhoan = Context.Items[typeof(TaiKhoan)] as TaiKhoan;
+    var nhanVien = Module5TrangThai.VaiTro.LaNhanVien(taiKhoan?.VaiTro);
+}
+<link rel="stylesheet" href="~/css/module5.css" asp-append-version="true" />
+<nav class="m5-nav" aria-label="Điều hướng lịch khám và kết quả">
+    @if (nhanVien)
+    {
+        <a asp-controller="ThongKe" asp-action="Dashboard" class="@(controller == "ThongKe" && action == "Dashboard" ? "active" : "")"><span class="material-symbols-outlined">dashboard</span>Dashboard</a>
+        <a asp-controller="LichKhamSangLoc" asp-action="Index" class="@(controller == "LichKhamSangLoc" ? "active" : "")"><span class="material-symbols-outlined">calendar_month</span>Lịch khám</a>
+        <a asp-controller="KetQuaHienMau" asp-action="Index" class="@(controller == "KetQuaHienMau" ? "active" : "")"><span class="material-symbols-outlined">assignment_turned_in</span>Kết quả hiến máu</a>
+        <a asp-controller="ThongKe" asp-action="Index" class="@(controller == "ThongKe" && action == "Index" ? "active" : "")"><span class="material-symbols-outlined">monitoring</span>Thống kê</a>
+    }
+    else
+    {
+        <a asp-controller="LichKhamSangLoc" asp-action="CuaToi" class="@(controller == "LichKhamSangLoc" ? "active" : "")">Lịch khám của tôi</a>
+        <a asp-controller="KetQuaHienMau" asp-action="CuaToi" class="@(controller == "KetQuaHienMau" ? "active" : "")">Kết quả của tôi</a>
+        <a asp-controller="NguoiHienMau" asp-action="HoSoCaNhan">Hồ sơ cá nhân</a>
+    }
+</nav>

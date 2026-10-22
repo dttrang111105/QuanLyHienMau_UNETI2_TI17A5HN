@@ -146,10 +146,6 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("MaLichKhamSangLoc"));
 
-                    b.Property<string>("BacSiChuanHoa")
-                        .HasMaxLength(120)
-                        .HasColumnType("nvarchar(120)");
-
                     b.Property<string>("BacSiSangLoc")
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
@@ -159,12 +155,12 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Migrations
                         .HasColumnType("nvarchar(255)");
 
                     b.Property<string>("GhiChu")
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("HinhThucTiepNhan")
-                        .HasMaxLength(80)
-                        .HasColumnType("nvarchar(80)");
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<int>("MaPhieu")
                         .HasColumnType("int");
@@ -183,8 +179,6 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Migrations
                     b.HasKey("MaLichKhamSangLoc");
 
                     b.HasIndex("MaPhieu");
-
-                    b.HasIndex("BacSiChuanHoa", "ThoiGianBatDau");
 
                     b.ToTable("LichKhamSangLoc");
                 });

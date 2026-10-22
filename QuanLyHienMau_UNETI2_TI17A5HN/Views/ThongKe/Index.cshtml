@@ -1,0 +1,38 @@
+@model QuanLyHienMau_UNETI2_TI17A5HN.ViewModels.ThongKeViewModel
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Thống kê hiến máu";
+}
+<div class="m5-page">
+    <partial name="Module5/_Nav" />
+    <div class="m5-header"><div><span class="m5-kicker">Tổng hợp hoạt động</span><h1>Thống kê hiến máu</h1><p>Toàn bộ dữ liệu · Cập nhật lúc @Model.ThoiDiemThongKe.ToString("HH:mm dd/MM/yyyy")</p></div><a asp-action="Dashboard" class="m5-btn secondary">Dashboard</a></div>
+    <div class="m5-stats">
+        <article class="m5-kpi"><div><small>Đợt nhận nhiều phiếu nhất</small><strong>@(Model.DotNhieuPhieuNhat.FirstOrDefault()?.TongPhieu ?? 0)</strong>@foreach (var dot in Model.DotNhieuPhieuNhat) { <small>@dot.TenDot</small> }@if (Model.DotNhieuPhieuNhat.Count == 0) { <small>Chưa có phiếu đăng ký</small> }</div><span class="m5-kpi-icon"><span class="material-symbols-outlined">leaderboard</span></span></article>
+        <article class="m5-kpi"><div><small>Phiếu đã khám sàng lọc</small><strong>@Model.TongDaKham</strong><small>Bao gồm các phiếu đã có kết quả cuối cùng</small></div><span class="m5-kpi-icon amber"><span class="material-symbols-outlined">medical_services</span></span></article>
+        <article class="m5-kpi"><div><small>Tỷ lệ hiến máu thành công</small><strong>@Model.TyLeThanhCong.ToString("0.##")%</strong><small>@Model.TongThanhCong thành công / @Model.TongDaKham phiếu đã khám</small></div><span class="m5-kpi-icon green"><span class="material-symbols-outlined">verified</span></span></article>
+    </div>
+    <section class="m5-card"><div class="m5-card-head"><div><h2>Phiếu, xác nhận và kết quả theo đợt</h2><p>Tỷ lệ qua xác nhận tính trên tổng phiếu. Phiếu đã khám được tính một lần, kể cả khi đã có kết quả.</p></div></div><div class="m5-table-wrap"><table class="m5-table"><thead><tr><th>Đợt hiến máu</th><th class="number">Tổng phiếu</th><th class="number">Đã xác nhận hiện tại</th><th class="number">Đã qua xác nhận</th><th class="number">Tỷ lệ xác nhận</th><th class="number">Đã khám</th><th class="number">Thành công</th><th class="number">Tỷ lệ thành công</th><th>Chỉ tiêu</th></tr></thead><tbody>
+        @if (Model.TheoDot.Count == 0) { <tr><td colspan="9" class="m5-empty">Chưa có đợt hiến máu.</td></tr> }
+        @foreach (var dot in Model.TheoDot)
+        {
+            <tr><td><strong>@dot.TenDot</strong><small>@dot.TenDonViToChuc</small></td><td class="number">@dot.TongPhieu</td><td class="number">@dot.DaXacNhan</td><td class="number">@dot.DaQuaXacNhan</td><td class="number">@dot.TyLeXacNhan.ToString("0.##")%<small>@dot.DaQuaXacNhan / @dot.TongPhieu phiếu</small></td><td class="number">@dot.DaKham</td><td class="number">@dot.ThanhCong</td><td class="number">@dot.TyLeThanhCong.ToString("0.##")%</td><td><strong>@dot.ThanhCong / @dot.ChiTieu</strong><div class="m5-progress"><span style="width:@(Math.Min(100m, dot.TienDo).ToString(System.Globalization.CultureInfo.InvariantCulture))%"></span></div>@if (dot.ChiTieu > 0 && dot.ThanhCong >= dot.ChiTieu) { <small>Đã đạt chỉ tiêu</small> }</td></tr>
+        }
+    </tbody></table></div></section>
+    <div class="m5-two-columns">
+        <section class="m5-card"><div class="m5-card-head"><h2>Đợt và hiến thành công theo đơn vị</h2></div><div class="m5-table-wrap"><table class="m5-table"><thead><tr><th>Đơn vị tổ chức</th><th class="number">Số đợt</th><th class="number">Phiếu thành công</th></tr></thead><tbody>
+            @if (Model.TheoDonVi.Count == 0) { <tr><td colspan="3" class="m5-empty">Chưa có đơn vị tổ chức.</td></tr> }
+            @foreach (var donVi in Model.TheoDonVi) { <tr><td>@donVi.TenDonViToChuc</td><td class="number">@donVi.SoDot</td><td class="number">@donVi.SoThanhCong</td></tr> }
+        </tbody></table></div></section>
+        <section class="m5-card"><div class="m5-card-head"><h2>Phiếu theo trạng thái hiện tại</h2></div><div class="m5-table-wrap"><table class="m5-table"><thead><tr><th>Trạng thái phiếu</th><th class="number">Số lượng</th></tr></thead><tbody>@foreach (var row in Model.TheoTrangThai) { <tr><td><partial name="Module5/_Badge" model="row.TrangThai" /></td><td class="number">@row.SoLuong</td></tr> }</tbody></table></div></section>
+    </div>
+    <div class="m5-two-columns">
+        <section class="m5-card"><div class="m5-card-head"><div><h2>Phiếu nộp theo tháng</h2><p>Tính theo ngày nộp phiếu</p></div></div><div class="m5-table-wrap"><table class="m5-table"><thead><tr><th>Tháng / Năm</th><th class="number">Số phiếu</th></tr></thead><tbody>
+            @if (Model.PhieuTheoThang.Count == 0) { <tr><td colspan="2" class="m5-empty">Chưa có phiếu đăng ký.</td></tr> }
+            @foreach (var row in Model.PhieuTheoThang) { <tr><td>@row.Thang.ToString("00") / @row.Nam</td><td class="number">@row.SoLuong</td></tr> }
+        </tbody></table></div></section>
+        <section class="m5-card"><div class="m5-card-head"><div><h2>Lịch khám theo tháng</h2><p>Tính theo thời gian bắt đầu, bao gồm lịch đã hủy trong lịch sử</p></div></div><div class="m5-table-wrap"><table class="m5-table"><thead><tr><th>Tháng / Năm</th><th class="number">Số lịch</th></tr></thead><tbody>
+            @if (Model.LichTheoThang.Count == 0) { <tr><td colspan="2" class="m5-empty">Chưa có lịch khám sàng lọc.</td></tr> }
+            @foreach (var row in Model.LichTheoThang) { <tr><td>@row.Thang.ToString("00") / @row.Nam</td><td class="number">@row.SoLuong</td></tr> }
+        </tbody></table></div></section>
+    </div>
+</div>

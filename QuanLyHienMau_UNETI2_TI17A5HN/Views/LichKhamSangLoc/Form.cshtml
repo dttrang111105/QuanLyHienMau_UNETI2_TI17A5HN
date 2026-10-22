@@ -1,68 +1,48 @@
-@* Họ và tên: ĐIỀN HỌ TÊN CỦA BẠN | Mã sinh viên: ĐIỀN MSSV CỦA BẠN | Nội dung: Module 5. *@
-@using QuanLyHienMau_UNETI2_TI17A5HN.ViewModels
-@model LichFormVm
-@{Layout="_AdminLayout";ViewData["Title"]=Model.Id==0?"Lập lịch khám":"Sửa lịch khám";}
+@model QuanLyHienMau_UNETI2_TI17A5HN.ViewModels.LichKhamFormViewModel
+@{
+    Layout = "_AdminLayout";
+    var sua = Model.MaLichKhamSangLoc.HasValue;
+    ViewData["Title"] = sua ? "Điều chỉnh lịch khám" : "Lập lịch khám sàng lọc";
+}
+<div class="m5-page">
+    <partial name="Module5/_Nav" />
+    <div class="m5-header">
+        <div><span class="m5-kicker">Tiếp nhận &amp; sàng lọc</span><h1>@ViewData["Title"]</h1><p>Sắp xếp thời gian và bác sĩ phụ trách cho người hiến máu.</p></div>
+        <a asp-action="Index" class="m5-btn secondary">Quay lại danh sách</a>
+    </div>
+    <partial name="Module5/_Alerts" />
+    <form asp-action="@(sua ? "Edit" : "Create")" asp-route-id="@Model.MaLichKhamSangLoc" method="post" class="m5-card">
+        <div class="m5-card-head"><div><h2>Thông tin lịch khám</h2><p>Thời gian hiển thị theo giờ Việt Nam.</p></div><span class="m5-badge scheduled">@(sua ? "Điều chỉnh lịch" : "Lịch mới")</span></div>
+        <div class="m5-card-body">
+            <div asp-validation-summary="All"></div>
+            <div class="m5-form-grid">
+                <div class="m5-field m5-span-2">
+                    <label asp-for="MaPhieu"></label>
+                    @if (sua)
+                    {
+                        <input asp-for="MaPhieu" type="hidden" />
+                        <input type="text" value="@Model.PhieuOptions.FirstOrDefault()?.Text" readonly aria-label="Phiếu đăng ký" />
+                    }
+                    else
+                    {
+                        <select asp-for="MaPhieu" asp-items="Model.PhieuOptions"><option value="0">Chọn phiếu đã xác nhận</option></select>
+                        @if (Model.PhieuOptions.Count == 0) { <small>Chưa có phiếu đã xác nhận đủ điều kiện lập lịch.</small> }
+                    }
+                    <span asp-validation-for="MaPhieu"></span>
+                </div>
+                <div class="m5-field"><label asp-for="ThoiGianBatDau"></label><input asp-for="ThoiGianBatDau" type="datetime-local" asp-format="{0:yyyy-MM-ddTHH:mm}" /><span asp-validation-for="ThoiGianBatDau"></span></div>
+                <div class="m5-field"><label asp-for="ThoiGianKetThuc"></label><input asp-for="ThoiGianKetThuc" type="datetime-local" asp-format="{0:yyyy-MM-ddTHH:mm}" /><span asp-validation-for="ThoiGianKetThuc"></span></div>
+                <div class="m5-field"><label asp-for="BacSiSangLoc"></label><input asp-for="BacSiSangLoc" list="bac-si-sang-loc" maxlength="150" placeholder="Họ tên bác sĩ phụ trách" /><datalist id="bac-si-sang-loc">@foreach (var bacSi in Model.BacSiOptions) { <option value="@bacSi"></option> }</datalist><span asp-validation-for="BacSiSangLoc"></span></div>
+                <div class="m5-field"><label asp-for="HinhThucTiepNhan"></label><select asp-for="HinhThucTiepNhan"><option>Trực tiếp</option><option>Trực tuyến</option></select><span asp-validation-for="HinhThucTiepNhan"></span></div>
+                <div class="m5-field m5-span-2"><label asp-for="DiaDiemHoacLienKet"></label><input asp-for="DiaDiemHoacLienKet" maxlength="500" placeholder="Địa chỉ tiếp nhận hoặc liên kết HTTPS" /><span asp-validation-for="DiaDiemHoacLienKet"></span></div>
+                <div class="m5-field m5-span-2"><label asp-for="GhiChu"></label><textarea asp-for="GhiChu" maxlength="2000" rows="4" placeholder="Thông tin cần chuẩn bị trước buổi khám"></textarea><span asp-validation-for="GhiChu"></span></div>
+            </div>
+        </div>
+        <div class="m5-form-footer"><a asp-action="Index" class="m5-btn secondary">Hủy thao tác</a><button type="submit" class="m5-btn" disabled="@(Model.PhieuOptions.Count == 0)"><span class="material-symbols-outlined">calendar_add_on</span>@(sua ? "Lưu thay đổi" : "Lập lịch khám")</button></div>
+    </form>
+</div>
 
-<link rel="stylesheet" href="~/css/module5-integration.css" asp-append-version="true"/><div class="m5-ui p-space-lg max-w-[1600px] mx-auto w-full"><partial name="_Module5Messages"/>
-<div class="page-head">
-<div>
-
-<h1>@ViewData["Title"]</h1>
-
-</div>
-<a class="button quiet" asp-action="Index">Về danh sách</a>
-</div>
-<section class="card form-card">
-<form asp-action="Save" method="post">
-<input asp-for="Id" type="hidden"/>
-<div asp-validation-summary="All">
-</div>
-<div class="field">
-<label asp-for="MaPhieu">Phiếu đăng ký đã xác nhận</label>@if(Model.Id!=0){<input asp-for="MaPhieu" type="hidden"/>
-<input readonly value="@Model.Phieus.FirstOrDefault(x=>x.Value==Model.MaPhieu.ToString())?.Text"/>}else{<select asp-for="MaPhieu" asp-items="Model.Phieus">
-<option value="0">— Chọn phiếu —</option>
-</select>}<span asp-validation-for="MaPhieu">
-</span>
-</div>
-<div class="grid2">
-<div class="field">
-<label asp-for="ThoiGianBatDau">Thời gian bắt đầu</label>
-<input asp-for="ThoiGianBatDau" asp-format="{0:yyyy-MM-ddTHH:mm}" type="datetime-local" required/>
-</div>
-<div class="field">
-<label asp-for="ThoiGianKetThuc">Thời gian kết thúc</label>
-<input asp-for="ThoiGianKetThuc" asp-format="{0:yyyy-MM-ddTHH:mm}" type="datetime-local" required/>
-</div>
-<div class="field">
-<label asp-for="BacSiSangLoc">Bác sĩ sàng lọc</label>
-<input asp-for="BacSiSangLoc" list="bacsi" required maxlength="120"/>
-<datalist id="bacsi">
-<option value="Bác sĩ Nguyễn An">
-</option>
-<option value="Bác sĩ Trần Bình">
-</option>
-</datalist>
-</div>
-<div class="field">
-<label asp-for="HinhThucTiepNhan">Hình thức tiếp nhận</label>
-<select asp-for="HinhThucTiepNhan">
-<option>Trực tiếp</option>
-<option>Trực tuyến</option>
-</select>
-</div>
-<div class="field full">
-<label asp-for="DiaDiemHoacLienKet">Địa điểm hoặc liên kết</label>
-<input asp-for="DiaDiemHoacLienKet" maxlength="250" required/>
-</div>
-<div class="field full">
-<label asp-for="GhiChu">Ghi chú</label>
-<textarea asp-for="GhiChu" maxlength="1000">
-</textarea>
-</div>
-</div>
-<button>Lưu lịch khám</button>
-<a class="button quiet" asp-action="Index">Quay lại</a>
-</form>
-</section>
-
-</div>
+@section Scripts {
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <partial name="_ValidationScriptsPartial" />
+}

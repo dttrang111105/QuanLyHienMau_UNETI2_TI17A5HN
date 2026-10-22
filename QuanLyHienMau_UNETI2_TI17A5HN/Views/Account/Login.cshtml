@@ -2,7 +2,8 @@
 Mã sinh viên: 23103100275
 Nội dung thực hiện: Tài khoản,
 giao diện trang đăng nhập. -->
-@model QuanLyHienMau_UNETI2_TI17A5HN.ViewModels.LoginVm
+
+
 @{
     ViewData["Title"] = "Đăng Nhập & Đăng Ký Cổng Hiến Máu";
     Layout = "~/Views/Shared/_Layout.cshtml";
@@ -383,7 +384,6 @@ giao diện trang đăng nhập. -->
 </div>
 
 @section Scripts {
-@if(Context.Request.Method=="POST"){<script>document.addEventListener("DOMContentLoaded",()=>setLoginMethod("email"));</script>}
 <script>
     function switchAuthTab(tab) {
         const btnLogin = document.getElementById('btn-tab-login');

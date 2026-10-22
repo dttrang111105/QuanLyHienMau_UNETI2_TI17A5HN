@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using QuanLyHienMau_UNETI2_TI17A5HN.Data;
-using QuanLyHienMau_UNETI2_TI17A5HN.Infrastructure;
+using QuanLyHienMau_UNETI2_TI17A5HN.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,10 +26,16 @@ builder.Services.AddAuthentication("QuanLyHienMau.Auth")
 
 // Đăng ký Session
 builder.Services.AddDistributedMemoryCache();
-builder.Services.AddSession();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+    options.Cookie.SameSite = SameSiteMode.Lax;
+});
 
 // Đăng ký các dịch vụ của Module 5
-builder.Services.AddModule5(builder.Configuration);
+builder.Services.AddModule5();
 
 var app = builder.Build();
 
@@ -71,12 +77,8 @@ app.UseHttpsRedirection();
 app.UseRouting();
 
 app.UseSession();
-
 app.UseAuthentication();
 app.UseAuthorization();
-
-// Middleware của Module 5
-app.UseMiddleware<Module5Middleware>();
 
 app.MapStaticAssets();
 

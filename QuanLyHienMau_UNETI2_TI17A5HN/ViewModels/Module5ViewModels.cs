@@ -1,93 +1,169 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using QuanLyHienMau_UNETI2_TI17A5HN.Models;
 
 namespace QuanLyHienMau_UNETI2_TI17A5HN.ViewModels;
-public class LoginVm
+
+public sealed class LichKhamFormViewModel : IValidatableObject
 {
-    [Required(ErrorMessage = "Nhập tên đăng nhập.")]
-    public string TenDangNhap { get; set; } = "";
-
-    [Required(ErrorMessage = "Nhập mật khẩu.")]
-    public string MatKhau { get; set; } = "";
-    public string? ReturnUrl { get; set; }
-    public bool RememberMe { get; set; }
-}
-
-public class LichFormVm
-{
-    public int Id { get; set; }
-
-    [Range(1, int.MaxValue, ErrorMessage = "Chọn phiếu đã xác nhận.")]
+    public int? MaLichKhamSangLoc { get; set; }
+    [Range(1, int.MaxValue, ErrorMessage = "Vui lòng chọn phiếu đã xác nhận.")]
+    [Display(Name = "Phiếu đăng ký")]
     public int MaPhieu { get; set; }
-
-    [Required(ErrorMessage = "Nhập thời gian bắt đầu.")]
+    [Required(ErrorMessage = "Vui lòng nhập thời gian bắt đầu.")]
+    [Display(Name = "Thời gian bắt đầu")]
     public DateTime? ThoiGianBatDau { get; set; }
-
-    [Required(ErrorMessage = "Nhập thời gian kết thúc.")]
+    [Required(ErrorMessage = "Vui lòng nhập thời gian kết thúc.")]
+    [Display(Name = "Thời gian kết thúc")]
     public DateTime? ThoiGianKetThuc { get; set; }
-
-    [Required, MaxLength(80)]
+    [Required(ErrorMessage = "Vui lòng chọn hình thức tiếp nhận.")]
+    [RegularExpression("^(Trực tiếp|Trực tuyến)$", ErrorMessage = "Hình thức tiếp nhận không hợp lệ.")]
+    [Display(Name = "Hình thức tiếp nhận")]
     public string HinhThucTiepNhan { get; set; } = "Trực tiếp";
-
-    [Required(ErrorMessage = "Nhập địa điểm hoặc liên kết."), MaxLength(250)]
+    [Required(ErrorMessage = "Vui lòng nhập địa điểm hoặc liên kết.")]
+    [StringLength(500, ErrorMessage = "Địa điểm hoặc liên kết không quá 500 ký tự.")]
+    [Display(Name = "Địa điểm hoặc liên kết")]
     public string DiaDiemHoacLienKet { get; set; } = "";
-
-    [Required(ErrorMessage = "Nhập bác sĩ sàng lọc."), MaxLength(120)]
+    [Required(ErrorMessage = "Vui lòng nhập bác sĩ sàng lọc.")]
+    [StringLength(150, ErrorMessage = "Tên bác sĩ không quá 150 ký tự.")]
+    [Display(Name = "Bác sĩ sàng lọc")]
     public string BacSiSangLoc { get; set; } = "";
-
-    [MaxLength(1000)]
+    [StringLength(2000, ErrorMessage = "Ghi chú không quá 2000 ký tự.")]
+    [Display(Name = "Ghi chú")]
     public string? GhiChu { get; set; }
-    public List<SelectListItem> Phieus { get; set; } = [];
+    [ValidateNever]
+    public List<SelectListItem> PhieuOptions { get; set; } = [];
+    [ValidateNever]
+    public List<string> BacSiOptions { get; set; } = [];
+
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (ThoiGianBatDau.HasValue && ThoiGianKetThuc.HasValue && ThoiGianKetThuc <= ThoiGianBatDau)
+            yield return new ValidationResult("Thời gian kết thúc phải sau thời gian bắt đầu.", [nameof(ThoiGianKetThuc)]);
+        if (HinhThucTiepNhan == "Trực tuyến" &&
+            (!Uri.TryCreate(DiaDiemHoacLienKet, UriKind.Absolute, out var uri) || uri.Scheme != Uri.UriSchemeHttps))
+            yield return new ValidationResult("Liên kết trực tuyến phải là địa chỉ HTTPS hợp lệ.", [nameof(DiaDiemHoacLienKet)]);
+    }
 }
 
-public class KetQuaFormVm
+public sealed class KetQuaFormViewModel
 {
+    [Range(1, int.MaxValue, ErrorMessage = "Vui lòng chọn phiếu đã khám sàng lọc.")]
+    [Display(Name = "Phiếu đăng ký")]
     public int MaPhieu { get; set; }
-    public string ThongTinPhieu { get; set; } = "";
-
-    [Range(0, 100, ErrorMessage = "Điểm phải từ 0 đến 100.")]
-    public int? DiemDanhGia { get; set; }
-
-    [Required(ErrorMessage = "Nhập nhận xét."), MaxLength(2000)]
-    public string NhanXet { get; set; } = "";
-
-    [Required(ErrorMessage = "Chọn kết quả.")]
+    [Range(typeof(decimal), "0", "100", ErrorMessage = "Điểm đánh giá phải từ 0 đến 100.")]
+    [Display(Name = "Điểm đánh giá")]
+    public decimal? DiemDanhGia { get; set; }
+    [StringLength(2000, ErrorMessage = "Nhận xét không quá 2000 ký tự.")]
+    [Display(Name = "Nhận xét")]
+    public string? NhanXet { get; set; }
+    [Required(ErrorMessage = "Vui lòng chọn kết quả cuối cùng.")]
+    [RegularExpression("^(Hiến máu thành công|Không đủ điều kiện hiến)$", ErrorMessage = "Kết quả không hợp lệ.")]
+    [Display(Name = "Kết quả hiến máu")]
     public string KetQua { get; set; } = "";
+    [ValidateNever]
+    public List<SelectListItem> PhieuOptions { get; set; } = [];
+    [ValidateNever]
+    public PhieuDangKyHienMau? Phieu { get; set; }
 }
 
-public record ThongKeDong(string Nhom, int SoLuong);
-public record TheoDotDong(int MaDot, string TenDot, int Tong, int DaXacNhan, int QuaXacNhan, int DaKham, int ThanhCong, int ChiTieu)
+public sealed class LichKhamListViewModel
 {
-    public double TyLeXacNhan => Tong == 0 ? 0 : 100d * QuaXacNhan / Tong;
-    public double TyLeThanhCong => DaKham == 0 ? 0 : 100d * ThanhCong / DaKham;
+    public List<LichKhamSangLoc> Items { get; set; } = [];
+    public string? Search { get; set; }
+    public string? TrangThai { get; set; }
+    public int? MaDot { get; set; }
+    public DateTime? Ngay { get; set; }
+    public int Page { get; set; } = 1;
+    public int TotalPages { get; set; }
+    public int TotalCount { get; set; }
+    public int SoLichHomNay { get; set; }
+    public int SoLichSapToi { get; set; }
+    public int SoLichHoanThanh { get; set; }
+    public bool ChiCuaToi { get; set; }
+    public List<SelectListItem> DotOptions { get; set; } = [];
 }
 
-public class DashboardVm
+public sealed class KetQuaListViewModel
 {
-    public int DonVi { get; set; }
-    public int Dot { get; set; }
-    public int DotMo { get; set; }
-    public int Nguoi { get; set; }
-    public int Phieu { get; set; }
-    public int ChoXacNhan { get; set; }
+    public List<KetQuaHienMau> Items { get; set; } = [];
+    public string? Search { get; set; }
+    public string? KetQua { get; set; }
+    public int? MaDot { get; set; }
+    public int Page { get; set; } = 1;
+    public int TotalPages { get; set; }
+    public int TotalCount { get; set; }
+    public int SoThanhCong { get; set; }
+    public int SoKhongDuDieuKien { get; set; }
+    public int SoChoKetQua { get; set; }
+    public bool ChiCuaToi { get; set; }
+    public List<SelectListItem> DotOptions { get; set; } = [];
+}
+
+public sealed class DashboardViewModel
+{
+    public int TongDonViToChuc { get; set; }
+    public int TongDotHienMau { get; set; }
+    public int SoDotDangMo { get; set; }
+    public int TongNguoiHienMau { get; set; }
+    public int TongPhieu { get; set; }
+    public int SoPhieuChoXacNhan { get; set; }
+    public int SoPhieuDaXacNhan { get; set; }
+    public int SoLichSapToi { get; set; }
+    public int SoPhieuThanhCong { get; set; }
+    public DateTime ThoiDiemThongKe { get; set; }
+    public List<LichKhamSangLoc> LichSapToi { get; set; } = [];
+    public List<ThongKeDotRow> CanhBaoChiTieu { get; set; } = [];
+}
+
+public sealed class ThongKeDonViRow
+{
+    public int MaDonViToChuc { get; set; }
+    public string TenDonViToChuc { get; set; } = "";
+    public int SoDot { get; set; }
+    public int SoThanhCong { get; set; }
+}
+
+public sealed class ThongKeDotRow
+{
+    public int MaDot { get; set; }
+    public string TenDot { get; set; } = "";
+    public string TenDonViToChuc { get; set; } = "";
+    public int ChiTieu { get; set; }
+    public int TongPhieu { get; set; }
     public int DaXacNhan { get; set; }
-    public int LichSapToi { get; set; }
+    public int DaQuaXacNhan { get; set; }
+    public int DaKham { get; set; }
     public int ThanhCong { get; set; }
-    public List<LichKhamSangLoc> SapToi { get; set; } = [];
-    public List<TheoDotDong> TienDo { get; set; } = [];
+    public decimal TyLeXacNhan => TongPhieu == 0 ? 0 : Math.Round(100m * DaQuaXacNhan / TongPhieu, 2);
+    public decimal TyLeThanhCong => DaKham == 0 ? 0 : Math.Round(100m * ThanhCong / DaKham, 2);
+    public decimal TienDo => ChiTieu <= 0 ? 0 : Math.Round(100m * ThanhCong / ChiTieu, 2);
 }
 
-public class ThongKeVm
+public sealed class ThongKeTrangThaiRow
+{
+    public string TrangThai { get; set; } = "";
+    public int SoLuong { get; set; }
+}
+
+public sealed class ThongKeThangRow
 {
     public int Nam { get; set; }
-    public int? MaDonVi { get; set; }
-    public List<SelectListItem> DonVis { get; set; } = [];
-    public List<ThongKeDong> DotTheoDonVi { get; set; } = [];
-    public List<ThongKeDong> PhieuTheoTrangThai { get; set; } = [];
-    public List<ThongKeDong> ThanhCongTheoDonVi { get; set; } = [];
-    public List<ThongKeDong> PhieuTheoThang { get; set; } = [];
-    public List<ThongKeDong> LichTheoThang { get; set; } = [];
-    public List<TheoDotDong> TheoDot { get; set; } = [];
-    public List<TheoDotDong> NhieuPhieuNhat { get; set; } = [];
+    public int Thang { get; set; }
+    public int SoLuong { get; set; }
+}
+
+public sealed class ThongKeViewModel
+{
+    public List<ThongKeDonViRow> TheoDonVi { get; set; } = [];
+    public List<ThongKeDotRow> TheoDot { get; set; } = [];
+    public List<ThongKeTrangThaiRow> TheoTrangThai { get; set; } = [];
+    public List<ThongKeThangRow> PhieuTheoThang { get; set; } = [];
+    public List<ThongKeThangRow> LichTheoThang { get; set; } = [];
+    public List<ThongKeDotRow> DotNhieuPhieuNhat { get; set; } = [];
+    public int TongDaKham { get; set; }
+    public int TongThanhCong { get; set; }
+    public decimal TyLeThanhCong => TongDaKham == 0 ? 0 : Math.Round(100m * TongThanhCong / TongDaKham, 2);
+    public DateTime ThoiDiemThongKe { get; set; }
 }

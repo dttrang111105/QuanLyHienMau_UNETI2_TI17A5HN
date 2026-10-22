@@ -1,0 +1,52 @@
+@model QuanLyHienMau_UNETI2_TI17A5HN.ViewModels.LichKhamListViewModel
+@{
+    Layout = Model.ChiCuaToi ? "_Layout" : "_AdminLayout";
+    ViewData["Title"] = Model.ChiCuaToi ? "Lịch khám của tôi" : "Lịch khám sàng lọc";
+    var action = Model.ChiCuaToi ? "CuaToi" : "Index";
+}
+<div class="m5-page">
+    <partial name="Module5/_Nav" />
+    <div class="m5-header">
+        <div><span class="m5-kicker">Tiếp nhận &amp; sàng lọc</span><h1>@ViewData["Title"]</h1><p>Theo dõi thời gian khám, bác sĩ phụ trách và trạng thái tiếp nhận.</p></div>
+        @if (!Model.ChiCuaToi) { <a asp-action="Create" class="m5-btn"><span class="material-symbols-outlined">add</span>Lập lịch khám</a> }
+    </div>
+    <partial name="Module5/_Alerts" />
+    <div class="m5-stats">
+        <article class="m5-kpi"><div><small>Lịch khám hôm nay</small><strong>@Model.SoLichHomNay</strong><small>Không bao gồm lịch đã hủy</small></div><span class="m5-kpi-icon"><span class="material-symbols-outlined">today</span></span></article>
+        <article class="m5-kpi"><div><small>Lịch sắp tới</small><strong>@Model.SoLichSapToi</strong><small>Các lịch đang lên lịch trong tương lai</small></div><span class="m5-kpi-icon amber"><span class="material-symbols-outlined">schedule</span></span></article>
+        <article class="m5-kpi"><div><small>Đã hoàn thành khám</small><strong>@Model.SoLichHoanThanh</strong><small>Các lịch khám đã được xác nhận hoàn thành</small></div><span class="m5-kpi-icon green"><span class="material-symbols-outlined">task_alt</span></span></article>
+    </div>
+    <section class="m5-card">
+        <div class="m5-card-head"><div><h2>Danh sách lịch khám</h2><p>@Model.TotalCount lịch phù hợp · Thời gian theo giờ Việt Nam</p></div></div>
+        <form asp-action="@action" method="get" class="m5-toolbar">
+            <div class="m5-field search"><label for="search">Tìm kiếm</label><input id="search" name="search" value="@Model.Search" placeholder="Người hiến, bác sĩ, tên đợt hoặc mã phiếu" /></div>
+            <div class="m5-field"><label for="maDot">Đợt hiến máu</label><select asp-for="MaDot" id="maDot" name="maDot" asp-items="Model.DotOptions"><option value="">Tất cả đợt</option></select></div>
+            <div class="m5-field"><label for="trangThai">Trạng thái lịch</label><select id="trangThai" name="trangThai"><option value="">Tất cả trạng thái</option>@foreach (var status in Module5TrangThai.LichKham.TatCa) { <option value="@status" selected="@(Model.TrangThai == status)">@status</option> }</select></div>
+            <div class="m5-field"><label for="ngay">Ngày khám</label><input id="ngay" name="ngay" type="date" value="@Model.Ngay?.ToString("yyyy-MM-dd")" /></div>
+            <div class="m5-actions"><button class="m5-btn" type="submit">Lọc</button><a asp-action="@action" class="m5-btn secondary">Đặt lại</a></div>
+        </form>
+        <div class="m5-table-wrap"><table class="m5-table"><thead><tr><th>Lịch / Phiếu</th><th>Người hiến &amp; đợt</th><th>Thời gian khám</th><th>Bác sĩ / Tiếp nhận</th><th>Trạng thái</th><th></th></tr></thead><tbody>
+            @if (Model.Items.Count == 0) { <tr><td colspan="6" class="m5-empty"><span class="material-symbols-outlined">event_busy</span>Chưa có lịch khám phù hợp với điều kiện đã chọn.</td></tr> }
+            @foreach (var lich in Model.Items)
+            {
+                <tr>
+                    <td><strong>#@lich.MaLichKhamSangLoc</strong><small>Phiếu #@lich.MaPhieu</small></td>
+                    <td><strong>@lich.PhieuDangKyHienMau.NguoiHienMau.HoTen</strong><small>@lich.PhieuDangKyHienMau.DotHienMau.TenDot</small></td>
+                    <td><strong>@lich.ThoiGianBatDau.ToString("dd/MM/yyyy")</strong><small>@lich.ThoiGianBatDau.ToString("HH:mm") – @lich.ThoiGianKetThuc.ToString("HH:mm dd/MM")</small></td>
+                    <td><strong>@lich.BacSiSangLoc</strong><small>@lich.HinhThucTiepNhan</small></td>
+                    <td><partial name="Module5/_Badge" model="lich.TrangThai" /></td>
+                    <td><a asp-action="Details" asp-route-id="@lich.MaLichKhamSangLoc" class="m5-btn small secondary">Chi tiết</a></td>
+                </tr>
+            }
+        </tbody></table></div>
+        <div class="m5-pagination"><span>@Model.TotalCount lịch · Trang @Model.Page / @Math.Max(1, Model.TotalPages)</span><nav aria-label="Phân trang lịch khám">
+            @if (Model.Page > 1) { <a asp-action="@action" asp-route-page="@(Model.Page - 1)" asp-route-search="@Model.Search" asp-route-maDot="@Model.MaDot" asp-route-trangThai="@Model.TrangThai" asp-route-ngay="@Model.Ngay?.ToString("yyyy-MM-dd")">Trước</a> }
+            @for (var i = Math.Max(1, Model.Page - 2); i <= Math.Min(Model.TotalPages, Model.Page + 2); i++)
+            {
+                if (i == Model.Page) { <span class="current" aria-current="page">@i</span> }
+                else { <a asp-action="@action" asp-route-page="@i" asp-route-search="@Model.Search" asp-route-maDot="@Model.MaDot" asp-route-trangThai="@Model.TrangThai" asp-route-ngay="@Model.Ngay?.ToString("yyyy-MM-dd")">@i</a> }
+            }
+            @if (Model.Page < Model.TotalPages) { <a asp-action="@action" asp-route-page="@(Model.Page + 1)" asp-route-search="@Model.Search" asp-route-maDot="@Model.MaDot" asp-route-trangThai="@Model.TrangThai" asp-route-ngay="@Model.Ngay?.ToString("yyyy-MM-dd")">Sau</a> }
+        </nav></div>
+    </section>
+</div>

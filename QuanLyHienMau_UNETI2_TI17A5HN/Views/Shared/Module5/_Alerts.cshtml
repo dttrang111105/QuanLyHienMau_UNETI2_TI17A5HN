@@ -1,0 +1,8 @@
+@if (TempData["Module5Success"] is string success)
+{
+    <div class="m5-alert" role="status"><span class="material-symbols-outlined">check_circle</span><p>@success</p></div>
+}
+@if (TempData["Module5Error"] is string error)
+{
+    <div class="m5-alert error" role="alert"><span class="material-symbols-outlined">error</span><p>@error</p></div>
+}

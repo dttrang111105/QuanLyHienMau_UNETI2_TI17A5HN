@@ -1,44 +1,32 @@
-@* Họ và tên: ĐIỀN HỌ TÊN CỦA BẠN | Mã sinh viên: ĐIỀN MSSV CỦA BẠN | Nội dung: Module 5. *@
-@using QuanLyHienMau_UNETI2_TI17A5HN.ViewModels
-@model KetQuaFormVm
-@{Layout="_AdminLayout";ViewData["Title"]="Nhập kết quả hiến máu";}
-
-<link rel="stylesheet" href="~/css/module5-integration.css" asp-append-version="true"/><div class="m5-ui p-space-lg max-w-[1600px] mx-auto w-full"><partial name="_Module5Messages"/>
-<div class="page-head">
-<div>
-
-<h1>Nhập kết quả hiến máu</h1><div class="text-on-surface-variant mt-2">@Model.ThongTinPhieu</div>
-
-</div>
-</div>
-<section class="card form-card">
-<form asp-action="Create" method="post" onsubmit="return confirm('Xác nhận công bố kết quả cuối cùng cho phiếu này?')">
-<input asp-for="MaPhieu" type="hidden"/>
-<div asp-validation-summary="All">
-</div>
-<div class="grid2">
-<div class="field">
-<label asp-for="DiemDanhGia">Điểm đánh giá (không bắt buộc, 0–100)</label>
-<input asp-for="DiemDanhGia" type="number" min="0" max="100"/>
-</div>
-<div class="field">
-<label asp-for="KetQua">Kết quả cuối cùng</label>
-<select asp-for="KetQua" required>
-<option value="">— Chọn kết quả —</option>
-<option>@TrangThaiPhieu.ThanhCong</option>
-<option>@TrangThaiPhieu.KhongDat</option>
-</select>
-</div>
-<div class="field full">
-<label asp-for="NhanXet">Nhận xét chuyên môn</label>
-<textarea asp-for="NhanXet" required maxlength="2000">
-</textarea>
-</div>
+@model QuanLyHienMau_UNETI2_TI17A5HN.ViewModels.KetQuaFormViewModel
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Ghi nhận kết quả hiến máu";
+}
+<div class="m5-page">
+    <partial name="Module5/_Nav" />
+    <div class="m5-header"><div><span class="m5-kicker">Sau khám sàng lọc</span><h1>Ghi nhận kết quả hiến máu</h1><p>Xác nhận kết quả cuối cùng của người hiến sau khi hoàn thành khám.</p></div><a asp-action="Index" class="m5-btn secondary">Quay lại danh sách</a></div>
+    <partial name="Module5/_Alerts" />
+    @if (Model.Phieu != null)
+    {
+        <div class="m5-card"><div class="m5-card-body"><dl class="m5-detail-grid"><div><dt>Người hiến máu</dt><dd>@Model.Phieu.NguoiHienMau.HoTen</dd></div><div><dt>Đợt hiến máu</dt><dd>@Model.Phieu.DotHienMau.TenDot</dd></div><div><dt>Đơn vị tổ chức</dt><dd>@Model.Phieu.DotHienMau.DonViToChuc.TenDonViToChuc</dd></div><div><dt>Trạng thái phiếu</dt><dd><partial name="Module5/_Badge" model="Model.Phieu.TrangThai" /></dd></div></dl></div></div>
+    }
+    <form asp-action="Create" method="post" class="m5-card">
+        <div class="m5-card-head"><div><h2>Kết quả chuyên môn</h2><p>Kết quả được công bố cho người hiến sau khi lưu.</p></div></div>
+        <div class="m5-card-body">
+            <div asp-validation-summary="All"></div>
+            <div class="m5-form-grid">
+                <div class="m5-field m5-span-2"><label asp-for="MaPhieu"></label><select asp-for="MaPhieu" asp-items="Model.PhieuOptions"><option value="0">Chọn phiếu đã khám sàng lọc</option></select><span asp-validation-for="MaPhieu"></span>@if (Model.PhieuOptions.Count == 0) { <small>Chưa có phiếu đã khám đang chờ kết quả.</small> }</div>
+                <div class="m5-field"><label asp-for="KetQua"></label><select asp-for="KetQua"><option value="">Chọn kết quả</option><option>@Module5TrangThai.Phieu.HienMauThanhCong</option><option>@Module5TrangThai.Phieu.KhongDuDieuKienHien</option></select><span asp-validation-for="KetQua"></span></div>
+                <div class="m5-field"><label asp-for="DiemDanhGia"></label><input asp-for="DiemDanhGia" type="number" min="0" max="100" step="0.01" placeholder="0–100" /><span asp-validation-for="DiemDanhGia"></span><small>Có thể để trống. Điểm đánh giá không tự quyết định kết quả.</small></div>
+                <div class="m5-field m5-span-2"><label asp-for="NhanXet"></label><textarea asp-for="NhanXet" rows="5" maxlength="2000" placeholder="Nhận xét sau khám và hiến máu"></textarea><span asp-validation-for="NhanXet"></span></div>
+            </div>
+        </div>
+        <div class="m5-form-footer"><a asp-action="Index" class="m5-btn secondary">Hủy thao tác</a><button type="submit" class="m5-btn" disabled="@(Model.PhieuOptions.Count == 0)"><span class="material-symbols-outlined">task_alt</span>Xác nhận và công bố</button></div>
+    </form>
 </div>
 
-<button>Xác nhận kết quả</button>
-<a class="button quiet" asp-action="Index">Quay lại</a>
-</form>
-</section>
-
-</div>
+@section Scripts {
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <partial name="_ValidationScriptsPartial" />
+}
