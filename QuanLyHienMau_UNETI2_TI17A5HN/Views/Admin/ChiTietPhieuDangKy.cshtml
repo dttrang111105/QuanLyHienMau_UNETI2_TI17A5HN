@@ -71,6 +71,10 @@
                 <p class="font-body-sm text-body-sm text-on-surface-variant">
                     Nộp lúc: <strong>@Model.NgayNop.ToString("dd/MM/yyyy HH:mm:ss")</strong> • Đợt: <strong>@(Model.DotHienMau?.TenDot ?? "Chưa rõ")</strong>
                 </p>
+                @if (Model.NgayXuLy.HasValue)
+                {
+                    <p class="font-body-sm text-body-sm text-on-surface-variant">Đã xử lý lúc: <strong>@Model.NgayXuLy.Value.ToString("dd/MM/yyyy HH:mm")</strong></p>
+                }
             </div>
 
             <!-- Action Toolbar -->
@@ -404,8 +408,29 @@
                                 <p>Đơn vị: <strong class="text-on-surface">@(Model.DotHienMau.DonViToChuc?.TenDonViToChuc ?? "Chưa rõ")</strong></p>
                                 <p>Thời gian đăng ký: <strong>@Model.DotHienMau.NgayBatDauDangKy.ToString("dd/MM/yyyy") - @Model.DotHienMau.HanDangKy.ToString("dd/MM/yyyy")</strong></p>
                                 <p>Chỉ tiêu: <strong>@Model.DotHienMau.ChiTieuDonViMau đơn vị máu</strong> • Cân nặng tối thiểu: <strong>≥ @Model.DotHienMau.CanNangToiThieu kg</strong></p>
+                                @if (!string.IsNullOrWhiteSpace(Model.DotHienMau.NhomMauUuTien))
+                                {
+                                    <p>Nhóm máu ưu tiên: <strong class="text-on-surface">@Model.DotHienMau.NhomMauUuTien</strong></p>
+                                }
                                 <p>Trạng thái đợt: <span class="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 font-bold text-[11px]">@Model.DotHienMau.TrangThai</span></p>
                             </div>
+                            @if (!string.IsNullOrWhiteSpace(Model.DotHienMau.MoTaDot))
+                            {
+                                <div class="p-3 rounded-xl bg-surface-container-low text-body-sm text-on-surface">
+                                    <p class="font-label-sm font-bold text-on-surface-variant mb-1">Thông tin đợt</p>
+                                    <p>@Model.DotHienMau.MoTaDot</p>
+                                </div>
+                            }
+                            @if (!string.IsNullOrWhiteSpace(Model.DotHienMau.DieuKienNguoiHien))
+                            {
+                                <div class="p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-950">
+                                    <div class="flex items-center gap-2 font-label-sm font-bold text-amber-900 mb-1">
+                                        <span class="material-symbols-outlined text-[18px]">fact_check</span>
+                                        Yêu cầu của đợt hiến
+                                    </div>
+                                    <p class="text-body-sm">@Model.DotHienMau.DieuKienNguoiHien</p>
+                                </div>
+                            }
                         </div>
                     }
                     else
@@ -501,8 +526,9 @@
             <input type="hidden" name="returnUrl" value="@Context.Request.Path@Context.Request.QueryString" />
 
             <div>
-                <label class="block font-label-md text-label-md font-bold text-on-surface mb-1">Ghi chú xác nhận (tùy chọn):</label>
-                <textarea name="ghiChu" rows="3" placeholder="Nhập ghi chú dặn dò hoặc hướng dẫn cho người hiến..." class="w-full p-3 bg-surface-container-low rounded-xl font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20"></textarea>
+                <label class="block font-label-md text-label-md font-bold text-on-surface mb-1">Ghi chú xác nhận <span class="text-error">*</span></label>
+                <textarea name="ghiChu" required maxlength="500" rows="4" placeholder="Ghi nhận kết quả kiểm tra hồ sơ, điều kiện đã đối chiếu hoặc hướng dẫn người hiến..." class="w-full p-3 bg-surface-container-low rounded-xl font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20"></textarea>
+                <p class="mt-1 text-xs text-on-surface-variant">Bắt buộc, tối đa 500 ký tự. Ghi chú và thời điểm xử lý sẽ được lưu vào hồ sơ phiếu.</p>
             </div>
 
             <div class="flex items-center justify-end gap-space-sm pt-2">
@@ -536,7 +562,8 @@
 
             <div>
                 <label class="block font-label-md text-label-md font-bold text-on-surface mb-1">Lý do từ chối <span class="text-error">*</span>:</label>
-                <textarea name="lyDoTuChoi" required rows="3" placeholder="Nhập lý do cụ thể..." class="w-full p-3 bg-surface-container-low rounded-xl font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-error/20"></textarea>
+                <textarea name="lyDoTuChoi" required maxlength="500" rows="4" placeholder="Nêu rõ yêu cầu chưa đáp ứng hoặc lý do không thể tiếp nhận..." class="w-full p-3 bg-surface-container-low rounded-xl font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-error/20"></textarea>
+                <p class="mt-1 text-xs text-on-surface-variant">Bắt buộc, tối đa 500 ký tự. Lý do sẽ được lưu vào ghi chú xử lý của phiếu.</p>
             </div>
 
             <div class="flex items-center justify-end gap-space-sm pt-2">
