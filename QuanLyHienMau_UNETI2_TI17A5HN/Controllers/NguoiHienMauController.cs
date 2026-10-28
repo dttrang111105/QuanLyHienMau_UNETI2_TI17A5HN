@@ -1,8 +1,5 @@
-// ============================================================================
-// DỰ ÁN QUẢN LÝ HIẾN MÁU NHÂN ĐẠO VITALIS - UNETI (TI17A5HN)
 // MODULE 3: QUẢN LÝ NGƯỜI HIẾN MÁU & PHIẾU ĐĂNG KÝ HIẾN MÁU
 // Phụ trách: Nhóm thực hiện Module 3 - Lớp DHTI17A5HN
-// ============================================================================
 
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
@@ -43,6 +40,13 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
                 return Challenge();
             }
 
+            var taiKhoan = await _context.TaiKhoans.FindAsync(maTaiKhoan);
+            if (taiKhoan == null || taiKhoan.TrangThai != "Hoạt động")
+            {
+                TempData["ErrorMessage"] = "Tài khoản của bạn hiện không tồn tại hoặc đã bị khóa.";
+                return RedirectToAction("Login", "Account");
+            }
+
             var nguoiHienMau = await _context.NguoiHienMaus
                 .Include(n => n.TaiKhoan)
                 .Include(n => n.PhieuDangKyHienMaus)
@@ -57,12 +61,6 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
             if (nguoiHienMau == null)
             {
                 // Tự động tạo hồ sơ NguoiHienMau nếu tài khoản chưa có (Auto-provisioning)
-                var taiKhoan = await _context.TaiKhoans.FindAsync(maTaiKhoan);
-                if (taiKhoan == null)
-                {
-                    return NotFound("Không tìm thấy thông tin tài khoản người dùng.");
-                }
-
                 nguoiHienMau = new NguoiHienMau
                 {
                     MaTaiKhoan = taiKhoan.MaTaiKhoan,
@@ -88,14 +86,37 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
                 return Challenge();
             }
 
+            var taiKhoan = await _context.TaiKhoans.FindAsync(maTaiKhoan);
+            if (taiKhoan == null || taiKhoan.TrangThai != "Hoạt động")
+            {
+                TempData["ErrorMessage"] = "Tài khoản của bạn hiện không tồn tại hoặc đã bị khóa.";
+                return RedirectToAction("Login", "Account");
+            }
+
             var nguoiHienMau = await _context.NguoiHienMaus
                 .Include(n => n.TaiKhoan)
                 .FirstOrDefaultAsync(n => n.MaTaiKhoan == maTaiKhoan);
 
             if (nguoiHienMau == null)
             {
-                return NotFound("Không tìm thấy hồ sơ người hiến máu của tài khoản hiện tại.");
+                nguoiHienMau = new NguoiHienMau
+                {
+                    MaTaiKhoan = taiKhoan.MaTaiKhoan,
+                    HoTen = taiKhoan.HoTen,
+                    Email = taiKhoan.Email,
+                    TrangThai = "Hoạt động"
+                };
+                _context.NguoiHienMaus.Add(nguoiHienMau);
             }
+
+            if (nguoiHienMau.TrangThai != "Hoạt động")
+            {
+                TempData["ErrorMessage"] = "Hồ sơ của bạn hiện đang ở trạng thái tạm khóa hoặc không hoạt động, không thể cập nhật thông tin.";
+                return RedirectToAction(nameof(HoSoCaNhan));
+            }
+
+            // Xóa các lỗi mặc định từ DataAnnotations để tránh lặp 2 thông báo lỗi cho cùng một trường
+            ModelState.Clear();
 
             // --- SERVER-SIDE VALIDATION ---
             // 1. Kiểm tra Họ và tên
@@ -109,7 +130,11 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
             }
 
             // 2. Kiểm tra Ngày sinh & Độ tuổi (18 - 60 tuổi theo quy định y tế)
-            if (model.NgaySinh.HasValue)
+            if (!model.NgaySinh.HasValue)
+            {
+                ModelState.AddModelError("NgaySinh", "Vui lòng nhập ngày sinh để xác định điều kiện độ tuổi (18 - 60 tuổi).");
+            }
+            else
             {
                 var birthDate = model.NgaySinh.Value.Date;
                 var today = DateTime.Today;
@@ -141,7 +166,11 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
             }
 
             // 4. Kiểm tra Số điện thoại
-            if (!string.IsNullOrWhiteSpace(model.SoDienThoai))
+            if (string.IsNullOrWhiteSpace(model.SoDienThoai))
+            {
+                ModelState.AddModelError("SoDienThoai", "Vui lòng nhập số điện thoại liên lạc.");
+            }
+            else
             {
                 var phone = model.SoDienThoai.Trim();
                 if (!Regex.IsMatch(phone, @"^0[0-9]{9,10}$"))
@@ -150,14 +179,45 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
                 }
             }
 
-            // 5. Kiểm tra Email
+            // 5. Kiểm tra Email & kiểm tra trùng lặp với tài khoản khác
             if (!string.IsNullOrWhiteSpace(model.Email))
             {
                 var email = model.Email.Trim();
-                if (!new EmailAddressAttribute().IsValid(email))
+                if (email.Length > 100 || !new EmailAddressAttribute().IsValid(email))
                 {
-                    ModelState.AddModelError("Email", "Địa chỉ email không đúng định dạng.");
+                    ModelState.AddModelError("Email", "Địa chỉ email không đúng định dạng hoặc vượt quá 100 ký tự.");
                 }
+                else
+                {
+                    bool emailTaken = await _context.TaiKhoans
+                        .AnyAsync(t => t.MaTaiKhoan != maTaiKhoan && t.Email != null && t.Email.ToLower() == email.ToLower());
+                    if (emailTaken)
+                    {
+                        ModelState.AddModelError("Email", "Địa chỉ email này đã được sử dụng bởi một tài khoản khác.");
+                    }
+                }
+            }
+
+            // 6. Kiểm tra độ dài các trường chuỗi còn lại
+            if (!string.IsNullOrEmpty(model.GioiTinh) && model.GioiTinh.Trim().Length > 10)
+            {
+                ModelState.AddModelError("GioiTinh", "Giới tính không được vượt quá 10 ký tự.");
+            }
+            if (!string.IsNullOrEmpty(model.NhomMau) && model.NhomMau.Trim().Length > 20)
+            {
+                ModelState.AddModelError("NhomMau", "Nhóm máu không được vượt quá 20 ký tự.");
+            }
+            if (!string.IsNullOrEmpty(model.NgheNghiep) && model.NgheNghiep.Trim().Length > 100)
+            {
+                ModelState.AddModelError("NgheNghiep", "Nghề nghiệp không được vượt quá 100 ký tự.");
+            }
+            if (!string.IsNullOrEmpty(model.DiaChi) && model.DiaChi.Trim().Length > 255)
+            {
+                ModelState.AddModelError("DiaChi", "Địa chỉ không được vượt quá 255 ký tự.");
+            }
+            if (!string.IsNullOrEmpty(model.GhiChuSucKhoe) && model.GhiChuSucKhoe.Trim().Length > 500)
+            {
+                ModelState.AddModelError("GhiChuSucKhoe", "Ghi chú sức khỏe không được vượt quá 500 ký tự.");
             }
 
             // Nếu phát hiện lỗi validation
@@ -176,14 +236,17 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
                 nguoiHienMau.GhiChuSucKhoe = model.GhiChuSucKhoe;
 
                 // Tải lại các quan hệ phiếu để View không bị lỗi hiển thị
-                await _context.Entry(nguoiHienMau)
-                    .Collection(n => n.PhieuDangKyHienMaus)
-                    .Query()
-                    .Include(p => p.DotHienMau!)
-                        .ThenInclude(d => d.DonViToChuc)
-                    .Include(p => p.LichKhamSangLocs)
-                    .Include(p => p.KetQuaHienMau)
-                    .LoadAsync();
+                if (nguoiHienMau.MaNguoiHien > 0)
+                {
+                    await _context.Entry(nguoiHienMau)
+                        .Collection(n => n.PhieuDangKyHienMaus)
+                        .Query()
+                        .Include(p => p.DotHienMau!)
+                            .ThenInclude(d => d.DonViToChuc)
+                        .Include(p => p.LichKhamSangLocs)
+                        .Include(p => p.KetQuaHienMau)
+                        .LoadAsync();
+                }
 
                 ViewBag.OpenEditModal = true;
                 TempData["ErrorMessage"] = "Cập nhật hồ sơ thất bại. Vui lòng kiểm tra các trường báo lỗi.";

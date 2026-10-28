@@ -544,7 +544,7 @@
                                                     <span class="material-symbols-outlined text-[20px]">phone_in_talk</span>
                                                 </button>
                                             }
-                                            <a asp-controller="Admin" asp-action="PhieuDangKy" asp-route-search="@donor.HoTen" class="p-1.5 rounded-lg text-secondary hover:text-primary hover:bg-surface-container transition-colors" title="Xem các phiếu đăng ký của người này">
+                                            <a asp-controller="Admin" asp-action="PhieuDangKyHienMau" asp-route-search="@donor.HoTen" asp-route-tenNguoiHien="@donor.HoTen" class="p-1.5 rounded-lg text-secondary hover:text-primary hover:bg-surface-container transition-colors" title="Xem các phiếu đăng ký của người này">
                                                 <span class="material-symbols-outlined text-[20px]">assignment_ind</span>
                                             </a>
                                             <button class="p-1.5 rounded-lg text-secondary hover:text-primary hover:bg-surface-container transition-colors" title="Gửi SMS thông báo" type="button" onclick="alert('Mở cổng gửi tin nhắn điều phối tới: @donor.HoTen (@donor.SoDienThoai)')">

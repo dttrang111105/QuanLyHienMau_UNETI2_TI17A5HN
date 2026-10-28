@@ -11,6 +11,8 @@
     ViewData["Title"] = $"Nộp Phiếu Đăng Ký Hiến Máu – {Model.TenDot}";
     var donor = ViewBag.NguoiHienMau as QuanLyHienMau_UNETI2_TI17A5HN.Models.NguoiHienMau;
     var minWeight = Model.CanNangToiThieu;
+    var recentEligibility = ViewBag.RecentDonationEligibility as QuanLyHienMau_UNETI2_TI17A5HN.Controllers.DangKyController.RecentDonationEligibilityResult;
+    var isCooldownBlocked = (ViewBag.IsCooldownBlocked as bool?) == true || (recentEligibility != null && !recentEligibility.IsEligible);
 }
 
 <div class="flex flex-col w-full">
@@ -37,9 +39,28 @@
     {
         var errorMsg = (TempData["ErrorMessage"] ?? ViewBag.ErrorMessage)?.ToString();
         <div class="max-w-[1240px] w-full mx-auto px-6 pt-4">
-            <div class="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 flex items-center gap-3 shadow-sm">
-                <span class="material-symbols-outlined text-rose-600 text-[24px]">error</span>
-                <span class="font-body-md text-sm font-semibold">@errorMsg</span>
+            <div class="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 flex items-start gap-3 shadow-sm">
+                <span class="material-symbols-outlined text-rose-600 text-[24px] mt-0.5">error</span>
+                <div class="space-y-1">
+                    <span class="font-body-md text-sm font-semibold block">@errorMsg</span>
+                    @if (isCooldownBlocked && recentEligibility != null)
+                    {
+                        <div class="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-rose-700 pt-1">
+                            @if (recentEligibility.LastActualDonationDate.HasValue)
+                            {
+                                <span>Lần hiến máu thành công gần nhất: <strong>@recentEligibility.LastActualDonationDate.Value.ToString("dd/MM/yyyy")</strong></span>
+                            }
+                            @if (recentEligibility.NextEligibleDate.HasValue)
+                            {
+                                <span>Ngày đủ điều kiện đăng ký lại: <strong class="underline">@recentEligibility.NextEligibleDate.Value.ToString("dd/MM/yyyy")</strong></span>
+                            }
+                            else if (recentEligibility.HasMissingActualDonationDate)
+                            {
+                                <span>Trạng thái dữ liệu: <strong>Thiếu ngày hoàn tất hiến máu thực tế (KetQuaHienMau.NgayCapNhat)</strong></span>
+                            }
+                        </div>
+                    }
+                </div>
             </div>
         </div>
     }
@@ -199,12 +220,13 @@
                                 </div>
                                 <div class="grid grid-cols-2 gap-3">
                                     <div class="space-y-1.5">
-                                        <label class="font-label-md text-label-md text-on-surface">Ngày sinh</label>
-                                        <input class="w-full h-12 bg-surface-container-lowest text-on-surface px-3 rounded-xl font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-primary shadow-sm border border-outline-variant/40" type="date" value="@(donor?.NgaySinh?.ToString("yyyy-MM-dd") ?? "2003-08-14")">
+                                        <label class="font-label-md text-label-md text-on-surface">Ngày sinh <span class="text-primary">*</span></label>
+                                        <input class="w-full h-12 bg-surface-container-lowest text-on-surface px-3 rounded-xl font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-primary shadow-sm border border-outline-variant/40" name="ngaySinh" required="" type="date" value="@(donor?.NgaySinh?.ToString("yyyy-MM-dd") ?? "")">
                                     </div>
                                     <div class="space-y-1.5">
                                         <label class="font-label-md text-label-md text-on-surface">Giới tính</label>
-                                        <select class="w-full h-12 bg-surface-container-lowest text-on-surface px-3 rounded-xl font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-primary shadow-sm border border-outline-variant/40 cursor-pointer">
+                                        <select class="w-full h-12 bg-surface-container-lowest text-on-surface px-3 rounded-xl font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-primary shadow-sm border border-outline-variant/40 cursor-pointer" name="gioiTinh">
+                                            <option value="" selected="@(string.IsNullOrEmpty(donor?.GioiTinh))">-- Chọn --</option>
                                             <option value="Nam" selected="@(donor?.GioiTinh == "Nam")">Nam</option>
                                             <option value="Nữ" selected="@(donor?.GioiTinh == "Nữ")">Nữ</option>
                                             <option value="Khác" selected="@(donor?.GioiTinh == "Khác")">Khác</option>
@@ -214,20 +236,20 @@
                                 <div class="space-y-1.5">
                                     <label class="font-label-md text-label-md text-on-surface">Số điện thoại di động <span class="text-primary">*</span></label>
                                     <div class="relative">
-                                        <input class="w-full h-12 bg-surface-container-lowest text-on-surface px-4 rounded-xl font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-primary shadow-sm border border-outline-variant/40" name="soDienThoai" placeholder="VD: 0912345678" required="" type="tel" value="@(donor?.SoDienThoai ?? "0988 123 456")">
+                                        <input class="w-full h-12 bg-surface-container-lowest text-on-surface px-4 rounded-xl font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-primary shadow-sm border border-outline-variant/40" name="soDienThoai" placeholder="VD: 0912345678" required="" type="tel" value="@(donor?.SoDienThoai ?? "")">
                                         <span class="absolute right-3.5 top-3.5 material-symbols-outlined text-on-surface-variant text-[20px]">phone_iphone</span>
                                     </div>
                                 </div>
                                 <div class="space-y-1.5">
                                     <label class="font-label-md text-label-md text-on-surface">Email nhận thông báo <span class="text-primary">*</span></label>
                                     <div class="relative">
-                                        <input class="w-full h-12 bg-surface-container-lowest text-on-surface px-4 rounded-xl font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-primary shadow-sm border border-outline-variant/40" name="email" placeholder="email@uneti.edu.vn" required="" type="email" value="@(donor?.Email ?? "sinhvien.uneti@gmail.com")">
+                                        <input class="w-full h-12 bg-surface-container-lowest text-on-surface px-4 rounded-xl font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-primary shadow-sm border border-outline-variant/40" name="email" placeholder="email@uneti.edu.vn" required="" type="email" value="@(donor?.Email ?? "")">
                                         <span class="absolute right-3.5 top-3.5 material-symbols-outlined text-on-surface-variant text-[20px]">mail</span>
                                     </div>
                                 </div>
                                 <div class="sm:col-span-2 space-y-1.5">
                                     <label class="font-label-md text-label-md text-on-surface">Lớp / Khoa / Đơn vị công tác (UNETI)</label>
-                                    <input class="w-full h-12 bg-surface-container-lowest text-on-surface px-4 rounded-xl font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-primary shadow-sm border border-outline-variant/40" placeholder="VD: Lớp DHTI17A5HN - Khoa Công Nghệ Thông Tin" type="text" value="@(donor?.NgheNghiep ?? "Lớp DHTI17A5HN - Khoa CNTT")">
+                                    <input class="w-full h-12 bg-surface-container-lowest text-on-surface px-4 rounded-xl font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-primary shadow-sm border border-outline-variant/40" name="ngheNghiep" placeholder="VD: Lớp DHTI17A5HN - Khoa Công Nghệ Thông Tin" type="text" value="@(donor?.NgheNghiep ?? "")">
                                 </div>
                             </div>
                         </div>
@@ -280,17 +302,17 @@
                                 <div class="space-y-1.5">
                                     <div class="flex items-center justify-between">
                                         <label class="font-label-md text-label-md text-on-surface">Cân nặng hiện tại (kg) <span class="text-primary">*</span></label>
-                                        <span class="font-label-sm text-label-sm text-emerald-700 font-semibold" id="weightValidationLabel">Đủ điều kiện (≥ @minWeight kg)</span>
+                                        <span class="font-label-sm text-label-sm text-emerald-700 font-semibold" id="weightValidationLabel">Yêu cầu tối thiểu (≥ @minWeight kg)</span>
                                     </div>
                                     <div class="relative">
-                                        <input class="w-full h-12 bg-surface-container-lowest text-on-surface px-4 rounded-xl font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-primary shadow-sm border border-outline-variant/40" id="donorWeight" max="150" min="@minWeight" name="canNang" required="" step="0.5" type="number" value="@(donor?.CanNang ?? 64)">
+                                        <input class="w-full h-12 bg-surface-container-lowest text-on-surface px-4 rounded-xl font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-primary shadow-sm border border-outline-variant/40" id="donorWeight" max="200" min="@minWeight" name="canNang" placeholder="VD: 55" required="" step="0.5" type="number" value="@(donor?.CanNang?.ToString() ?? "")">
                                         <span class="absolute right-4 top-3 font-label-md text-label-md text-secondary">kg</span>
                                     </div>
                                 </div>
                                 <div class="space-y-1.5">
                                     <label class="font-label-md text-label-md text-on-surface">Chiều cao hiện tại (cm)</label>
                                     <div class="relative">
-                                        <input class="w-full h-12 bg-surface-container-lowest text-on-surface px-4 rounded-xl font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-primary shadow-sm border border-outline-variant/40" max="210" min="140" type="number" value="172">
+                                        <input class="w-full h-12 bg-surface-container-lowest text-on-surface px-4 rounded-xl font-body-md text-body-md focus:outline-none focus:ring-2 focus:ring-primary shadow-sm border border-outline-variant/40" max="210" min="140" placeholder="VD: 168" type="number">
                                         <span class="absolute right-4 top-3 font-label-md text-label-md text-secondary">cm</span>
                                     </div>
                                 </div>
@@ -407,10 +429,20 @@
                                 <span class="material-symbols-outlined text-[20px]">arrow_back</span>
                                 <span>Quay lại chi tiết đợt</span>
                             </a>
-                            <button class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-gradient-to-r from-primary to-primary-container text-on-primary font-label-md text-label-md px-8 py-3.5 rounded-xl shadow-lg shadow-primary-container/30 hover:shadow-xl hover:-translate-y-0.5 transition-all cursor-pointer font-bold" type="submit">
-                                <span class="material-symbols-outlined text-[20px]">send</span>
-                                <span>XÁC NHẬN &amp; NỘP PHIẾU ĐĂNG KÝ</span>
-                            </button>
+                            @if (isCooldownBlocked)
+                            {
+                                <button disabled class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-surface-container-high text-on-surface-variant font-label-md text-label-md px-8 py-3.5 rounded-xl cursor-not-allowed opacity-70 font-bold" type="button">
+                                    <span class="material-symbols-outlined text-[20px]">schedule</span>
+                                    <span>@(recentEligibility?.NextEligibleDate != null ? $"ĐỦ ĐIỀU KIỆN ĐĂNG KÝ LẠI TỪ {recentEligibility.NextEligibleDate.Value:dd/MM/yyyy}" : "CHƯA ĐỦ ĐIỀU KIỆN ĐĂNG KÝ LẠI")</span>
+                                </button>
+                            }
+                            else
+                            {
+                                <button class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-gradient-to-r from-primary to-primary-container text-on-primary font-label-md text-label-md px-8 py-3.5 rounded-xl shadow-lg shadow-primary-container/30 hover:shadow-xl hover:-translate-y-0.5 transition-all cursor-pointer font-bold" type="submit">
+                                    <span class="material-symbols-outlined text-[20px]">send</span>
+                                    <span>XÁC NHẬN &amp; NỘP PHIẾU ĐĂNG KÝ</span>
+                                </button>
+                            }
                         </div>
                     </form>
                 </div>

@@ -12,17 +12,30 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 
     var phieuList = Model?.PhieuDangKyHienMaus?.OrderByDescending(p => p.NgayNop).ToList() ?? new List<QuanLyHienMau_UNETI2_TI17A5HN.Models.PhieuDangKyHienMau>();
-    var successfulDonations = phieuList.Where(p => p.TrangThai == "Hiến máu thành công" || p.KetQuaHienMau?.KetQua == "Hiến máu thành công").ToList();
-    var totalCount = successfulDonations.Count > 0 ? successfulDonations.Count : phieuList.Count(p => p.TrangThai != "Đã hủy");
+    var eligibility = QuanLyHienMau_UNETI2_TI17A5HN.Controllers.DangKyController.EvaluateRecentDonationEligibility(phieuList, DateTime.Today);
+    var totalCount = eligibility.TotalSuccessfulDonations;
     var totalVolume = totalCount * 350;
     var peopleSaved = totalCount * 3;
 
-    var latestDonation = successfulDonations.FirstOrDefault() ?? phieuList.FirstOrDefault();
-    var latestDateStr = latestDonation?.NgayNop.ToString("dd/MM/yyyy") ?? "Chưa có";
-    var latestDotName = latestDonation?.DotHienMau?.TenDot ?? "Chưa tham gia đợt nào";
+    var latestSuccessful = eligibility.LastSuccessfulPhieu;
+    var lastSuccessDate = eligibility.LastActualDonationDate;
+    var nextEligibleDate = eligibility.NextEligibleDate;
+    var latestDateStr = lastSuccessDate.HasValue
+        ? lastSuccessDate.Value.ToString("dd/MM/yyyy")
+        : (latestSuccessful != null ? "Chưa cập nhật ngày hiến thực tế" : "Chưa có lần hiến thành công");
+    var latestDotName = latestSuccessful?.DotHienMau?.TenDot ?? "Chưa hoàn tất đợt hiến nào";
 
-    var age = Model?.NgaySinh.HasValue == true ? (DateTime.Now.Year - Model.NgaySinh.Value.Year) : 23;
-    var nhomMauDisplay = string.IsNullOrEmpty(Model?.NhomMau) ? "O Rh(+)" : Model.NhomMau;
+    var daysSinceLastSuccess = eligibility.DaysSinceLastDonation ?? (eligibility.HasMissingActualDonationDate ? 0 : 84);
+    var isReadyNextDonation = eligibility.IsEligible;
+    var recoveryPercent = lastSuccessDate.HasValue
+        ? Math.Min(100, (int)Math.Round(daysSinceLastSuccess * 100.0 / 84.0))
+        : (eligibility.HasMissingActualDonationDate ? 0 : 100);
+    var remainingDays = eligibility.RemainingCooldownDays;
+
+    var age = Model?.NgaySinh.HasValue == true
+        ? (DateTime.Today.Year - Model.NgaySinh.Value.Year - (Model.NgaySinh.Value.Date > DateTime.Today.AddYears(-(DateTime.Today.Year - Model.NgaySinh.Value.Year)) ? 1 : 0))
+        : (int?)null;
+    var nhomMauDisplay = string.IsNullOrEmpty(Model?.NhomMau) ? "Chưa rõ" : Model.NhomMau;
     var rankName = totalCount >= 5 ? "Huy Hiệu Vàng" : totalCount >= 3 ? "Huy Hiệu Bạc" : totalCount >= 1 ? "Huy Hiệu Đồng" : "Thành Viên Mới";
     var rankBadge = totalCount >= 5 ? "Vàng" : totalCount >= 3 ? "Bạc" : totalCount >= 1 ? "Đồng" : "Mới";
 }
@@ -123,9 +136,9 @@
                         <div class="flex flex-wrap items-center gap-x-3 gap-y-1 font-body-sm text-xs sm:text-sm text-on-surface-variant mt-0.5">
                             <span class="font-medium text-on-surface">Mã định danh: <span class="font-mono font-bold">#NHM-@(Model?.MaNguoiHien.ToString("D5") ?? "00001")</span></span>
                             <span>•</span>
-                            <span>@(Model?.NgaySinh?.ToString("dd/MM/yyyy") ?? "Chưa cập nhật") (@age tuổi)</span>
+                            <span>@(Model?.NgaySinh.HasValue == true ? $"{Model.NgaySinh.Value:dd/MM/yyyy} ({age} tuổi)" : "Chưa cập nhật ngày sinh")</span>
                             <span>•</span>
-                            <span>@(Model?.GioiTinh ?? "Nam")</span>
+                            <span>@(Model?.GioiTinh ?? "Chưa cập nhật")</span>
                             <span>•</span>
                             <span class="flex items-center gap-1"><span class="material-symbols-outlined text-[14px] text-primary">call</span>@(Model?.SoDienThoai ?? "Chưa có SĐT")</span>
                             <span>•</span>
@@ -154,15 +167,28 @@
                                 <span class="material-symbols-outlined text-[18px]">timelapse</span>
                                 <span class="font-label-md text-xs sm:text-sm font-bold">Chu kỳ hiến tiếp theo</span>
                             </div>
-                            <span class="bg-secondary-fixed text-on-secondary-fixed font-label-sm text-xs px-2 py-0.5 rounded font-bold">Sẵn sàng</span>
+                            <span class="@(isReadyNextDonation ? "bg-secondary-fixed text-on-secondary-fixed" : "bg-amber-100 text-amber-800") font-label-sm text-xs px-2 py-0.5 rounded font-bold">
+                                @(isReadyNextDonation ? "Sẵn sàng" : (eligibility.HasMissingActualDonationDate && !lastSuccessDate.HasValue ? "Thiếu ngày hiến" : $"Còn {remainingDays} ngày"))
+                            </span>
                         </div>
                         <p class="font-body-sm text-xs sm:text-sm text-on-surface-variant leading-relaxed">
-                            Đủ điều kiện hiến đợt tiếp theo.
+                            @if (isReadyNextDonation)
+                            {
+                                <span>Đủ điều kiện đăng ký đợt hiến máu tiếp theo.</span>
+                            }
+                            else if (nextEligibleDate.HasValue)
+                            {
+                                <span>Đang trong thời gian phục hồi sau hiến máu (@daysSinceLastSuccess/84 ngày). Ngày đủ điều kiện đăng ký lại: <strong class="text-primary font-bold">@nextEligibleDate.Value.ToString("dd/MM/yyyy")</strong>.</span>
+                            }
+                            else
+                            {
+                                <span>Đã có phiếu hiến máu thành công nhưng chưa cập nhật ngày hiến thực tế trong cơ sở dữ liệu.</span>
+                            }
                             <span class="block text-[11px] text-on-surface-variant/80 mt-0.5">Quy chuẩn khoảng cách: <strong class="text-on-surface font-semibold">84 ngày theo Bộ Y Tế</strong></span>
                         </p>
                         <!-- Progress Bar -->
                         <div class="w-full bg-surface-container-high h-2 rounded-full overflow-hidden mt-2">
-                            <div class="bg-primary h-full rounded-full transition-all duration-500" style="width: 100%;"></div>
+                            <div class="bg-primary h-full rounded-full transition-all duration-500" style="width: @(recoveryPercent)%;"></div>
                         </div>
                     </div>
                 </div>
@@ -221,11 +247,21 @@
             <div class="bg-surface-container-lowest rounded-2xl p-4 sm:p-5 shadow-sm border border-surface-container flex items-center justify-between group hover:shadow-md transition-shadow">
                 <div class="flex flex-col">
                     <span class="font-label-sm text-xs text-on-surface-variant uppercase font-semibold">An toàn sinh học</span>
-                    <div class="flex items-baseline gap-1 mt-1">
-                        <span class="font-display-hero text-2xl sm:text-3xl font-extrabold text-primary">100%</span>
-                        <span class="font-label-md text-xs sm:text-sm text-on-surface-variant font-bold">chuẩn y tế</span>
-                    </div>
-                    <span class="font-body-sm text-xs text-on-surface-variant mt-1">NAT &amp; ELISA âm tính hoàn toàn</span>
+                    @if (totalCount > 0)
+                    {
+                        <div class="flex items-baseline gap-1 mt-1">
+                            <span class="font-display-hero text-2xl sm:text-3xl font-extrabold text-primary">100%</span>
+                            <span class="font-label-md text-xs sm:text-sm text-on-surface-variant font-bold">chuẩn y tế</span>
+                        </div>
+                        <span class="font-body-sm text-xs text-on-surface-variant mt-1">NAT &amp; ELISA âm tính hoàn toàn</span>
+                    }
+                    else
+                    {
+                        <div class="flex items-baseline gap-1 mt-1">
+                            <span class="font-headline-md text-lg sm:text-xl font-extrabold text-on-surface-variant">Chưa có KQ</span>
+                        </div>
+                        <span class="font-body-sm text-xs text-on-surface-variant mt-1">Cập nhật sau lần hiến máu đầu tiên</span>
+                    }
                 </div>
                 <div class="w-12 h-12 rounded-xl bg-surface-container-low flex items-center justify-center text-primary group-hover:scale-105 transition-transform shrink-0">
                     <span class="material-symbols-outlined text-[26px]">health_and_safety</span>
@@ -277,8 +313,10 @@
                             {
                                 var item = phieuList[i];
                                 var isFirst = i == 0;
-                                var statusClass = item.TrangThai == "Hiến máu thành công" ? "bg-emerald-100 text-emerald-800" :
-                                                  item.TrangThai == "Đã hủy" ? "bg-rose-100 text-rose-800" :
+                                var isItemSuccess = QuanLyHienMau_UNETI2_TI17A5HN.Controllers.DangKyController.IsConfirmedSuccessfulDonation(item);
+                                var itemActualDate = QuanLyHienMau_UNETI2_TI17A5HN.Controllers.DangKyController.GetActualDonationDate(item);
+                                var statusClass = isItemSuccess ? "bg-emerald-100 text-emerald-800" :
+                                                  (item.TrangThai == "Đã hủy" || item.TrangThai == "Từ chối" || item.TrangThai == "Không đủ điều kiện hiến") ? "bg-rose-100 text-rose-800" :
                                                   item.TrangThai == "Chờ xác nhận" ? "bg-amber-100 text-amber-800" :
                                                   "bg-blue-100 text-blue-800";
 
@@ -288,13 +326,19 @@
                                             <span class="bg-primary text-on-primary font-label-md text-xs px-2.5 py-1 rounded-lg font-bold">Lần @(phieuList.Count - i)</span>
                                             <span class="font-title-md text-sm sm:text-base text-on-surface font-extrabold">@(item.DotHienMau?.TenDot ?? "Đợt hiến máu nhân đạo")</span>
                                         </div>
-                                        <div class="flex items-center gap-2">
+                                        <div class="flex items-center gap-2 flex-wrap">
                                             <span class="px-2.5 py-1 rounded-full font-label-sm text-xs font-bold @statusClass">
                                                 @item.TrangThai
                                             </span>
-                                            <span class="bg-surface-container-high text-on-surface font-label-sm text-xs px-2.5 py-1 rounded-full flex items-center gap-1 font-semibold">
-                                                <span>@item.NgayNop.ToString("dd/MM/yyyy")</span>
+                                            <span class="bg-surface-container-high text-on-surface font-label-sm text-xs px-2.5 py-1 rounded-full flex items-center gap-1 font-semibold" title="Ngày nộp phiếu đăng ký">
+                                                <span>ĐK: @item.NgayNop.ToString("dd/MM/yyyy")</span>
                                             </span>
+                                            @if (isItemSuccess && itemActualDate.HasValue)
+                                            {
+                                                <span class="bg-emerald-50 text-emerald-800 border border-emerald-200 font-label-sm text-xs px-2.5 py-1 rounded-full flex items-center gap-1 font-semibold" title="Ngày hiến máu thực tế được xác nhận">
+                                                    <span>Ngày hiến: @itemActualDate.Value.ToString("dd/MM/yyyy")</span>
+                                                </span>
+                                            }
                                         </div>
                                     </div>
                                     <!-- Metadata Grid -->
@@ -342,6 +386,18 @@
                             </div>
                             <span class="font-label-md text-xs sm:text-sm font-mono text-primary bg-primary-fixed px-2.5 py-0.5 rounded-md font-bold">Mã hồ sơ: #NHM-@(Model?.MaNguoiHien.ToString("D5") ?? "00001")</span>
                         </div>
+                        @if (totalCount == 0)
+                        {
+                            <div class="p-8 text-center bg-surface-container-low rounded-2xl border border-surface-container">
+                                <span class="material-symbols-outlined text-outline text-[44px]">bloodtype</span>
+                                <h4 class="font-headline-sm text-base text-on-surface font-bold mt-2">Chưa có dữ liệu hành trình túi máu</h4>
+                                <p class="font-body-sm text-xs sm:text-sm text-on-surface-variant mt-1">
+                                    Hành trình tiếp nhận, xét nghiệm sàng lọc và lưu trữ túi máu sẽ được cập nhật sau khi bạn hoàn thành lần hiến máu thực tế đầu tiên.
+                                </p>
+                            </div>
+                        }
+                        else
+                        {
                         <p class="font-body-sm text-xs sm:text-sm text-on-surface-variant mb-2">
                             Hệ thống phân tách và vận chuyển máu thời gian thực theo tiêu chuẩn quản lý ngân hàng máu quốc gia.
                         </p>
@@ -414,6 +470,7 @@
                                 </div>
                             </div>
                         </div>
+                        }
                     </div>
 
                     <!-- TAB 3: LAB RESULTS -->
@@ -422,6 +479,18 @@
                             <h4 class="font-title-md text-sm sm:text-base font-bold text-on-surface">Kết Quả Xét Nghiệm Sinh Học Lâm Sàng</h4>
                             <span class="bg-emerald-100 text-emerald-800 font-label-sm text-xs px-2.5 py-1 rounded-full font-bold">Chuẩn ISO 15189</span>
                         </div>
+                        @if (totalCount == 0)
+                        {
+                            <div class="p-8 text-center bg-surface-container-low rounded-2xl border border-surface-container">
+                                <span class="material-symbols-outlined text-outline text-[44px]">biotech</span>
+                                <h4 class="font-headline-sm text-base text-on-surface font-bold mt-2">Chưa có hồ sơ xét nghiệm lâm sàng</h4>
+                                <p class="font-body-sm text-xs sm:text-sm text-on-surface-variant mt-1">
+                                    Kết quả xét nghiệm sàng lọc (HIV, HBV, HCV, Giang mai, Sốt rét) sẽ được hiển thị sau khi đơn vị máu của bạn hoàn tất kiểm định tại phòng Lab.
+                                </p>
+                            </div>
+                        }
+                        else
+                        {
                         <div class="overflow-x-auto">
                             <table class="w-full text-left font-body-sm text-xs sm:text-sm">
                                 <thead class="bg-surface-container text-on-surface font-label-md">
@@ -472,6 +541,7 @@
                                 </tbody>
                             </table>
                         </div>
+                        }
                     </div>
                 </div>
             </div>
@@ -511,19 +581,26 @@
                         </p>
                         <div class="bg-surface-container-low py-2.5 px-3 rounded-xl border border-surface-container-high">
                             <span class="font-headline-sm text-sm sm:text-base text-on-surface font-extrabold uppercase tracking-wide block">
-                                @(Model?.HoTen?.ToUpper() ?? "NGUYỄN HOÀNG NAM")
+                                @(Model?.HoTen?.ToUpper() ?? "CHƯA CẬP NHẬT HỌ TÊN")
                             </span>
                             <div class="flex items-center justify-center gap-3 font-body-sm text-xs text-on-surface-variant mt-0.5">
-                                <span>Ngày sinh: <strong class="text-on-surface">@(Model?.NgaySinh?.ToString("dd/MM/yyyy") ?? "18/06/1998")</strong></span>
+                                <span>Ngày sinh: <strong class="text-on-surface">@(Model?.NgaySinh?.ToString("dd/MM/yyyy") ?? "Chưa cập nhật")</strong></span>
                                 <span>•</span>
-                                <span>SĐT: <strong class="text-on-surface font-mono font-bold">@(Model?.SoDienThoai ?? "0988 123 456")</strong></span>
+                                <span>SĐT: <strong class="text-on-surface font-mono font-bold">@(Model?.SoDienThoai ?? "Chưa cập nhật")</strong></span>
                             </div>
                         </div>
                         <div class="text-on-surface font-body-md text-xs sm:text-sm leading-relaxed px-1">
-                            Đã tình nguyện hiến <strong class="text-primary font-bold">350 mL Máu toàn phần</strong> (Nhóm máu @nhomMauDisplay) vì sự sống của người bệnh.
-                            <span class="block text-xs text-on-surface-variant mt-0.5">
-                                Đợt gần nhất: <strong class="text-on-surface font-bold">@latestDotName</strong> - Ngày @latestDateStr.
-                            </span>
+                            @if (totalCount > 0)
+                            {
+                                <span>Đã tình nguyện hiến <strong class="text-primary font-bold">@totalVolume.ToString("N0") mL Máu toàn phần</strong> (Nhóm máu @nhomMauDisplay) vì sự sống của người bệnh.</span>
+                                <span class="block text-xs text-on-surface-variant mt-0.5">
+                                    Đợt gần nhất: <strong class="text-on-surface font-bold">@latestDotName</strong> - Ngày @latestDateStr.
+                                </span>
+                            }
+                            else
+                            {
+                                <span>Chứng nhận hiến máu điện tử sẽ được kích hoạt chính thức sau khi bạn hoàn thành lần hiến máu đầu tiên.</span>
+                            }
                         </div>
 
                         <!-- Legal Donor Right Clause -->

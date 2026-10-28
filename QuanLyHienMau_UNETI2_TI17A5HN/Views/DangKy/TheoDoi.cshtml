@@ -147,7 +147,11 @@
                             <span class="material-symbols-outlined text-[18px] text-primary">person</span>
                             Hồ sơ cá nhân
                         </a>
-                        @if (trangThai == "Chờ xác nhận" || trangThai == "Đã xác nhận")
+                        @{
+                            bool hasActiveScreening = Model.LichKhamSangLocs?.Any(l => l.TrangThai != "Đã hủy") == true;
+                            bool canCancelTicket = (trangThai == "Chờ xác nhận" || trangThai == "Đã xác nhận") && !hasActiveScreening && Model.KetQuaHienMau == null;
+                        }
+                        @if (canCancelTicket)
                         {
                             <button class="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-700 font-label-md text-label-md transition-all cursor-pointer font-semibold border border-rose-200" onclick="toggleRescheduleModal()">
                                 <span class="material-symbols-outlined text-[18px]">cancel</span>
@@ -185,7 +189,7 @@
                         </div>
                         <div>
                             <div class="font-label-sm text-label-sm text-secondary uppercase">Nhóm máu &amp; Thể tích</div>
-                            <div class="font-title-md text-title-md text-primary font-bold mt-0.5">@(string.IsNullOrEmpty(Model.NguoiHienMau?.NhomMau) ? "O Rh(+)" : Model.NguoiHienMau.NhomMau) • @(Model.LyDoHienMau ?? "350ml")</div>
+                            <div class="font-title-md text-title-md text-primary font-bold mt-0.5">@(string.IsNullOrEmpty(Model.NguoiHienMau?.NhomMau) ? "Chưa xác định" : Model.NguoiHienMau.NhomMau) • @(Model.LyDoHienMau ?? "350ml")</div>
                             <div class="font-body-sm text-body-sm text-on-surface-variant">Hiến máu toàn phần</div>
                         </div>
                     </div>
@@ -229,6 +233,29 @@
                             <p class="font-body-sm text-xs text-rose-700 max-w-md mx-auto">
                                 @(Model.GhiChuXacNhan ?? "Phiếu đăng ký đã được hủy thành công theo yêu cầu của bạn.")
                             </p>
+                            @if (Model.NgayXuLy.HasValue)
+                            {
+                                <p class="font-label-sm text-[11px] text-rose-600">Thời gian hủy: @Model.NgayXuLy.Value.ToString("dd/MM/yyyy • HH:mm")</p>
+                            }
+                        </div>
+                    }
+                    else if (trangThai == "Từ chối" || trangThai == "Không đủ điều kiện hiến")
+                    {
+                        <div class="p-6 rounded-2xl bg-rose-50 border border-rose-200 text-center space-y-2 mb-6">
+                            <span class="material-symbols-outlined text-rose-600 text-[40px]">report</span>
+                            <h3 class="font-headline-sm text-base text-rose-800 font-bold">
+                                @(trangThai == "Từ chối" ? "Phiếu Đăng Ký Bị Từ Chối Tiếp Nhận" : "Chưa Đủ Điều Kiện Hiến Máu Trong Đợt Này")
+                            </h3>
+                            <p class="font-body-sm text-sm text-rose-700 max-w-xl mx-auto">
+                                <strong>Lý do / Ghi chú từ bộ phận y tế:</strong>
+                                @(string.IsNullOrWhiteSpace(Model.GhiChuXacNhan)
+                                    ? (Model.KetQuaHienMau?.NhanXet ?? "Chưa đáp ứng điều kiện y tế tại thời điểm sàng lọc.")
+                                    : Model.GhiChuXacNhan)
+                            </p>
+                            @if (Model.NgayXuLy.HasValue)
+                            {
+                                <p class="font-label-sm text-[11px] text-rose-600">Thời gian cập nhật: @Model.NgayXuLy.Value.ToString("dd/MM/yyyy • HH:mm")</p>
+                            }
                         </div>
                     }
                     else
@@ -431,7 +458,7 @@
                             </div>
                             <div class="space-y-1">
                                 <span class="font-label-sm text-label-sm text-secondary">Ngày sinh &amp; Giới tính</span>
-                                <p class="font-title-md text-title-md text-on-surface">@(Model.NguoiHienMau?.NgaySinh?.ToString("dd/MM/yyyy") ?? "Chưa rõ") • @(Model.NguoiHienMau?.GioiTinh ?? "Nam")</p>
+                                <p class="font-title-md text-title-md text-on-surface">@(Model.NguoiHienMau?.NgaySinh?.ToString("dd/MM/yyyy") ?? "Chưa rõ") • @(Model.NguoiHienMau?.GioiTinh ?? "Chưa cập nhật")</p>
                             </div>
                             <div class="space-y-1">
                                 <span class="font-label-sm text-label-sm text-secondary">Số điện thoại liên hệ</span>
@@ -439,7 +466,7 @@
                             </div>
                             <div class="space-y-1">
                                 <span class="font-label-sm text-label-sm text-secondary">Cân nặng ghi nhận</span>
-                                <p class="font-title-md text-title-md text-on-surface">@(Model.NguoiHienMau?.CanNang ?? 64) kg</p>
+                                <p class="font-title-md text-title-md text-on-surface">@(Model.NguoiHienMau?.CanNang.HasValue == true ? $"{Model.NguoiHienMau.CanNang.Value} kg" : "Chưa cập nhật")</p>
                             </div>
                         </div>
                     </div>
@@ -511,7 +538,7 @@
                             </div>
                             <div class="mt-4 space-y-1">
                                 <p class="font-title-md text-title-md font-bold text-on-primary">
-                                    @(Model.NguoiHienMau?.HoTen ?? "Người hiến máu") • @(string.IsNullOrEmpty(Model.NguoiHienMau?.NhomMau) ? "O Rh(+)" : Model.NguoiHienMau.NhomMau)
+                                    @(Model.NguoiHienMau?.HoTen ?? "Người hiến máu") • @(string.IsNullOrEmpty(Model.NguoiHienMau?.NhomMau) ? "Chưa xác định" : Model.NguoiHienMau.NhomMau)
                                 </p>
                                 <p class="text-xs text-on-primary/80">
                                     Khung giờ hiệu lực: <strong class="text-on-primary">@(Model.GhiChu ?? "Ca 1: 07:30 - 09:30")</strong>
