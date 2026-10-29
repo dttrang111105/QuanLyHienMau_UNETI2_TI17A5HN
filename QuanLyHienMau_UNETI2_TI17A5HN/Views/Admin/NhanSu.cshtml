@@ -1,6 +1,11 @@
+@model IEnumerable<QuanLyHienMau_UNETI2_TI17A5HN.Models.TaiKhoan>
 @{
     ViewData["Title"] = "Phân quyền nhân sự & Quản trị tài khoản y tế";
     Layout = "_AdminLayout";
+    var totalAccounts = ViewBag.TotalAccounts ?? (Model?.Count() ?? 0);
+    var adminCount = ViewBag.AdminCount ?? 0;
+    var medicalStaffCount = ViewBag.MedicalStaffCount ?? 0;
+    var donorCount = ViewBag.DonorCount ?? 0;
 }
 
 <!-- Subtle Ambient Glow -->
@@ -9,6 +14,28 @@
     <div class="absolute top-1/2 -left-20 w-80 h-80 bg-primary-container/5 rounded-full blur-3xl pointer-events-none"></div>
 
     <!-- 1. Header Section -->
+    
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center justify-between shadow-xs">
+            <div class="flex items-center gap-2.5">
+                <span class="material-symbols-outlined text-emerald-600 text-[22px]">check_circle</span>
+                <span class="font-body-sm font-semibold">@TempData["SuccessMessage"]</span>
+            </div>
+            <button onclick="this.parentElement.remove()" class="text-emerald-600 hover:text-emerald-900 cursor-pointer"><span class="material-symbols-outlined text-[18px]">close</span></button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="p-4 rounded-2xl bg-red-50 border border-red-200 text-red-800 flex items-center justify-between shadow-xs">
+            <div class="flex items-center gap-2.5">
+                <span class="material-symbols-outlined text-red-600 text-[22px]">error</span>
+                <span class="font-body-sm font-semibold">@TempData["ErrorMessage"]</span>
+            </div>
+            <button onclick="this.parentElement.remove()" class="text-red-600 hover:text-red-900 cursor-pointer"><span class="material-symbols-outlined text-[18px]">close</span></button>
+        </div>
+    }
+
     <header class="flex flex-col gap-space-sm relative z-10">
         <!-- Breadcrumb -->
         <nav class="flex items-center gap-2 font-label-sm text-label-sm text-on-surface-variant">
@@ -45,7 +72,7 @@
                     <span class="material-symbols-outlined text-[18px] text-on-surface-variant">tune</span>
                     <span>Cấu Hình Ma Trận (RBAC)</span>
                 </a>
-                <button class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-on-primary shadow-md hover:bg-primary-container active:scale-[0.98] transition-all duration-180 font-label-md text-label-md" type="button" onclick="alert('Mở biểu mẫu tạo tài khoản cán bộ y tế mới.')">
+                <button class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-on-primary shadow-md hover:bg-primary-container active:scale-[0.98] transition-all duration-180 font-label-md text-label-md" type="button" onclick="document.getElementById('modalCreateAccount').classList.remove('hidden')">
                     <span class="material-symbols-outlined text-[20px]">person_add</span>
                     <span>+ Thêm Cán Bộ Y Tế Mới</span>
                 </button>
@@ -373,57 +400,44 @@
     <!-- 4. Block 2: Medical Staff Account Directory & Security Status Table -->
     <section class="flex flex-col gap-space-sm">
         <!-- Filter Bar -->
-        <div class="p-space-md bg-surface-container-lowest rounded-xl shadow-sm flex flex-col lg:flex-row gap-3 items-stretch lg:items-center justify-between">
+        <form method="get" asp-controller="Admin" asp-action="NhanSu" class="p-space-md bg-surface-container-lowest rounded-xl shadow-sm flex flex-col lg:flex-row gap-3 items-stretch lg:items-center justify-between">
             <div class="flex flex-1 flex-col sm:flex-row gap-3">
                 <!-- Search input -->
                 <div class="relative flex-1">
                     <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">search</span>
-                    <input id="staffSearchInput" class="w-full h-11 pl-10 pr-4 bg-surface-container-low rounded-xl font-body-sm text-body-sm text-on-surface placeholder:text-on-surface-variant/60 focus:outline-none focus:bg-surface-container-lowest transition-all" placeholder="Tìm họ tên, Mã định danh CBYT, CCHN, Email y tế..." type="search">
+                    <input name="search" value="@ViewBag.CurrentSearch" class="w-full h-11 pl-10 pr-4 bg-surface-container-low rounded-xl font-body-sm text-body-sm text-on-surface placeholder:text-on-surface-variant/60 focus:outline-none focus:bg-surface-container-lowest transition-all" placeholder="Tìm tên đăng nhập, họ tên, email..." type="search">
                 </div>
                 <!-- Role Filter -->
                 <div class="relative min-w-[200px]">
-                    <select id="staffRoleSelect" class="w-full h-11 px-3 bg-surface-container-low rounded-xl font-body-sm text-body-sm text-on-surface focus:outline-none cursor-pointer appearance-none">
-                        <option value="">Tất cả Vai trò (5 nhóm)</option>
-                        <option value="Trưởng kíp">Trưởng Kíp / Trưởng Khoa</option>
-                        <option value="Khám Sàng Lọc">Bác Sĩ Sàng Lọc Lâm Sàng</option>
-                        <option value="Xét Nghiệm">Kỹ Thuật Viên Xét Nghiệm</option>
-                        <option value="Thủ Kho">Thủ Kho Lưu Trữ &amp; Chuỗi Lạnh</option>
-                        <option value="Điều Phối">Điều Phối Viên Ngoại Viện</option>
+                    <select name="vaiTro" class="w-full h-11 px-3 bg-surface-container-low rounded-xl font-body-sm text-body-sm text-on-surface focus:outline-none cursor-pointer appearance-none">
+                        <option value="all">Tất cả Vai trò</option>
+                        <option value="Admin" selected="@(ViewBag.CurrentVaiTro == "Admin" ? "selected" : null)">Admin (Quản trị)</option>
+                        <option value="Medical Staff" selected="@(ViewBag.CurrentVaiTro == "Medical Staff" ? "selected" : null)">Nhân viên y tế / Bác sĩ</option>
+                        <option value="Donor" selected="@(ViewBag.CurrentVaiTro == "Donor" ? "selected" : null)">Người hiến máu (Donor)</option>
                     </select>
                     <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none text-[18px]">expand_more</span>
                 </div>
-                <!-- Hospital Unit Filter -->
-                <div class="relative min-w-[210px]">
-                    <select id="staffUnitSelect" class="w-full h-11 px-3 bg-surface-container-low rounded-xl font-body-sm text-body-sm text-on-surface focus:outline-none cursor-pointer appearance-none">
-                        <option value="">Tất cả Khoa / Viện Tiếp Nhận</option>
-                        <option value="Viện Huyết học TW">Viện Huyết học TW</option>
-                        <option value="Việt Đức">BV Hữu nghị Việt Đức</option>
-                        <option value="Bạch Mai">Bệnh viện Bạch Mai</option>
-                        <option value="Lưu Động">Đội Xe Hiến Máu Lưu Động</option>
-                    </select>
-                    <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none text-[18px]">expand_more</span>
-                </div>
-                <!-- PKI Token Filter -->
+                <!-- Status Filter -->
                 <div class="relative min-w-[190px]">
-                    <select id="staffTokenSelect" class="w-full h-11 px-3 bg-surface-container-low rounded-xl font-body-sm text-body-sm text-on-surface focus:outline-none cursor-pointer appearance-none">
-                        <option value="">Trạng thái Ký số PKI</option>
-                        <option value="SmartCA">Đã xác thực SmartCA (Valid)</option>
-                        <option value="Hết hạn">Sắp hết hạn (&lt; 15 ngày)</option>
-                        <option value="Khóa">Tạm khóa bảo mật</option>
+                    <select name="trangThai" class="w-full h-11 px-3 bg-surface-container-low rounded-xl font-body-sm text-body-sm text-on-surface focus:outline-none cursor-pointer appearance-none">
+                        <option value="all">Tất cả Trạng thái</option>
+                        <option value="Hoạt động" selected="@(ViewBag.CurrentTrangThai == "Hoạt động" ? "selected" : null)">Hoạt động</option>
+                        <option value="Bị khóa" selected="@(ViewBag.CurrentTrangThai == "Bị khóa" ? "selected" : null)">Bị khóa</option>
                     </select>
                     <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none text-[18px]">expand_more</span>
                 </div>
             </div>
-            <!-- Reload / Quick actions -->
+            <!-- Submit Button & Reset -->
             <div class="flex items-center gap-2 self-end lg:self-center shrink-0">
-                <button id="btnResetFilter" class="p-2.5 rounded-xl bg-surface-container-low hover:bg-surface-container text-on-surface transition-colors" title="Làm mới bộ lọc" type="button">
+                <button type="submit" class="px-4 py-2.5 rounded-xl bg-primary text-on-primary font-label-md text-label-md font-semibold hover:bg-primary-container transition-all flex items-center gap-1.5 cursor-pointer">
+                    <span class="material-symbols-outlined text-[18px]">search</span>
+                    <span>Lọc Dữ Liệu</span>
+                </button>
+                <a asp-action="NhanSu" class="p-2.5 rounded-xl bg-surface-container-low hover:bg-surface-container text-on-surface transition-colors" title="Làm mới bộ lọc">
                     <span class="material-symbols-outlined text-[20px]">refresh</span>
-                </button>
-                <button class="p-2.5 rounded-xl bg-surface-container-low hover:bg-surface-container text-on-surface transition-colors" title="Xuất dữ liệu Excel CBYT" type="button" onclick="alert('Đang trích xuất danh sách cán bộ y tế (Excel)...')">
-                    <span class="material-symbols-outlined text-[20px]">download</span>
-                </button>
+                </a>
             </div>
-        </div>
+        </form>
 
         <!-- Table Wrapper -->
         <div class="overflow-x-auto rounded-xl bg-surface-container-lowest shadow-sm">
@@ -439,410 +453,125 @@
                         <th class="py-3.5 px-space-md text-right">Thao Tác</th>
                     </tr>
                 </thead>
-                <tbody id="staffTableBody" class="font-body-sm text-body-sm text-on-surface divide-y divide-surface-container-low">
-                    <!-- Row 1: Trần Mai Linh -->
-                    <tr class="hover:bg-surface-container-low/50 transition-colors">
-                        <td class="py-3.5 px-space-md">
-                            <div class="flex items-center gap-3">
-                                <div class="relative w-10 h-10 rounded-full bg-primary-container text-on-primary flex items-center justify-center font-bold text-label-md shrink-0">
-                                    ML
-                                    <span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 ring-2 ring-white"></span>
-                                </div>
-                                <div class="flex flex-col">
-                                    <div class="flex items-center gap-1.5">
-                                        <span class="font-title-md text-title-md font-bold text-on-surface">BS. CKI Trần Mai Linh</span>
-                                        <span class="material-symbols-outlined text-primary text-[16px]" title="Xác thực VNeID Y Tế C06">verified</span>
-                                    </div>
-                                    <div class="flex items-center gap-2 font-label-sm text-label-sm text-on-surface-variant">
-                                        <span class="text-primary font-semibold">CCHN: 004128/BYT-CCHN</span>
-                                        <span>•</span>
-                                        <span>linh.tm@nihbt.org.vn</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="py-3.5 px-space-md">
-                            <div class="flex flex-col">
-                                <span class="font-semibold text-on-surface">Viện Huyết học TW</span>
-                                <span class="text-on-surface-variant font-label-sm text-label-sm">Khoa Tiếp nhận &amp; Cấp phát Máu</span>
-                            </div>
-                        </td>
-                        <td class="py-3.5 px-space-md">
-                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary-fixed text-primary font-label-sm text-label-sm font-bold">
-                                <span class="material-symbols-outlined text-[14px]">shield_person</span>
-                                Trưởng kíp (Medical Lead)
-                            </span>
-                        </td>
-                        <td class="py-3.5 px-space-md">
-                            <div class="flex flex-col gap-0.5">
-                                <div class="flex items-center gap-1.5">
-                                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-                                    <span class="font-semibold text-emerald-800 font-label-sm text-label-sm">SmartCA Bộ Y Tế</span>
-                                </div>
-                                <span class="font-label-sm text-label-sm text-on-surface-variant">HSD: 24/12/2026 (SN: 77F2-990A)</span>
-                            </div>
-                        </td>
-                        <td class="py-3.5 px-space-md">
-                            <div class="flex flex-col">
-                                <span class="text-emerald-700 font-semibold font-label-sm text-label-sm flex items-center gap-1">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse"></span>
-                                    Đang trực tuyến
-                                </span>
-                                <span class="font-label-sm text-label-sm text-on-surface-variant">10.120.4.15 • Trạm Ký số Trung tâm</span>
-                            </div>
-                        </td>
-                        <td class="py-3.5 px-space-md">
-                            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-label-sm text-label-sm font-semibold">
-                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
-                                Đang hoạt động
-                            </span>
-                        </td>
-                        <td class="py-3.5 px-space-md text-right">
-                            <div class="inline-flex items-center gap-1">
-                                <a asp-controller="Admin" asp-action="RBAC" class="p-1.5 rounded-lg hover:bg-surface-container text-on-surface-variant hover:text-primary transition-colors" title="Xem phân quyền">
-                                    <span class="material-symbols-outlined text-[18px]">visibility</span>
-                                </a>
-                                <a asp-controller="Admin" asp-action="RBAC" class="p-1.5 rounded-lg hover:bg-surface-container text-on-surface-variant hover:text-primary transition-colors" title="Đổi vai trò">
-                                    <span class="material-symbols-outlined text-[18px]">manage_accounts</span>
-                                </a>
-                                <button class="p-1.5 rounded-lg hover:bg-error/10 text-on-surface-variant hover:text-error transition-colors" title="Khóa tài khoản" type="button" onclick="alert('Khóa tạm thời tài khoản BS. CKI Trần Mai Linh.')">
-                                    <span class="material-symbols-outlined text-[18px]">lock</span>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
+                                <tbody id="staffTableBody" class="font-body-sm text-body-sm text-on-surface divide-y divide-surface-container-low">
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var acc in Model)
+                        {
+                            var words = (acc.HoTen ?? "TK").Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                            var initials = words.Length > 1 ? (words[0].Substring(0, 1) + words[words.Length - 1].Substring(0, 1)).ToUpper() : (words.Length == 1 && words[0].Length > 0 ? words[0].Substring(0, Math.Min(2, words[0].Length)).ToUpper() : "TK");
+                            var isLocked = acc.TrangThai == "Bị khóa";
 
-                    <!-- Row 2: Vũ Quang Huy -->
-                    <tr class="hover:bg-surface-container-low/50 transition-colors">
-                        <td class="py-3.5 px-space-md">
-                            <div class="flex items-center gap-3">
-                                <div class="relative w-10 h-10 rounded-full bg-surface-container-high text-on-surface flex items-center justify-center font-bold text-label-md shrink-0">
-                                    QH
-                                    <span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 ring-2 ring-white"></span>
-                                </div>
-                                <div class="flex flex-col">
-                                    <div class="flex items-center gap-1.5">
-                                        <span class="font-title-md text-title-md font-bold text-on-surface">TS. BS Vũ Quang Huy</span>
-                                        <span class="material-symbols-outlined text-primary text-[16px]" title="Xác thực VNeID Y Tế">verified</span>
+                            <tr class="hover:bg-surface-container-low/50 transition-colors @(isLocked ? "bg-red-50/40" : "")">
+                                <td class="py-3.5 px-space-md">
+                                    <div class="flex items-center gap-3">
+                                        <div class="relative w-10 h-10 rounded-full @(acc.VaiTro == "Admin" ? "bg-purple-700 text-white" : (acc.VaiTro == "Medical Staff" ? "bg-primary text-on-primary" : "bg-secondary-container text-primary")) flex items-center justify-center font-bold text-label-md shrink-0">
+                                            @initials
+                                            @if (!isLocked)
+                                            {
+                                                <span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 ring-2 ring-white"></span>
+                                            }
+                                            else
+                                            {
+                                                <span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-red-500 ring-2 ring-white"></span>
+                                            }
+                                        </div>
+                                        <div class="flex flex-col">
+                                            <div class="flex items-center gap-1.5">
+                                                <span class="font-title-md text-title-md font-bold text-on-surface">@acc.HoTen</span>
+                                                <span class="text-xs text-on-surface-variant font-mono">(@acc.TenDangNhap)</span>
+                                            </div>
+                                            <div class="flex items-center gap-2 font-label-sm text-label-sm text-on-surface-variant">
+                                                <span>Email: @(acc.Email ?? "Chưa thiết lập")</span>
+                                                @if (acc.NguoiHienMau?.SoDienThoai != null)
+                                                {
+                                                    <span>• SĐT: @acc.NguoiHienMau.SoDienThoai</span>
+                                                }
+                                            </div>
+                                        </div>
                                     </div>
-                                    <div class="flex items-center gap-2 font-label-sm text-label-sm text-on-surface-variant">
-                                        <span class="font-semibold">CCHN: 012890/HNO-CCHN</span>
-                                        <span>•</span>
-                                        <span>huy.vq@vietduchospital.edu.vn</span>
+                                </td>
+                                <td class="py-3.5 px-space-md">
+                                    <div class="flex flex-col">
+                                        <span class="font-semibold text-on-surface">Hệ Thống Hiến Máu</span>
+                                        <span class="text-on-surface-variant font-label-sm text-label-sm">Mã TK: #@acc.MaTaiKhoan</span>
                                     </div>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="py-3.5 px-space-md">
-                            <div class="flex flex-col">
-                                <span class="font-semibold text-on-surface">BV Hữu nghị Việt Đức</span>
-                                <span class="text-on-surface-variant font-label-sm text-label-sm">Trung tâm Truyền máu Ngoại khoa</span>
-                            </div>
-                        </td>
-                        <td class="py-3.5 px-space-md">
-                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-container-high text-on-surface font-label-sm text-label-sm font-semibold">
-                                <span class="material-symbols-outlined text-[14px]">stethoscope</span>
-                                BS. Khám Sàng Lọc
-                            </span>
-                        </td>
-                        <td class="py-3.5 px-space-md">
-                            <div class="flex flex-col gap-0.5">
-                                <div class="flex items-center gap-1.5">
-                                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-                                    <span class="font-semibold text-on-surface font-label-sm text-label-sm">VNPT-CA USB Token</span>
-                                </div>
-                                <span class="font-label-sm text-label-sm text-on-surface-variant">HSD: 18/09/2026 (SN: VN-4412B)</span>
-                            </div>
-                        </td>
-                        <td class="py-3.5 px-space-md">
-                            <div class="flex flex-col">
-                                <span class="font-semibold text-on-surface font-label-sm text-label-sm">12 phút trước</span>
-                                <span class="font-label-sm text-label-sm text-on-surface-variant">192.168.10.88 • Phòng Khám số 3</span>
-                            </div>
-                        </td>
-                        <td class="py-3.5 px-space-md">
-                            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-label-sm text-label-sm font-semibold">
-                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
-                                Đang hoạt động
-                            </span>
-                        </td>
-                        <td class="py-3.5 px-space-md text-right">
-                            <div class="inline-flex items-center gap-1">
-                                <a asp-controller="Admin" asp-action="RBAC" class="p-1.5 rounded-lg hover:bg-surface-container text-on-surface-variant hover:text-primary transition-colors">
-                                    <span class="material-symbols-outlined text-[18px]">visibility</span>
-                                </a>
-                                <a asp-controller="Admin" asp-action="RBAC" class="p-1.5 rounded-lg hover:bg-surface-container text-on-surface-variant hover:text-primary transition-colors">
-                                    <span class="material-symbols-outlined text-[18px]">manage_accounts</span>
-                                </a>
-                                <button class="p-1.5 rounded-lg hover:bg-error/10 text-on-surface-variant hover:text-error transition-colors" type="button" onclick="alert('Khóa tạm thời tài khoản TS. BS Vũ Quang Huy.')">
-                                    <span class="material-symbols-outlined text-[18px]">lock</span>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-
-                    <!-- Row 3: Lê Thảo Trang (Warning Certificate Expiring) -->
-                    <tr class="bg-error-container/10 hover:bg-error-container/20 transition-colors">
-                        <td class="py-3.5 px-space-md">
-                            <div class="flex items-center gap-3">
-                                <div class="relative w-10 h-10 rounded-full bg-emerald-100 text-emerald-900 flex items-center justify-center font-bold text-label-md shrink-0">
-                                    TT
-                                    <span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 ring-2 ring-white"></span>
-                                </div>
-                                <div class="flex flex-col">
-                                    <div class="flex items-center gap-1.5">
-                                        <span class="font-title-md text-title-md font-bold text-on-surface">KTV. Lê Thảo Trang</span>
-                                        <span class="material-symbols-outlined text-primary text-[16px]">verified</span>
+                                </td>
+                                <td class="py-3.5 px-space-md">
+                                    @if (acc.VaiTro == "Admin")
+                                    {
+                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-purple-100 text-purple-800 font-label-sm text-label-sm font-bold">
+                                            <span class="material-symbols-outlined text-[14px]">admin_panel_settings</span>
+                                            Admin Quản Trị
+                                        </span>
+                                    }
+                                    else if (acc.VaiTro == "Medical Staff")
+                                    {
+                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-primary-fixed text-primary font-label-sm text-label-sm font-bold">
+                                            <span class="material-symbols-outlined text-[14px]">stethoscope</span>
+                                            Nhân Viên Y Tế
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-semibold">
+                                            <span class="material-symbols-outlined text-[14px]">person</span>
+                                            Người Hiến Máu
+                                        </span>
+                                    }
+                                </td>
+                                <td class="py-3.5 px-space-md">
+                                    <div class="flex flex-col gap-0.5">
+                                        <div class="flex items-center gap-1.5">
+                                            <span class="w-2 h-2 rounded-full @(!isLocked ? "bg-emerald-500" : "bg-red-500")"></span>
+                                            <span class="font-semibold @(!isLocked ? "text-emerald-800" : "text-red-700") font-label-sm text-label-sm">Định danh y tế</span>
+                                        </div>
+                                        <span class="font-label-sm text-label-sm text-on-surface-variant">Hồ sơ đã xác thực</span>
                                     </div>
-                                    <div class="flex items-center gap-2 font-label-sm text-label-sm text-on-surface-variant">
-                                        <span class="font-semibold">CCHN: 009812/BYT-KTV</span>
-                                        <span>•</span>
-                                        <span>trang.lt@huyethoc.vn</span>
+                                </td>
+                                <td class="py-3.5 px-space-md">
+                                    <span class="text-xs text-on-surface-variant">Cổng Trực Tuyến UNETI</span>
+                                </td>
+                                <td class="py-3.5 px-space-md">
+                                    @if (isLocked)
+                                    {
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-red-100 text-red-700 font-label-sm text-label-sm font-bold">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-red-600"></span>
+                                            Bị Khóa
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-label-sm text-label-sm font-semibold">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                                            Đang hoạt động
+                                        </span>
+                                    }
+                                </td>
+                                <td class="py-3.5 px-space-md text-right">
+                                    <div class="inline-flex items-center gap-2">
+                                        <form method="post" asp-controller="Admin" asp-action="KhoaMoKhoaTaiKhoan" class="inline">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="id" value="@acc.MaTaiKhoan" />
+                                            <input type="hidden" name="returnUrl" value="@Context.Request.Path@Context.Request.QueryString" />
+                                            <button type="submit" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer @(isLocked ? "bg-emerald-600 hover:bg-emerald-700 text-white" : "bg-red-50 hover:bg-red-100 text-red-700 border border-red-200")" title="@(isLocked ? "Mở khóa tài khoản" : "Khóa tài khoản này")" onclick="return confirm('Bạn có chắc chắn muốn @(isLocked ? "MỞ KHÓA" : "KHÓA") tài khoản \'@acc.TenDangNhap\' (@acc.HoTen) không?');">
+                                                <span class="material-symbols-outlined text-[16px]">@(isLocked ? "lock_open" : "lock")</span>
+                                                <span>@(isLocked ? "Mở Khóa" : "Khóa TK")</span>
+                                            </button>
+                                        </form>
                                     </div>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="py-3.5 px-space-md">
-                            <div class="flex flex-col">
-                                <span class="font-semibold text-on-surface">Trung Tâm Máu Quốc Gia</span>
-                                <span class="text-on-surface-variant font-label-sm text-label-sm">Phòng Xét Nghiệm NAT &amp; Miễn Dịch</span>
-                            </div>
-                        </td>
-                        <td class="py-3.5 px-space-md">
-                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 font-label-sm text-label-sm font-semibold">
-                                <span class="material-symbols-outlined text-[14px]">biotech</span>
-                                KTV Xét Nghiệm Lab
-                            </span>
-                        </td>
-                        <td class="py-3.5 px-space-md">
-                            <div class="flex flex-col gap-0.5">
-                                <div class="flex items-center gap-1.5">
-                                    <span class="w-2 h-2 rounded-full bg-error animate-ping"></span>
-                                    <span class="font-bold text-error font-label-sm text-label-sm">Viettel-CA (Hết hạn trong 12 ngày)</span>
-                                </div>
-                                <span class="font-label-sm text-label-sm text-error/80">HSD: 02/04/2025 (Cần gia hạn ngay)</span>
-                            </div>
-                        </td>
-                        <td class="py-3.5 px-space-md">
-                            <div class="flex flex-col">
-                                <span class="font-semibold text-on-surface font-label-sm text-label-sm">35 phút trước</span>
-                                <span class="font-label-sm text-label-sm text-on-surface-variant">10.120.8.44 • Máy phân tích Cobas 6800</span>
-                            </div>
-                        </td>
-                        <td class="py-3.5 px-space-md">
-                            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-800 font-label-sm text-label-sm font-semibold">
-                                <span class="w-1.5 h-1.5 rounded-full bg-amber-600"></span>
-                                Cảnh báo Ký số
-                            </span>
-                        </td>
-                        <td class="py-3.5 px-space-md text-right">
-                            <div class="inline-flex items-center gap-1">
-                                <button class="px-2.5 py-1 rounded-lg bg-primary text-on-primary font-label-sm text-label-sm font-semibold hover:bg-primary-container transition-colors" type="button" onclick="alert('Gửi thông báo yêu cầu gia hạn SmartCA tới KTV. Lê Thảo Trang.')">
-                                    Gia hạn CA
-                                </button>
-                                <a asp-controller="Admin" asp-action="RBAC" class="p-1.5 rounded-lg hover:bg-surface-container text-on-surface-variant">
-                                    <span class="material-symbols-outlined text-[18px]">more_vert</span>
-                                </a>
-                            </div>
-                        </td>
-                    </tr>
-
-                    <!-- Row 4: Nguyễn Văn Toàn -->
-                    <tr class="hover:bg-surface-container-low/50 transition-colors">
-                        <td class="py-3.5 px-space-md">
-                            <div class="flex items-center gap-3">
-                                <div class="relative w-10 h-10 rounded-full bg-sky-100 text-sky-900 flex items-center justify-center font-bold text-label-md shrink-0">
-                                    VT
-                                    <span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 ring-2 ring-white"></span>
-                                </div>
-                                <div class="flex flex-col">
-                                    <div class="flex items-center gap-1.5">
-                                        <span class="font-title-md text-title-md font-bold text-on-surface">KTV. Nguyễn Văn Toàn</span>
-                                        <span class="material-symbols-outlined text-primary text-[16px]">verified</span>
-                                    </div>
-                                    <div class="flex items-center gap-2 font-label-sm text-label-sm text-on-surface-variant">
-                                        <span class="font-semibold">CCHN: 008122/BYT-KTV</span>
-                                        <span>•</span>
-                                        <span>toan.nv@nihbt.org.vn</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="py-3.5 px-space-md">
-                            <div class="flex flex-col">
-                                <span class="font-semibold text-on-surface">Viện Huyết học TW</span>
-                                <span class="text-on-surface-variant font-label-sm text-label-sm">Kho Lưu Trữ Chuỗi Lạnh &amp; Phân Phối</span>
-                            </div>
-                        </td>
-                        <td class="py-3.5 px-space-md">
-                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-sky-100 text-sky-800 font-label-sm text-label-sm font-semibold">
-                                <span class="material-symbols-outlined text-[14px]">ac_unit</span>
-                                Thủ Kho Chuỗi Lạnh
-                            </span>
-                        </td>
-                        <td class="py-3.5 px-space-md">
-                            <div class="flex flex-col gap-0.5">
-                                <div class="flex items-center gap-1.5">
-                                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
-                                    <span class="font-semibold text-on-surface font-label-sm text-label-sm">SmartCA Y Tế Mobile</span>
-                                </div>
-                                <span class="font-label-sm text-label-sm text-on-surface-variant">HSD: 15/11/2026 (SN: CA-8891)</span>
-                            </div>
-                        </td>
-                        <td class="py-3.5 px-space-md">
-                            <div class="flex flex-col">
-                                <span class="font-semibold text-on-surface font-label-sm text-label-sm">Hôm nay 08:15</span>
-                                <span class="font-label-sm text-label-sm text-on-surface-variant">10.120.6.12 • Máy quét Barcode Zebra</span>
-                            </div>
-                        </td>
-                        <td class="py-3.5 px-space-md">
-                            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-label-sm text-label-sm font-semibold">
-                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
-                                Đang hoạt động
-                            </span>
-                        </td>
-                        <td class="py-3.5 px-space-md text-right">
-                            <div class="inline-flex items-center gap-1">
-                                <a asp-controller="Admin" asp-action="RBAC" class="p-1.5 rounded-lg hover:bg-surface-container text-on-surface-variant hover:text-primary transition-colors">
-                                    <span class="material-symbols-outlined text-[18px]">visibility</span>
-                                </a>
-                                <a asp-controller="Admin" asp-action="RBAC" class="p-1.5 rounded-lg hover:bg-surface-container text-on-surface-variant hover:text-primary transition-colors">
-                                    <span class="material-symbols-outlined text-[18px]">manage_accounts</span>
-                                </a>
-                                <button class="p-1.5 rounded-lg hover:bg-error/10 text-on-surface-variant hover:text-error transition-colors" type="button" onclick="alert('Khóa tạm thời tài khoản KTV. Nguyễn Văn Toàn.')">
-                                    <span class="material-symbols-outlined text-[18px]">lock</span>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-
-                    <!-- Row 5: Phạm Hoàng Long -->
-                    <tr class="hover:bg-surface-container-low/50 transition-colors">
-                        <td class="py-3.5 px-space-md">
-                            <div class="flex items-center gap-3">
-                                <div class="relative w-10 h-10 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-bold text-label-md shrink-0">
-                                    HL
-                                    <span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 ring-2 ring-white"></span>
-                                </div>
-                                <div class="flex flex-col">
-                                    <div class="flex items-center gap-1.5">
-                                        <span class="font-title-md text-title-md font-bold text-on-surface">ThS. Phạm Hoàng Long</span>
-                                        <span class="material-symbols-outlined text-primary text-[16px]">verified</span>
-                                    </div>
-                                    <div class="flex items-center gap-2 font-label-sm text-label-sm text-on-surface-variant">
-                                        <span class="font-semibold">VNeID Mức 2 (C06)</span>
-                                        <span>•</span>
-                                        <span>longph@redcross.org.vn</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="py-3.5 px-space-md">
-                            <div class="flex flex-col">
-                                <span class="font-semibold text-on-surface">Hội Chữ Thập Đỏ TP Hà Nội</span>
-                                <span class="text-on-surface-variant font-label-sm text-label-sm">Đội Điều Phối Hiến Máu Lưu Động</span>
-                            </div>
-                        </td>
-                        <td class="py-3.5 px-space-md">
-                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-semibold">
-                                <span class="material-symbols-outlined text-[14px]">groups</span>
-                                Điều Phối Ngoại Viện
-                            </span>
-                        </td>
-                        <td class="py-3.5 px-space-md">
-                            <div class="flex flex-col gap-0.5">
-                                <span class="font-semibold text-on-surface font-label-sm text-label-sm">Xác thực eKYC VNeID</span>
-                                <span class="font-label-sm text-label-sm text-on-surface-variant">Không yêu cầu chữ ký số kết quả</span>
-                            </div>
-                        </td>
-                        <td class="py-3.5 px-space-md">
-                            <div class="flex flex-col">
-                                <span class="font-semibold text-on-surface font-label-sm text-label-sm">Hôm qua 17:40</span>
-                                <span class="font-label-sm text-label-sm text-on-surface-variant">4G Viettel • iPad Check-in Xe 02</span>
-                            </div>
-                        </td>
-                        <td class="py-3.5 px-space-md">
-                            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-label-sm text-label-sm font-semibold">
-                                <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
-                                Đang hoạt động
-                            </span>
-                        </td>
-                        <td class="py-3.5 px-space-md text-right">
-                            <div class="inline-flex items-center gap-1">
-                                <a asp-controller="Admin" asp-action="RBAC" class="p-1.5 rounded-lg hover:bg-surface-container text-on-surface-variant hover:text-primary transition-colors">
-                                    <span class="material-symbols-outlined text-[18px]">visibility</span>
-                                </a>
-                                <a asp-controller="Admin" asp-action="RBAC" class="p-1.5 rounded-lg hover:bg-surface-container text-on-surface-variant hover:text-primary transition-colors">
-                                    <span class="material-symbols-outlined text-[18px]">manage_accounts</span>
-                                </a>
-                                <button class="p-1.5 rounded-lg hover:bg-error/10 text-on-surface-variant hover:text-error transition-colors" type="button" onclick="alert('Khóa tạm thời tài khoản ThS. Phạm Hoàng Long.')">
-                                    <span class="material-symbols-outlined text-[18px]">lock</span>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-
-                    <!-- Row 6: Đỗ Minh Triết (Locked Account - Security Alert) -->
-                    <tr class="bg-error-container/15 hover:bg-error-container/25 transition-colors">
-                        <td class="py-3.5 px-space-md">
-                            <div class="flex items-center gap-3">
-                                <div class="relative w-10 h-10 rounded-full bg-error text-on-error flex items-center justify-center font-bold text-label-md shrink-0">
-                                    MT
-                                    <span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-error ring-2 ring-white"></span>
-                                </div>
-                                <div class="flex flex-col">
-                                    <div class="flex items-center gap-1.5">
-                                        <span class="font-title-md text-title-md font-bold text-on-surface line-through decoration-error">BS. Đỗ Minh Triết</span>
-                                        <span class="material-symbols-outlined text-error text-[16px]">lock</span>
-                                    </div>
-                                    <div class="flex items-center gap-2 font-label-sm text-label-sm text-error">
-                                        <span class="font-semibold">Tạm khóa bảo mật Zero-Trust</span>
-                                        <span>•</span>
-                                        <span>triet.dm@huyethoc.vn</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </td>
-                        <td class="py-3.5 px-space-md">
-                            <div class="flex flex-col">
-                                <span class="font-semibold text-on-surface">Đội Xe Hiến Máu Chuyên Dụng 02</span>
-                                <span class="text-on-surface-variant font-label-sm text-label-sm">Tuyến Ngoại viện Điểm lưu động</span>
-                            </div>
-                        </td>
-                        <td class="py-3.5 px-space-md">
-                            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm font-semibold line-through">
-                                BS. Khám Sàng Lọc
-                            </span>
-                        </td>
-                        <td class="py-3.5 px-space-md">
-                            <div class="flex flex-col gap-0.5">
-                                <span class="font-semibold text-error font-label-sm text-label-sm">Đình chỉ ký số tự động</span>
-                                <span class="font-label-sm text-label-sm text-on-surface-variant">Lý do: Sai OTP Token 5 lần liên tiếp</span>
-                            </div>
-                        </td>
-                        <td class="py-3.5 px-space-md">
-                            <div class="flex flex-col">
-                                <span class="font-bold text-error font-label-sm text-label-sm">07:55:22 Sáng nay</span>
-                                <span class="font-label-sm text-label-sm text-error">IP Ngoại mạng: 14.232.89.102</span>
-                            </div>
-                        </td>
-                        <td class="py-3.5 px-space-md">
-                            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-error text-on-error font-label-sm text-label-sm font-bold">
-                                <span class="material-symbols-outlined text-[13px]">gpp_bad</span>
-                                Tạm Khóa An Toàn
-                            </span>
-                        </td>
-                        <td class="py-3.5 px-space-md text-right">
-                            <div class="inline-flex items-center gap-1">
-                                <button class="px-3 py-1 rounded-lg bg-surface-container hover:bg-surface-container-highest text-primary font-label-sm text-label-sm font-bold transition-colors" type="button" onclick="alert('Đã gửi mã mở khóa an toàn tới số điện thoại định danh của BS. Đỗ Minh Triết.')">
-                                    Mở Khóa / Reset
-                                </button>
-                                <a asp-controller="Admin" asp-action="RBAC" class="p-1.5 rounded-lg hover:bg-surface-container text-on-surface-variant">
-                                    <span class="material-symbols-outlined text-[18px]">more_vert</span>
-                                </a>
-                            </div>
-                        </td>
-                    </tr>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="7" class="py-8 text-center text-on-surface-variant font-body-md">
+                                Không tìm thấy tài khoản nào phù hợp với bộ lọc hiện tại.
+                            </td>
+                        </tr>
+                    }
                 </tbody>
             </table>
 
@@ -890,7 +619,7 @@
             <div class="flex items-center gap-2">
                 <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 font-label-sm text-label-sm font-semibold">
                     <span class="w-2 h-2 rounded-full bg-emerald-600 animate-ping"></span>
-                    EF Core 10 Interceptor: Active
+                    Giám sát an toàn: Đang kích hoạt
                 </span>
                 <button class="p-2 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface transition-colors" title="Bộ lọc sự kiện bảo mật" type="button" onclick="alert('Lọc sự kiện theo cấp độ bảo mật y tế...')">
                     <span class="material-symbols-outlined text-[18px]">filter_list</span>
@@ -996,6 +725,88 @@
             </div>
         </div>
     </section>
+
+<!-- Modal Thêm Tài Khoản Mới -->
+<div id="modalCreateAccount" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs @(TempData["OpenCreateModal"] != null ? "" : "hidden")">
+    <div class="bg-surface-container-lowest rounded-3xl p-6 sm:p-8 max-w-lg w-full mx-4 shadow-2xl border border-surface-container relative animate-in fade-in zoom-in duration-150">
+        <div class="flex items-center justify-between mb-4 pb-3 border-b border-surface-container">
+            <div class="flex items-center gap-2.5">
+                <div class="w-10 h-10 rounded-xl bg-primary-fixed flex items-center justify-center text-primary">
+                    <span class="material-symbols-outlined text-[22px]">person_add</span>
+                </div>
+                <div>
+                    <h3 class="font-title-lg font-bold text-on-surface">Tạo Tài Khoản Người Dùng Mới</h3>
+                    <p class="text-xs text-on-surface-variant">Thiết lập tài khoản và phân quyền cán bộ y tế / quản trị viên</p>
+                </div>
+            </div>
+            <button onclick="document.getElementById('modalCreateAccount').classList.add('hidden')" class="p-1 rounded-lg text-on-surface-variant hover:bg-surface-container cursor-pointer" type="button">
+                <span class="material-symbols-outlined text-[20px]">close</span>
+            </button>
+        </div>
+
+        @if (TempData["CreateAccountError"] != null)
+        {
+            <div class="mb-4 p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 flex items-center gap-2.5 text-xs font-semibold">
+                <span class="material-symbols-outlined text-[20px] text-red-600 shrink-0">error</span>
+                <span>@TempData["CreateAccountError"]</span>
+            </div>
+        }
+
+        <form method="post" asp-controller="Admin" asp-action="TaoTaiKhoan" class="space-y-4">
+            @Html.AntiForgeryToken()
+
+            <div>
+                <label class="block text-xs font-bold text-on-surface mb-1">Tên Đăng Nhập <span class="text-primary">*</span></label>
+                <input name="TenDangNhap" value="@(TempData["CreateTenDangNhap"] ?? "")" required minlength="3" maxlength="50" pattern="^[a-zA-Z0-9_.-]+$" title="Tên đăng nhập từ 3 đến 50 ký tự, không chứa dấu cách" placeholder="ví dụ: bstranlinh" class="w-full h-11 px-3.5 rounded-xl border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20 text-sm bg-surface-container-low" />
+                <span class="text-[11px] text-on-surface-variant mt-0.5 block">Tối thiểu 3 ký tự, không chứa dấu cách, không trùng với tài khoản đã có.</span>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-on-surface mb-1">Họ Và Tên Cán Bộ / Người Dùng <span class="text-primary">*</span></label>
+                <input name="HoTen" value="@(TempData["CreateHoTen"] ?? "")" required maxlength="100" placeholder="ví dụ: BS. Trần Mai Linh" class="w-full h-11 px-3.5 rounded-xl border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20 text-sm bg-surface-container-low" />
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-bold text-on-surface mb-1">Địa Chỉ Email</label>
+                    <input name="Email" type="email" value="@(TempData["CreateEmail"] ?? "")" placeholder="linh.tm@hospital.vn" class="w-full h-11 px-3.5 rounded-xl border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20 text-sm bg-surface-container-low" />
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-on-surface mb-1">Mật Khẩu Khởi Tạo <span class="text-primary">*</span></label>
+                    <input name="MatKhau" type="password" required minlength="6" placeholder="Tối thiểu 6 ký tự" class="w-full h-11 px-3.5 rounded-xl border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20 text-sm bg-surface-container-low" />
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-xs font-bold text-on-surface mb-1">Phân Cấp Vai Trò <span class="text-primary">*</span></label>
+                    <select name="VaiTro" class="w-full h-11 px-3.5 rounded-xl border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20 text-sm bg-surface-container-low">
+                        <option value="Medical Staff" selected="@(TempData["CreateVaiTro"]?.ToString() == "Medical Staff" ? "selected" : null)">Nhân Viên Y Tế / Bác Sĩ</option>
+                        <option value="Admin" selected="@(TempData["CreateVaiTro"]?.ToString() == "Admin" ? "selected" : null)">Admin Quản Trị Hệ Thống</option>
+                        <option value="Donor" selected="@(TempData["CreateVaiTro"]?.ToString() == "Donor" ? "selected" : null)">Người Hiến Máu (Donor)</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-on-surface mb-1">Trạng Thái Ban Đầu</label>
+                    <select name="TrangThai" class="w-full h-11 px-3.5 rounded-xl border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20 text-sm bg-surface-container-low">
+                        <option value="Hoạt động" selected="@(TempData["CreateTrangThai"]?.ToString() == "Hoạt động" ? "selected" : null)">Hoạt động (Active)</option>
+                        <option value="Bị khóa" selected="@(TempData["CreateTrangThai"]?.ToString() == "Bị khóa" ? "selected" : null)">Bị khóa (Locked)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-end gap-3 pt-3 border-t border-surface-container">
+                <button onclick="document.getElementById('modalCreateAccount').classList.add('hidden')" type="button" class="px-4 py-2.5 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface text-sm font-semibold cursor-pointer">
+                    Hủy bỏ
+                </button>
+                <button type="submit" class="px-5 py-2.5 rounded-xl bg-primary text-on-primary text-sm font-bold shadow-md hover:bg-primary-container cursor-pointer flex items-center gap-1.5">
+                    <span class="material-symbols-outlined text-[18px]">check</span>
+                    <span>Tạo Tài Khoản</span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
 </div>
 
 <script>

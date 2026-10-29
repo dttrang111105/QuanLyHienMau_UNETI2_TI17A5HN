@@ -1,6 +1,11 @@
+// Họ và tên: Nguyễn Tiến Nam
+// Mã sinh viên: 23103100275
+// Nội dung thực hiện: Module 1 - Cấu hình DI Repository Pattern, Authentication và Session
+
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using QuanLyHienMau_UNETI2_TI17A5HN.Data;
+using QuanLyHienMau_UNETI2_TI17A5HN.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +15,25 @@ builder.Services.AddControllersWithViews();
 // Register DbContext with SQL Server
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// ========================================================
+// ĐĂNG KÝ DEPENDENCY INJECTION CHO REPOSITORY PATTERN
+// ========================================================
+builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
+builder.Services.AddScoped<ITaiKhoanRepository, TaiKhoanRepository>();
+builder.Services.AddScoped<IDonViToChucRepository, DonViToChucRepository>();
+
+// ========================================================
+// CẤU HÌNH SESSION CHO ĐĂNG NHẬP & PHÂN QUYỀN (Mục 5.2 & 5.3)
+// ========================================================
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromHours(2);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+    options.Cookie.Name = "QuanLyHienMau.Session";
+});
 
 // Configure Cookie Authentication
 builder.Services.AddAuthentication("QuanLyHienMau.Auth")
@@ -50,6 +74,9 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseRouting();
+
+// Kích hoạt Session trước Authentication/Authorization
+app.UseSession();
 
 app.UseAuthentication();
 app.UseAuthorization();

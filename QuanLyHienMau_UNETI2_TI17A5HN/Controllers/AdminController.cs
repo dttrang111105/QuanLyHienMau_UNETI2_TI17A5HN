@@ -4,11 +4,15 @@
 // Thêm sửa xóa đơn vị, quản lí đơn vị tổ chức 
 
 using System.Globalization;
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using QuanLyHienMau_UNETI2_TI17A5HN.Data;
 using QuanLyHienMau_UNETI2_TI17A5HN.Models;
+using QuanLyHienMau_UNETI2_TI17A5HN.Models.ViewModels;
+using QuanLyHienMau_UNETI2_TI17A5HN.Repositories;
 
 namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
 {
@@ -16,10 +20,20 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
     public class AdminController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IDonViToChucRepository _donViToChucRepository;
+        private readonly ITaiKhoanRepository _taiKhoanRepository;
+        private readonly PasswordHasher<TaiKhoan> _passwordHasher;
+        private static readonly Regex EmailRegex = new(@"^[^@\s]+@[^@\s]+\.[^@\s]+$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-        public AdminController(ApplicationDbContext context)
+        public AdminController(
+            ApplicationDbContext context,
+            IDonViToChucRepository donViToChucRepository,
+            ITaiKhoanRepository taiKhoanRepository)
         {
             _context = context;
+            _donViToChucRepository = donViToChucRepository;
+            _taiKhoanRepository = taiKhoanRepository;
+            _passwordHasher = new PasswordHasher<TaiKhoan>();
         }
 
         private static bool TryParseDateTime(string? input, out DateTime result)
@@ -633,27 +647,12 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
         // GET: /Admin/DonViToChuc
         public async Task<IActionResult> DonViToChuc(string? search, string? status)
         {
-            var query = _context.DonViToChucs
-                .Include(d => d.DotHienMaus)
-                .AsQueryable();
-
-            if (!string.IsNullOrWhiteSpace(search))
-            {
-                var searchLower = search.Trim().ToLower();
-                query = query.Where(d => d.TenDonViToChuc.ToLower().Contains(searchLower) ||
-                                         (d.EmailLienHe != null && d.EmailLienHe.ToLower().Contains(searchLower)) ||
-                                         (d.MoTa != null && d.MoTa.ToLower().Contains(searchLower)));
-            }
-
-            if (!string.IsNullOrWhiteSpace(status) && status != "all")
-            {
-                query = query.Where(d => d.TrangThai == status);
-            }
+            // Sử dụng Repository thay vì truy vấn DbContext trực tiếp
+            var donViList = await _donViToChucRepository.GetAllWithDotHienMauAsync(search, status);
 
             ViewBag.CurrentSearch = search;
             ViewBag.CurrentStatus = status;
 
-            var donViList = await query.OrderByDescending(d => d.MaDonViToChuc).ToListAsync();
             return View(donViList);
         }
 
@@ -672,18 +671,16 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
             // Kiểm tra định dạng email nếu có nhập
             if (!string.IsNullOrWhiteSpace(donVi.EmailLienHe))
             {
-                var emailPattern = new System.Text.RegularExpressions.Regex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$");
-                if (!emailPattern.IsMatch(donVi.EmailLienHe.Trim()))
+                if (!EmailRegex.IsMatch(donVi.EmailLienHe.Trim()))
                 {
                     TempData["ErrorMessage"] = "Địa chỉ email liên hệ không đúng định dạng.";
                     return RedirectToAction(nameof(DonViToChuc));
                 }
             }
 
-            // Kiểm tra trùng tên đơn vị tổ chức
+            // Kiểm tra trùng tên đơn vị tổ chức qua Repository
             var tenTrimmed = donVi.TenDonViToChuc.Trim();
-            var isDuplicate = await _context.DonViToChucs
-                .AnyAsync(d => d.TenDonViToChuc.ToLower() == tenTrimmed.ToLower());
+            var isDuplicate = await _donViToChucRepository.IsTenDonViExistsAsync(tenTrimmed);
             if (isDuplicate)
             {
                 TempData["ErrorMessage"] = $"Tên đơn vị \"{tenTrimmed}\" đã tồn tại. Vui lòng chọn tên khác.";
@@ -691,13 +688,10 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
             }
 
             donVi.TenDonViToChuc = tenTrimmed;
+            await _donViToChucRepository.AddAsync(donVi);
+            await _donViToChucRepository.SaveChangesAsync();
+            TempData["SuccessMessage"] = "Thêm đơn vị tổ chức thành công!";
 
-            if (ModelState.IsValid)
-            {
-                _context.DonViToChucs.Add(donVi);
-                await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = "Thêm đơn vị tổ chức thành công!";
-            }
             return RedirectToAction(nameof(DonViToChuc));
         }
 
@@ -721,47 +715,37 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
             // Kiểm tra định dạng email nếu có nhập
             if (!string.IsNullOrWhiteSpace(donVi.EmailLienHe))
             {
-                var emailPattern = new System.Text.RegularExpressions.Regex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$");
-                if (!emailPattern.IsMatch(donVi.EmailLienHe.Trim()))
+                if (!EmailRegex.IsMatch(donVi.EmailLienHe.Trim()))
                 {
                     TempData["ErrorMessage"] = "Địa chỉ email liên hệ không đúng định dạng.";
                     return RedirectToAction(nameof(DonViToChuc));
                 }
             }
 
-            // Kiểm tra trùng tên đơn vị tổ chức (loại trừ chính nó)
+            // Kiểm tra trùng tên đơn vị tổ chức (loại trừ chính nó) qua Repository
             var tenTrimmed = donVi.TenDonViToChuc.Trim();
-            var isDuplicate = await _context.DonViToChucs
-                .AnyAsync(d => d.TenDonViToChuc.ToLower() == tenTrimmed.ToLower()
-                            && d.MaDonViToChuc != donVi.MaDonViToChuc);
+            var isDuplicate = await _donViToChucRepository.IsTenDonViExistsAsync(tenTrimmed, donVi.MaDonViToChuc);
             if (isDuplicate)
             {
                 TempData["ErrorMessage"] = $"Tên đơn vị \"{tenTrimmed}\" đã tồn tại. Vui lòng chọn tên khác.";
                 return RedirectToAction(nameof(DonViToChuc));
             }
 
-            donVi.TenDonViToChuc = tenTrimmed;
-
-            if (ModelState.IsValid)
+            var existing = await _donViToChucRepository.GetByIdAsync(id);
+            if (existing == null)
             {
-                try
-                {
-                    _context.Update(donVi);
-                    await _context.SaveChangesAsync();
-                    TempData["SuccessMessage"] = "Cập nhật đơn vị tổ chức thành công!";
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!_context.DonViToChucs.Any(e => e.MaDonViToChuc == donVi.MaDonViToChuc))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
+                return NotFound();
             }
+
+            existing.TenDonViToChuc = tenTrimmed;
+            existing.MoTa = donVi.MoTa;
+            existing.EmailLienHe = donVi.EmailLienHe?.Trim();
+            existing.TrangThai = donVi.TrangThai;
+
+            _donViToChucRepository.Update(existing);
+            await _donViToChucRepository.SaveChangesAsync();
+            TempData["SuccessMessage"] = "Cập nhật đơn vị tổ chức thành công!";
+
             return RedirectToAction(nameof(DonViToChuc));
         }
 
@@ -774,20 +758,7 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
                 return Json(new { isDuplicate = false });
             }
 
-            var tenLower = ten.Trim().ToLower();
-            bool isDuplicate;
-
-            if (excludeId.HasValue)
-            {
-                isDuplicate = await _context.DonViToChucs
-                    .AnyAsync(d => d.TenDonViToChuc.ToLower() == tenLower && d.MaDonViToChuc != excludeId.Value);
-            }
-            else
-            {
-                isDuplicate = await _context.DonViToChucs
-                    .AnyAsync(d => d.TenDonViToChuc.ToLower() == tenLower);
-            }
-
+            var isDuplicate = await _donViToChucRepository.IsTenDonViExistsAsync(ten.Trim(), excludeId);
             return Json(new { isDuplicate });
         }
 
@@ -796,20 +767,19 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteDonViToChuc(int id)
         {
-            var donVi = await _context.DonViToChucs
-                .Include(d => d.DotHienMaus)
-                .FirstOrDefaultAsync(d => d.MaDonViToChuc == id);
+            var hasDot = await _donViToChucRepository.HasDotHienMauAsync(id);
+            var donVi = await _donViToChucRepository.GetByIdAsync(id);
 
             if (donVi != null)
             {
-                if (donVi.DotHienMaus.Any())
+                if (hasDot)
                 {
-                    TempData["ErrorMessage"] = $"Không thể xóa đơn vị \"{donVi.TenDonViToChuc}\" vì đang có {donVi.DotHienMaus.Count} đợt hiến máu liên kết. Việc xóa sẽ làm các đợt hiến máu này không còn hợp lệ.";
+                    TempData["ErrorMessage"] = $"Không thể xóa đơn vị \"{donVi.TenDonViToChuc}\" vì đang có đợt hiến máu liên kết. Việc xóa sẽ làm các đợt hiến máu này không còn hợp lệ.";
                 }
                 else
                 {
-                    _context.DonViToChucs.Remove(donVi);
-                    await _context.SaveChangesAsync();
+                    _donViToChucRepository.Delete(donVi);
+                    await _donViToChucRepository.SaveChangesAsync();
                     TempData["SuccessMessage"] = "Đã xóa đơn vị tổ chức thành công!";
                 }
             }
@@ -1072,9 +1042,199 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
         }
 
         [Authorize(Roles = "Admin")]
-        public IActionResult NhanSu()
+        public async Task<IActionResult> NhanSu(string? search, string? vaiTro, string? trangThai)
         {
-            return View();
+            // Sử dụng Repository để lấy danh sách tài khoản
+            var accounts = await _taiKhoanRepository.GetAllWithProfileAsync(search, vaiTro, trangThai);
+
+            ViewBag.CurrentSearch = search;
+            ViewBag.CurrentVaiTro = vaiTro;
+            ViewBag.CurrentTrangThai = trangThai;
+            ViewBag.TotalAccounts = accounts.Count();
+            ViewBag.AdminCount = await _taiKhoanRepository.CountByRoleAsync("Admin");
+            ViewBag.MedicalStaffCount = await _taiKhoanRepository.CountByRoleAsync("Medical Staff");
+            ViewBag.DonorCount = await _taiKhoanRepository.CountByRoleAsync("Donor");
+
+            return View(accounts);
+        }
+
+        // POST: /Admin/KhoaMoKhoaTaiKhoan
+        [HttpPost]
+        [Authorize(Roles = "Admin")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> KhoaMoKhoaTaiKhoan(int id, string? returnUrl)
+        {
+            var account = await _taiKhoanRepository.GetByIdAsync(id);
+            if (account == null)
+            {
+                TempData["ErrorMessage"] = "Không tìm thấy tài khoản để thao tác.";
+            }
+            else
+            {
+                var newStatus = account.TrangThai == "Hoạt động" ? "Bị khóa" : "Hoạt động";
+                await _taiKhoanRepository.UpdateAccountStatusAsync(id, newStatus);
+                var actionName = newStatus == "Bị khóa" ? "Khóa" : "Mở khóa";
+                TempData["SuccessMessage"] = $"Đã {actionName} thành công tài khoản '{account.TenDangNhap}'.";
+            }
+
+            if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+            {
+                return Redirect(returnUrl);
+            }
+            return RedirectToAction(nameof(NhanSu));
+        }
+
+        // POST: /Admin/TaoTaiKhoan
+        [HttpPost]
+        [Authorize(Roles = "Admin")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> TaoTaiKhoan(CreateAccountAdminViewModel model)
+        {
+            // 1. Kiểm tra các trường thông tin bắt buộc
+            if (string.IsNullOrWhiteSpace(model.TenDangNhap) ||
+                string.IsNullOrWhiteSpace(model.MatKhau) ||
+                string.IsNullOrWhiteSpace(model.HoTen))
+            {
+                SetModalError("Vui lòng điền đầy đủ các thông tin bắt buộc (*).", model);
+                return RedirectToAction(nameof(NhanSu));
+            }
+
+            var cleanUsername = model.TenDangNhap.Trim();
+            var cleanHoTen = model.HoTen.Trim();
+
+            // 2. Kiểm tra độ dài và định dạng tên đăng nhập
+            if (cleanUsername.Length < 3 || cleanUsername.Length > 50)
+            {
+                SetModalError("Tên đăng nhập phải có độ dài từ 3 đến 50 ký tự.", model);
+                return RedirectToAction(nameof(NhanSu));
+            }
+
+            if (cleanUsername.Contains(' '))
+            {
+                SetModalError("Tên đăng nhập không được chứa dấu cách (khoảng trắng).", model);
+                return RedirectToAction(nameof(NhanSu));
+            }
+
+            if (!Regex.IsMatch(cleanUsername, @"^[a-zA-Z0-9_.-]+$"))
+            {
+                SetModalError("Tên đăng nhập chỉ được chứa chữ cái, chữ số, dấu gạch dưới (_), gạch ngang (-) và dấu chấm (.).", model);
+                return RedirectToAction(nameof(NhanSu));
+            }
+
+            // 3. Kiểm tra độ dài mật khẩu khởi tạo
+            if (model.MatKhau.Length < 6)
+            {
+                SetModalError("Mật khẩu khởi tạo phải có tối thiểu 6 ký tự.", model);
+                return RedirectToAction(nameof(NhanSu));
+            }
+
+            // 4. Kiểm tra độ dài họ tên
+            if (cleanHoTen.Length > 100)
+            {
+                SetModalError("Họ và tên không được vượt quá 100 ký tự.", model);
+                return RedirectToAction(nameof(NhanSu));
+            }
+
+            // 5. Kiểm tra định dạng email nếu có nhập
+            string? cleanEmail = null;
+            if (!string.IsNullOrWhiteSpace(model.Email))
+            {
+                cleanEmail = model.Email.Trim();
+                if (!EmailRegex.IsMatch(cleanEmail))
+                {
+                    SetModalError("Địa chỉ email không đúng định dạng (Ví dụ: nguoidung@domain.com).", model);
+                    return RedirectToAction(nameof(NhanSu));
+                }
+            }
+
+            // 6. Kiểm tra trùng tên đăng nhập qua Repository
+            var isDuplicateUsername = await _taiKhoanRepository.IsTenDangNhapExistsAsync(cleanUsername);
+            if (isDuplicateUsername)
+            {
+                SetModalError($"Tên đăng nhập '{cleanUsername}' đã được sử dụng. Vui lòng chọn tên khác.", model);
+                return RedirectToAction(nameof(NhanSu));
+            }
+
+            // 7. Kiểm tra trùng email qua Repository nếu có nhập email
+            if (!string.IsNullOrWhiteSpace(cleanEmail))
+            {
+                var isDuplicateEmail = await _taiKhoanRepository.IsEmailExistsAsync(cleanEmail);
+                if (isDuplicateEmail)
+                {
+                    SetModalError("Địa chỉ email này đã được sử dụng cho tài khoản khác.", model);
+                    return RedirectToAction(nameof(NhanSu));
+                }
+            }
+
+            // 8. Tạo đối tượng TaiKhoan
+            var account = new TaiKhoan
+            {
+                TenDangNhap = cleanUsername,
+                HoTen = cleanHoTen,
+                Email = cleanEmail,
+                VaiTro = string.IsNullOrWhiteSpace(model.VaiTro) ? "Medical Staff" : model.VaiTro,
+                TrangThai = string.IsNullOrWhiteSpace(model.TrangThai) ? "Hoạt động" : model.TrangThai
+            };
+
+            account.MatKhau = _passwordHasher.HashPassword(account, model.MatKhau);
+
+            // Nếu tạo tài khoản người hiến máu, tạo kèm hồ sơ liên kết
+            if (account.VaiTro == "Donor")
+            {
+                var donorProfile = new NguoiHienMau
+                {
+                    HoTen = account.HoTen,
+                    Email = account.Email,
+                    TrangThai = "Hoạt động"
+                };
+                await _taiKhoanRepository.RegisterDonorAccountAsync(account, donorProfile);
+            }
+            else
+            {
+                await _taiKhoanRepository.AddAsync(account);
+                await _taiKhoanRepository.SaveChangesAsync();
+            }
+
+            TempData["SuccessMessage"] = $"Đã tạo mới tài khoản '{account.TenDangNhap}' ({account.VaiTro}) thành công!";
+            return RedirectToAction(nameof(NhanSu));
+        }
+
+        private void SetModalError(string errorMsg, CreateAccountAdminViewModel model)
+        {
+            TempData["CreateAccountError"] = errorMsg;
+            TempData["ErrorMessage"] = errorMsg;
+            TempData["CreateTenDangNhap"] = model.TenDangNhap;
+            TempData["CreateHoTen"] = model.HoTen;
+            TempData["CreateEmail"] = model.Email;
+            TempData["CreateVaiTro"] = model.VaiTro;
+            TempData["CreateTrangThai"] = model.TrangThai;
+            TempData["OpenCreateModal"] = true;
+        }
+
+        // POST: /Admin/DoiMatKhau
+        [HttpPost]
+        [Authorize(Roles = "Admin")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DoiMatKhau(int id, string matKhauMoi)
+        {
+            if (string.IsNullOrWhiteSpace(matKhauMoi) || matKhauMoi.Length < 6)
+            {
+                TempData["ErrorMessage"] = "Mật khẩu mới phải có tối thiểu 6 ký tự.";
+                return RedirectToAction(nameof(NhanSu));
+            }
+
+            var account = await _taiKhoanRepository.GetByIdAsync(id);
+            if (account == null)
+            {
+                TempData["ErrorMessage"] = "Không tìm thấy tài khoản.";
+                return RedirectToAction(nameof(NhanSu));
+            }
+
+            var hashed = _passwordHasher.HashPassword(account, matKhauMoi);
+            await _taiKhoanRepository.ChangePasswordAsync(id, hashed);
+
+            TempData["SuccessMessage"] = $"Đã đổi mật khẩu cho tài khoản '{account.TenDangNhap}' thành công.";
+            return RedirectToAction(nameof(NhanSu));
         }
 
         [Authorize(Roles = "Admin")]
