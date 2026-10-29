@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using QuanLyHienMau_UNETI2_TI17A5HN.Data;
+using QuanLyHienMau_UNETI2_TI17A5HN.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +11,11 @@ builder.Services.AddControllersWithViews();
 // Register DbContext with SQL Server
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+// ─── Module 2: Đăng ký Repository Pattern cho Đợt Hiến Máu ─────────────────
+// Controller sẽ nhận IDotHienMauRepository qua Dependency Injection,
+// không phụ thuộc trực tiếp vào ApplicationDbContext.
+builder.Services.AddScoped<IDotHienMauRepository, DotHienMauRepository>();
 
 // Configure Cookie Authentication
 builder.Services.AddAuthentication("QuanLyHienMau.Auth")

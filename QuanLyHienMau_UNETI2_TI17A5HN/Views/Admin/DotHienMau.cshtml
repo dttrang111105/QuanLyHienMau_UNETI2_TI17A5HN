@@ -1,0 +1,685 @@
+﻿@* ========================================================= *@
+@* Ho va ten : NGUYEN THI PHUONG THAO                        *@
+@* Ma sinh vien: 23103100272                                  *@
+@* Noi dung thuc hien: Quan ly dot hien mau,                  *@
+@*   tim kiem, loc, sap xep va phan trang.                    *@
+@* ========================================================= *@
+@model IEnumerable<QuanLyHienMau_UNETI2_TI17A5HN.Models.DotHienMau>
+
+@{
+    ViewData["Title"] = "Quản lý Đợt Hiến Máu";
+    Layout = "_AdminLayout";
+
+    int currentPage  = ViewBag.CurrentPage  ?? 1;
+    int totalPages   = ViewBag.TotalPages   ?? 1;
+    int totalItems   = ViewBag.TotalItems   ?? 0;
+    int totalCount   = ViewBag.TotalCount   ?? 0;
+    int chuaMoCount  = ViewBag.ChuaMoCount  ?? 0;
+    int dangMoCount  = ViewBag.DangMoCount  ?? 0;
+    int tamDungCount = ViewBag.TamDungCount ?? 0;
+    int daDongCount  = ViewBag.DaDongCount  ?? 0;
+
+    string? searchVal  = ViewBag.Search  as string;
+    string? statusVal  = ViewBag.Status  as string;
+    string? nhomMauVal = ViewBag.NhomMau as string;
+    string? thoiHanVal = ViewBag.ThoiHan as string;
+    string? sortVal    = ViewBag.Sort    as string;
+    int?    donViIdVal = ViewBag.DonViId as int?;
+    double? canNangVal = ViewBag.CanNang as double?;
+
+    var donViList = ViewBag.DonViList as IEnumerable<QuanLyHienMau_UNETI2_TI17A5HN.Models.DonViToChuc>
+                   ?? Enumerable.Empty<QuanLyHienMau_UNETI2_TI17A5HN.Models.DonViToChuc>();
+}
+
+<div class="p-space-lg space-y-space-lg max-w-[1600px] mx-auto w-full">
+
+    @* ── Thông báo ── *@
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-emerald-600">check_circle</span>
+                <span class="font-body-md text-body-md font-medium">@TempData["SuccessMessage"]</span>
+            </div>
+            <button onclick="this.parentElement.remove()" class="text-emerald-600 hover:text-emerald-900">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="p-4 rounded-xl bg-error-container/40 border border-error text-error flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-error">error</span>
+                <span class="font-body-md text-body-md font-medium">@TempData["ErrorMessage"]</span>
+            </div>
+            <button onclick="this.parentElement.remove()" class="text-error hover:text-red-900">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+    }
+
+    @* ── 1. Page Header ── *@
+    <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-space-md">
+        <div class="space-y-1">
+            <nav class="flex items-center gap-2 font-label-sm text-label-sm text-on-surface-variant">
+                <a asp-controller="Admin" asp-action="Dashboard" class="hover:text-primary transition-colors">Hệ thống Quản trị Y tế</a>
+                <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+                <span class="text-on-surface-variant">Chiến dịch Hiến máu</span>
+                <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+                <span class="text-primary font-semibold">Quản lý Đợt Hiến Máu</span>
+            </nav>
+            <div class="flex items-center gap-3">
+                <h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">Quản Lý Đợt Hiến Máu</h1>
+                <span class="px-2.5 py-1 rounded-full bg-red-100 text-red-700 font-label-sm text-label-sm font-bold flex items-center gap-1">
+                    <span class="w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
+                    Module 2
+                </span>
+            </div>
+            <p class="font-body-md text-body-md text-on-surface-variant max-w-4xl">
+                Quản lý toàn bộ các đợt hiến máu nhân đạo của hệ thống UNETI: tạo mới, điều chỉnh chỉ tiêu, thay đổi trạng thái và theo dõi phiếu đăng ký.
+            </p>
+        </div>
+        <div class="flex flex-wrap items-center gap-3">
+            <button class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-on-primary font-label-md text-label-md shadow-md shadow-primary/20 hover:bg-primary-container transition-all cursor-pointer"
+                    type="button" onclick="openCreateModal()">
+                <span class="material-symbols-outlined text-[18px]">bloodtype</span>
+                <span>+ Thêm Đợt Hiến Máu Mới</span>
+            </button>
+        </div>
+    </div>
+
+    @* ── 2. Metric Cards ── *@
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-space-md">
+        @* Card 1: Tổng đợt *@
+        <div class="bg-surface-container-lowest p-space-md rounded-2xl shadow-sm flex flex-col justify-between relative overflow-hidden group">
+            <div class="absolute right-0 top-0 w-24 h-24 bg-gradient-to-bl from-primary/10 via-transparent to-transparent rounded-bl-full pointer-events-none"></div>
+            <div class="flex items-start justify-between">
+                <div>
+                    <p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Tổng số đợt hiến máu</p>
+                    <h3 class="font-display-hero text-display-hero text-on-surface mt-1 leading-none font-bold">
+                        @totalCount <span class="font-title-md text-title-md font-medium text-on-surface-variant">Đợt</span>
+                    </h3>
+                </div>
+                <div class="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                    <span class="material-symbols-outlined text-[24px]">campaign</span>
+                </div>
+            </div>
+            <div class="pt-4 flex items-center justify-between text-on-surface-variant">
+                <div class="flex items-center gap-1.5 font-label-sm text-label-sm text-primary font-semibold">
+                    <span class="material-symbols-outlined text-[14px]">trending_up</span>
+                    <span>Toàn hệ thống UNETI</span>
+                </div>
+                <span class="font-label-sm text-label-sm font-bold text-on-surface">SQL Server Live</span>
+            </div>
+        </div>
+
+        @* Card 2: Đang mở *@
+        <div class="bg-surface-container-lowest p-space-md rounded-2xl shadow-sm flex flex-col justify-between relative overflow-hidden group">
+            <div class="absolute right-0 top-0 w-24 h-24 bg-gradient-to-bl from-emerald-500/10 via-transparent to-transparent rounded-bl-full pointer-events-none"></div>
+            <div class="flex items-start justify-between">
+                <div>
+                    <p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Đang mở đăng ký</p>
+                    <h3 class="font-display-hero text-display-hero text-emerald-600 mt-1 leading-none font-bold">
+                        @dangMoCount <span class="font-title-md text-title-md font-medium text-on-surface-variant">Đợt</span>
+                    </h3>
+                </div>
+                <div class="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-[24px]">how_to_reg</span>
+                </div>
+            </div>
+            <div class="pt-4 flex items-center justify-between">
+                <div class="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-label-sm text-label-sm font-semibold">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span>Đang nhận phiếu đăng ký</span>
+                </div>
+            </div>
+        </div>
+
+        @* Card 3: Chưa mở + Tạm dừng *@
+        <div class="bg-surface-container-lowest p-space-md rounded-2xl shadow-sm flex flex-col justify-between relative overflow-hidden group">
+            <div class="absolute right-0 top-0 w-24 h-24 bg-gradient-to-bl from-blue-500/10 via-transparent to-transparent rounded-bl-full pointer-events-none"></div>
+            <div class="flex items-start justify-between">
+                <div>
+                    <p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Chưa mở / Tạm dừng</p>
+                    <h3 class="font-display-hero text-display-hero text-on-surface mt-1 leading-none font-bold">
+                        @(chuaMoCount + tamDungCount) <span class="font-title-md text-title-md font-medium text-on-surface-variant">Đợt</span>
+                    </h3>
+                </div>
+                <div class="w-12 h-12 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-[24px]">schedule</span>
+                </div>
+            </div>
+            <div class="pt-4">
+                <span class="font-label-sm text-label-sm text-on-surface-variant">Chưa mở: @chuaMoCount · Tạm dừng: @tamDungCount</span>
+            </div>
+        </div>
+
+        @* Card 4: Đã đóng *@
+        <div class="bg-surface-container-lowest p-space-md rounded-2xl shadow-sm flex flex-col justify-between relative overflow-hidden group">
+            <div class="absolute right-0 top-0 w-24 h-24 bg-gradient-to-bl from-gray-500/10 via-transparent to-transparent rounded-bl-full pointer-events-none"></div>
+            <div class="flex items-start justify-between">
+                <div>
+                    <p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Đã đóng đăng ký</p>
+                    <h3 class="font-display-hero text-display-hero text-on-surface mt-1 leading-none font-bold">
+                        @daDongCount <span class="font-title-md text-title-md font-medium text-on-surface-variant">Đợt</span>
+                    </h3>
+                </div>
+                <div class="w-12 h-12 rounded-xl bg-gray-100 text-gray-600 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-[24px]">lock</span>
+                </div>
+            </div>
+            <div class="pt-4">
+                <span class="font-label-sm text-label-sm text-on-surface-variant">Đã kết thúc chiến dịch</span>
+            </div>
+        </div>
+    </div>
+
+    @* ── 3. Search & Filter + Table ── *@
+    <div class="bg-surface-container-lowest rounded-2xl shadow-sm p-space-lg space-y-space-md">
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md">
+            <div>
+                <div class="flex items-center gap-3">
+                    <h2 class="font-headline-sm text-headline-sm text-on-surface">Danh Sách Đợt Hiến Máu</h2>
+                    <span class="px-2.5 py-0.5 rounded-full bg-primary/10 text-primary font-label-sm text-label-sm font-bold">@totalItems Đợt</span>
+                </div>
+                <p class="font-body-sm text-body-sm text-on-surface-variant">Dữ liệu được phân trang (Skip/Take), lọc và sắp xếp trực tiếp trên EF Core IQueryable</p>
+            </div>
+        </div>
+
+        @* Search & Filter Form *@
+        <form method="get" asp-controller="Admin" asp-action="DotHienMau"
+              class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3 bg-surface-container-low p-3 rounded-xl">
+            @* Search *@
+            <div class="relative xl:col-span-1">
+                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">search</span>
+                <input name="search" value="@searchVal"
+                       class="w-full h-10 pl-10 pr-4 bg-surface-container-lowest rounded-xl font-body-sm text-body-sm text-on-surface placeholder:text-on-surface-variant/70 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all shadow-xs"
+                       placeholder="Tìm tên đợt, mô tả..."
+                       type="text" />
+            </div>
+            @* Trạng thái *@
+            <select name="status" class="h-10 px-3 bg-surface-container-lowest rounded-xl font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-xs">
+                <option value="">-- Tất cả trạng thái --</option>
+                <option value="Chưa mở"          selected="@(statusVal == "Chưa mở")">Chưa mở</option>
+                <option value="Đang mở đăng ký"  selected="@(statusVal == "Đang mở đăng ký")">Đang mở đăng ký</option>
+                <option value="Tạm dừng"         selected="@(statusVal == "Tạm dừng")">Tạm dừng</option>
+                <option value="Đã đóng"          selected="@(statusVal == "Đã đóng")">Đã đóng</option>
+            </select>
+            @* Đơn vị *@
+            <select name="donViId" class="h-10 px-3 bg-surface-container-lowest rounded-xl font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-xs">
+                <option value="">-- Tất cả đơn vị --</option>
+                @foreach (var dv in donViList)
+                {
+                    <option value="@dv.MaDonViToChuc" selected="@(donViIdVal == dv.MaDonViToChuc)">@dv.TenDonViToChuc</option>
+                }
+            </select>
+            @* Nhóm máu *@
+            <select name="nhomMau" class="h-10 px-3 bg-surface-container-lowest rounded-xl font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-xs">
+                <option value="">-- Tất cả nhóm máu --</option>
+                @foreach (var nm in new[] { "A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-" })
+                {
+                    <option value="@nm" selected="@(nhomMauVal == nm)">@nm</option>
+                }
+            </select>
+            @* Cân nặng tối thiểu *@
+            <select name="canNang" class="h-10 px-3 bg-surface-container-lowest rounded-xl font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-xs">
+                <option value="">-- Cân nặng tối thiểu --</option>
+                <option value="45" selected="@(canNangVal == 45)">≥ 45 kg</option>
+                <option value="50" selected="@(canNangVal == 50)">≥ 50 kg</option>
+                <option value="55" selected="@(canNangVal == 55)">≥ 55 kg</option>
+            </select>
+            @* Thời hạn *@
+            <select name="thoiHan" class="h-10 px-3 bg-surface-container-lowest rounded-xl font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-xs">
+                <option value="">-- Thời hạn đăng ký --</option>
+                <option value="conhan"   selected="@(thoiHanVal == "conhan")">Còn hạn</option>
+                <option value="hethong" selected="@(thoiHanVal == "hethong")">Hết hạn</option>
+                <option value="7ngay"   selected="@(thoiHanVal == "7ngay")">Sắp hết hạn (7 ngày)</option>
+            </select>
+            @* Sắp xếp *@
+            <select name="sort" class="h-10 px-3 bg-surface-container-lowest rounded-xl font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-xs">
+                <option value="">-- Sắp xếp --</option>
+                <option value="name_asc"    selected="@(sortVal == "name_asc")">Tên A→Z</option>
+                <option value="name_desc"   selected="@(sortVal == "name_desc")">Tên Z→A</option>
+                <option value="deadline_asc"    selected="@(sortVal == "deadline_asc")">Hạn ĐK tăng dần</option>
+                <option value="deadline_desc"   selected="@(sortVal == "deadline_desc")">Hạn ĐK giảm dần</option>
+                <option value="quota_asc"  selected="@(sortVal == "quota_asc")">Chỉ tiêu tăng dần</option>
+                <option value="quota_desc" selected="@(sortVal == "quota_desc")">Chỉ tiêu giảm dần</option>
+            </select>
+            <div class="flex gap-2 xl:col-span-2 justify-end items-center">
+                <button type="submit" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-on-primary font-label-md text-label-md shadow hover:bg-primary-container transition-all">
+                    <span class="material-symbols-outlined text-[18px]">filter_list</span>
+                    Lọc
+                </button>
+                <a asp-controller="Admin" asp-action="DotHienMau"
+                   class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-surface-container text-on-surface font-label-md text-label-md hover:bg-surface-container-high transition-all">
+                    <span class="material-symbols-outlined text-[18px]">restart_alt</span>
+                    Đặt lại
+                </a>
+            </div>
+        </form>
+
+        @* ── Table ── *@
+        <div class="overflow-x-auto rounded-xl">
+            <table class="w-full border-collapse">
+                <thead>
+                    <tr class="bg-surface-container border-b border-outline-variant">
+                        <th class="px-4 py-3 text-left font-label-md text-label-md text-on-surface-variant uppercase tracking-wide">#</th>
+                        <th class="px-4 py-3 text-left font-label-md text-label-md text-on-surface-variant uppercase tracking-wide">Tên đợt</th>
+                        <th class="px-4 py-3 text-left font-label-md text-label-md text-on-surface-variant uppercase tracking-wide">Đơn vị tổ chức</th>
+                        <th class="px-4 py-3 text-left font-label-md text-label-md text-on-surface-variant uppercase tracking-wide">Hạn đăng ký</th>
+                        <th class="px-4 py-3 text-center font-label-md text-label-md text-on-surface-variant uppercase tracking-wide">Chỉ tiêu</th>
+                        <th class="px-4 py-3 text-center font-label-md text-label-md text-on-surface-variant uppercase tracking-wide">Nhóm máu</th>
+                        <th class="px-4 py-3 text-center font-label-md text-label-md text-on-surface-variant uppercase tracking-wide">Trạng thái</th>
+                        <th class="px-4 py-3 text-center font-label-md text-label-md text-on-surface-variant uppercase tracking-wide">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-outline-variant/50">
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="8" class="px-4 py-12 text-center text-on-surface-variant">
+                                <div class="flex flex-col items-center gap-3">
+                                    <span class="material-symbols-outlined text-[48px] text-on-surface-variant/40">bloodtype</span>
+                                    <p class="font-body-md text-body-md">Không tìm thấy đợt hiến máu nào phù hợp.</p>
+                                    <a asp-controller="Admin" asp-action="DotHienMau" class="text-primary font-label-md text-label-md hover:underline">Xem tất cả đợt</a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        int stt = (currentPage - 1) * 10 + 1;
+                        @foreach (var dot in Model)
+                        {
+                            var trangThaiClass = dot.TrangThai switch
+                            {
+                                "Đang mở đăng ký" => "bg-emerald-100 text-emerald-700",
+                                "Chưa mở"         => "bg-blue-100 text-blue-700",
+                                "Tạm dừng"        => "bg-yellow-100 text-yellow-700",
+                                "Đã đóng"         => "bg-gray-100 text-gray-600",
+                                _                 => "bg-surface-container text-on-surface-variant"
+                            };
+                            var trangThaiLabel = dot.TrangThai switch
+                            {
+                                "Đang mở đăng ký" => "Đang mở",
+                                "Chưa mở"         => "Chưa mở",
+                                "Tạm dừng"        => "Tạm dừng",
+                                "Đã đóng"         => "Đã đóng",
+                                _                 => dot.TrangThai ?? "—"
+                            };
+                            string tenDotEncoded = Html.Encode(dot.TenDot);
+                            <tr class="hover:bg-surface-container/50 transition-colors group">
+                                <td class="px-4 py-3 font-body-sm text-body-sm text-on-surface-variant">@stt</td>
+                                <td class="px-4 py-3">
+                                    <div class="font-body-md text-body-md text-on-surface font-semibold max-w-[200px] truncate" title="@dot.TenDot">@dot.TenDot</div>
+                                    <div class="font-label-sm text-label-sm text-on-surface-variant">Mã: #@dot.MaDot · Cân nặng ≥ @dot.CanNangToiThieu kg</div>
+                                </td>
+                                <td class="px-4 py-3 font-body-sm text-body-sm text-on-surface">
+                                    @(dot.DonViToChuc?.TenDonViToChuc ?? $"ID: {dot.MaDonViToChuc}")
+                                </td>
+                                <td class="px-4 py-3 font-body-sm text-body-sm text-on-surface">
+                                    @dot.HanDangKy.ToString("dd/MM/yyyy")
+                                    @if (dot.HanDangKy < DateTime.Today)
+                                    {
+                                        <span class="ml-1 px-1.5 py-0.5 rounded bg-red-100 text-red-600 font-label-sm text-label-sm">Hết hạn</span>
+                                    }
+                                </td>
+                                <td class="px-4 py-3 text-center font-body-sm text-body-sm text-on-surface font-semibold">@dot.ChiTieuDonViMau</td>
+                                <td class="px-4 py-3 text-center">
+                                    <span class="px-2 py-0.5 rounded-full bg-red-100 text-red-700 font-label-sm text-label-sm font-bold">
+                                        @(string.IsNullOrWhiteSpace(dot.NhomMauUuTien) ? "Tất cả" : dot.NhomMauUuTien)
+                                    </span>
+                                </td>
+                                <td class="px-4 py-3 text-center">
+                                    <span class="px-2.5 py-1 rounded-full font-label-sm text-label-sm font-semibold @trangThaiClass">
+                                        @trangThaiLabel
+                                    </span>
+                                </td>
+                                <td class="px-4 py-3">
+                                    <div class="flex items-center justify-center gap-1 flex-wrap">
+                                        @* Nút Sửa *@
+                                        <button type="button"
+                                                onclick="openEditModal(@dot.MaDot, '@Html.Raw(Html.Encode(dot.TenDot))', @dot.MaDonViToChuc, @dot.ChiTieuDonViMau, '@Html.Raw(Html.Encode(dot.NhomMauUuTien ?? ""))', @dot.CanNangToiThieu, '@dot.NgayBatDauDangKy.ToString("yyyy-MM-dd")', '@dot.HanDangKy.ToString("yyyy-MM-dd")', '@Html.Raw(Html.Encode(dot.MoTaDot ?? ""))', '@Html.Raw(Html.Encode(dot.DieuKienNguoiHien ?? ""))')"
+                                                class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 font-label-sm text-label-sm transition-colors">
+                                            <span class="material-symbols-outlined text-[16px]">edit</span>
+                                            Sửa
+                                        </button>
+                                        @* Đổi trạng thái *@
+                                        <div class="relative group/status">
+                                            <button type="button"
+                                                    class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-amber-50 text-amber-700 hover:bg-amber-100 font-label-sm text-label-sm transition-colors">
+                                                <span class="material-symbols-outlined text-[16px]">sync</span>
+                                                Trạng thái
+                                            </button>
+                                            <div class="absolute right-0 top-full mt-1 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-lg z-10 hidden group-hover/status:block min-w-[170px] py-1">
+                                                @foreach (var ts in new (string val, string lbl, string icon)[] {
+                                                    ("Chưa mở",          "Chưa mở",          "schedule"),
+                                                    ("Đang mở đăng ký",  "Đang mở đăng ký",  "how_to_reg"),
+                                                    ("Tạm dừng",         "Tạm dừng",         "pause_circle"),
+                                                    ("Đã đóng",          "Đã đóng",          "lock")
+                                                })
+                                                {
+                                                    if (dot.TrangThai != ts.val)
+                                                    {
+                                                        <form method="post" asp-controller="Admin" asp-action="AdminChangeStatusDot">
+                                                            @Html.AntiForgeryToken()
+                                                            <input type="hidden" name="id" value="@dot.MaDot" />
+                                                            <input type="hidden" name="trangThai" value="@ts.val" />
+                                                            <button type="submit"
+                                                                    class="w-full px-4 py-2 text-left font-body-sm text-body-sm text-on-surface hover:bg-surface-container flex items-center gap-2 transition-colors">
+                                                                <span class="material-symbols-outlined text-[16px]">@ts.icon</span>
+                                                                @ts.lbl
+                                                            </button>
+                                                        </form>
+                                                    }
+                                                }
+                                            </div>
+                                        </div>
+                                        @* Xóa — dùng JS confirm, không có C# trong attribute form *@
+                                        <form method="post" asp-controller="Admin" asp-action="AdminDeleteDot"
+                                              id="deleteForm_@dot.MaDot">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="id" value="@dot.MaDot" />
+                                            <button type="button"
+                                                    onclick="confirmDelete(@dot.MaDot, '@tenDotEncoded')"
+                                                    class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-red-50 text-red-700 hover:bg-red-100 font-label-sm text-label-sm transition-colors">
+                                                <span class="material-symbols-outlined text-[16px]">delete</span>
+                                                Xóa
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                            stt++;
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        @* ── Pagination ── *@
+        @if (totalPages > 1)
+        {
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
+                <p class="font-body-sm text-body-sm text-on-surface-variant">
+                    Trang <span class="font-semibold text-on-surface">@currentPage</span> / @totalPages
+                    &nbsp;·&nbsp; Tổng <span class="font-semibold text-on-surface">@totalItems</span> đợt
+                </p>
+                <div class="flex items-center gap-1">
+                    @if (currentPage > 1)
+                    {
+                        <a asp-controller="Admin" asp-action="DotHienMau"
+                           asp-route-page="@(currentPage - 1)"
+                           asp-route-search="@searchVal" asp-route-status="@statusVal"
+                           asp-route-donViId="@donViIdVal" asp-route-nhomMau="@nhomMauVal"
+                           asp-route-canNang="@canNangVal" asp-route-thoiHan="@thoiHanVal"
+                           asp-route-sort="@sortVal"
+                           class="w-9 h-9 flex items-center justify-center rounded-lg bg-surface-container text-on-surface hover:bg-primary hover:text-on-primary transition-all font-label-md text-label-md">
+                            <span class="material-symbols-outlined text-[18px]">chevron_left</span>
+                        </a>
+                    }
+                    @for (int p = Math.Max(1, currentPage - 2); p <= Math.Min(totalPages, currentPage + 2); p++)
+                    {
+                        <a asp-controller="Admin" asp-action="DotHienMau"
+                           asp-route-page="@p"
+                           asp-route-search="@searchVal" asp-route-status="@statusVal"
+                           asp-route-donViId="@donViIdVal" asp-route-nhomMau="@nhomMauVal"
+                           asp-route-canNang="@canNangVal" asp-route-thoiHan="@thoiHanVal"
+                           asp-route-sort="@sortVal"
+                           class="w-9 h-9 flex items-center justify-center rounded-lg @(p == currentPage ? "bg-primary text-on-primary font-bold" : "bg-surface-container text-on-surface hover:bg-surface-container-high") transition-all font-label-md text-label-md">
+                            @p
+                        </a>
+                    }
+                    @if (currentPage < totalPages)
+                    {
+                        <a asp-controller="Admin" asp-action="DotHienMau"
+                           asp-route-page="@(currentPage + 1)"
+                           asp-route-search="@searchVal" asp-route-status="@statusVal"
+                           asp-route-donViId="@donViIdVal" asp-route-nhomMau="@nhomMauVal"
+                           asp-route-canNang="@canNangVal" asp-route-thoiHan="@thoiHanVal"
+                           asp-route-sort="@sortVal"
+                           class="w-9 h-9 flex items-center justify-center rounded-lg bg-surface-container text-on-surface hover:bg-primary hover:text-on-primary transition-all font-label-md text-label-md">
+                            <span class="material-symbols-outlined text-[18px]">chevron_right</span>
+                        </a>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@* ════════════════════════════════════════════════════
+   MODAL: Thêm Đợt Hiến Máu Mới
+   ════════════════════════════════════════════════════ *@
+<div id="createModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div class="bg-surface-container-lowest rounded-2xl shadow-xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+        <div class="flex items-center justify-between p-6 border-b border-outline-variant">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                    <span class="material-symbols-outlined text-[20px]">bloodtype</span>
+                </div>
+                <h2 class="font-headline-sm text-headline-sm text-on-surface">Thêm Đợt Hiến Máu Mới</h2>
+            </div>
+            <button onclick="closeCreateModal()" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface-container transition-colors text-on-surface-variant">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        <form method="post" asp-controller="Admin" asp-action="AdminCreateDot" class="p-6 space-y-4">
+            @Html.AntiForgeryToken()
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="md:col-span-2">
+                    <label class="block font-label-md text-label-md text-on-surface mb-1.5">Tên đợt hiến máu <span class="text-error">*</span></label>
+                    <input type="text" name="TenDot" required maxlength="200"
+                           class="w-full h-10 px-3 bg-surface-container rounded-xl font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
+                           placeholder="VD: Đợt hiến máu mùa xuân 2025" />
+                </div>
+                <div>
+                    <label class="block font-label-md text-label-md text-on-surface mb-1.5">Đơn vị tổ chức <span class="text-error">*</span></label>
+                    <select name="MaDonViToChuc" required
+                            class="w-full h-10 px-3 bg-surface-container rounded-xl font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all">
+                        <option value="">-- Chọn đơn vị --</option>
+                        @foreach (var dv in donViList)
+                        {
+                            <option value="@dv.MaDonViToChuc">@dv.TenDonViToChuc</option>
+                        }
+                    </select>
+                </div>
+                <div>
+                    <label class="block font-label-md text-label-md text-on-surface mb-1.5">Chỉ tiêu đơn vị máu <span class="text-error">*</span></label>
+                    <input type="number" name="ChiTieuDonViMau" required min="1"
+                           class="w-full h-10 px-3 bg-surface-container rounded-xl font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
+                           placeholder="VD: 200" />
+                </div>
+                <div>
+                    <label class="block font-label-md text-label-md text-on-surface mb-1.5">Nhóm máu ưu tiên</label>
+                    <input type="text" name="NhomMauUuTien" maxlength="50"
+                           class="w-full h-10 px-3 bg-surface-container rounded-xl font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
+                           placeholder="VD: O+, A-, ... (để trống = tất cả)" />
+                </div>
+                <div>
+                    <label class="block font-label-md text-label-md text-on-surface mb-1.5">Cân nặng tối thiểu (kg)</label>
+                    <input type="number" name="CanNangToiThieu" min="0" step="0.1" value="45"
+                           class="w-full h-10 px-3 bg-surface-container rounded-xl font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all" />
+                </div>
+                <div>
+                    <label class="block font-label-md text-label-md text-on-surface mb-1.5">Ngày bắt đầu đăng ký <span class="text-error">*</span></label>
+                    <input type="date" name="NgayBatDauDangKy" required
+                           class="w-full h-10 px-3 bg-surface-container rounded-xl font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all" />
+                </div>
+                <div>
+                    <label class="block font-label-md text-label-md text-on-surface mb-1.5">Hạn đăng ký <span class="text-error">*</span></label>
+                    <input type="date" name="HanDangKy" required
+                           class="w-full h-10 px-3 bg-surface-container rounded-xl font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all" />
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block font-label-md text-label-md text-on-surface mb-1.5">Mô tả đợt</label>
+                    <textarea name="MoTaDot" rows="3"
+                              class="w-full px-3 py-2 bg-surface-container rounded-xl font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all resize-none"
+                              placeholder="Mô tả chi tiết về đợt hiến máu..."></textarea>
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block font-label-md text-label-md text-on-surface mb-1.5">Điều kiện người hiến</label>
+                    <textarea name="DieuKienNguoiHien" rows="3"
+                              class="w-full px-3 py-2 bg-surface-container rounded-xl font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all resize-none"
+                              placeholder="Các điều kiện sức khỏe, tuổi tác, v.v..."></textarea>
+                </div>
+            </div>
+            <div class="flex items-center justify-end gap-3 pt-4 border-t border-outline-variant">
+                <button type="button" onclick="closeCreateModal()"
+                        class="px-5 py-2.5 rounded-xl bg-surface-container text-on-surface font-label-md text-label-md hover:bg-surface-container-high transition-all">
+                    Hủy
+                </button>
+                <button type="submit"
+                        class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-on-primary font-label-md text-label-md shadow hover:bg-primary-container transition-all">
+                    <span class="material-symbols-outlined text-[18px]">save</span>
+                    Thêm đợt
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@* ════════════════════════════════════════════════════
+   MODAL: Chỉnh sửa Đợt Hiến Máu
+   ════════════════════════════════════════════════════ *@
+<div id="editModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div class="bg-surface-container-lowest rounded-2xl shadow-xl w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+        <div class="flex items-center justify-between p-6 border-b border-outline-variant">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-[20px]">edit</span>
+                </div>
+                <h2 class="font-headline-sm text-headline-sm text-on-surface">Chỉnh Sửa Đợt Hiến Máu</h2>
+            </div>
+            <button onclick="closeEditModal()" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-surface-container transition-colors text-on-surface-variant">
+                <span class="material-symbols-outlined">close</span>
+            </button>
+        </div>
+        <form method="post" asp-controller="Admin" asp-action="AdminEditDot" class="p-6 space-y-4">
+            @Html.AntiForgeryToken()
+            <input type="hidden" id="editMaDot" name="id" />
+            <input type="hidden" id="editMaDotModel" name="MaDot" />
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="md:col-span-2">
+                    <label class="block font-label-md text-label-md text-on-surface mb-1.5">Tên đợt hiến máu <span class="text-error">*</span></label>
+                    <input type="text" id="editTenDot" name="TenDot" required maxlength="200"
+                           class="w-full h-10 px-3 bg-surface-container rounded-xl font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all" />
+                </div>
+                <div>
+                    <label class="block font-label-md text-label-md text-on-surface mb-1.5">Đơn vị tổ chức <span class="text-error">*</span></label>
+                    <select id="editDonVi" name="MaDonViToChuc" required
+                            class="w-full h-10 px-3 bg-surface-container rounded-xl font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all">
+                        @foreach (var dv in donViList)
+                        {
+                            <option value="@dv.MaDonViToChuc">@dv.TenDonViToChuc</option>
+                        }
+                    </select>
+                </div>
+                <div>
+                    <label class="block font-label-md text-label-md text-on-surface mb-1.5">Chỉ tiêu đơn vị máu <span class="text-error">*</span></label>
+                    <input type="number" id="editChiTieu" name="ChiTieuDonViMau" required min="1"
+                           class="w-full h-10 px-3 bg-surface-container rounded-xl font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all" />
+                </div>
+                <div>
+                    <label class="block font-label-md text-label-md text-on-surface mb-1.5">Nhóm máu ưu tiên</label>
+                    <input type="text" id="editNhomMau" name="NhomMauUuTien" maxlength="50"
+                           class="w-full h-10 px-3 bg-surface-container rounded-xl font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all" />
+                </div>
+                <div>
+                    <label class="block font-label-md text-label-md text-on-surface mb-1.5">Cân nặng tối thiểu (kg)</label>
+                    <input type="number" id="editCanNang" name="CanNangToiThieu" min="0" step="0.1"
+                           class="w-full h-10 px-3 bg-surface-container rounded-xl font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all" />
+                </div>
+                <div>
+                    <label class="block font-label-md text-label-md text-on-surface mb-1.5">Ngày bắt đầu đăng ký <span class="text-error">*</span></label>
+                    <input type="date" id="editNgayBD" name="NgayBatDauDangKy" required
+                           class="w-full h-10 px-3 bg-surface-container rounded-xl font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all" />
+                </div>
+                <div>
+                    <label class="block font-label-md text-label-md text-on-surface mb-1.5">Hạn đăng ký <span class="text-error">*</span></label>
+                    <input type="date" id="editHanDK" name="HanDangKy" required
+                           class="w-full h-10 px-3 bg-surface-container rounded-xl font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all" />
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block font-label-md text-label-md text-on-surface mb-1.5">Mô tả đợt</label>
+                    <textarea id="editMoTa" name="MoTaDot" rows="3"
+                              class="w-full px-3 py-2 bg-surface-container rounded-xl font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all resize-none"></textarea>
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block font-label-md text-label-md text-on-surface mb-1.5">Điều kiện người hiến</label>
+                    <textarea id="editDieuKien" name="DieuKienNguoiHien" rows="3"
+                              class="w-full px-3 py-2 bg-surface-container rounded-xl font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all resize-none"></textarea>
+                </div>
+            </div>
+            <div class="flex items-center justify-end gap-3 pt-4 border-t border-outline-variant">
+                <button type="button" onclick="closeEditModal()"
+                        class="px-5 py-2.5 rounded-xl bg-surface-container text-on-surface font-label-md text-label-md hover:bg-surface-container-high transition-all">
+                    Hủy
+                </button>
+                <button type="submit"
+                        class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 text-white font-label-md text-label-md shadow hover:bg-blue-700 transition-all">
+                    <span class="material-symbols-outlined text-[18px]">save</span>
+                    Lưu thay đổi
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // ── Create Modal ──
+        function openCreateModal() {
+            const m = document.getElementById('createModal');
+            m.classList.remove('hidden');
+            m.classList.add('flex');
+        }
+        function closeCreateModal() {
+            const m = document.getElementById('createModal');
+            m.classList.add('hidden');
+            m.classList.remove('flex');
+        }
+
+        // ── Edit Modal ──
+        function openEditModal(id, tenDot, maDonVi, chiTieu, nhomMau, canNang, ngayBD, hanDK, moTa, dieuKien) {
+            document.getElementById('editMaDot').value      = id;
+            document.getElementById('editMaDotModel').value = id;
+            document.getElementById('editTenDot').value     = tenDot;
+            document.getElementById('editDonVi').value      = maDonVi;
+            document.getElementById('editChiTieu').value    = chiTieu;
+            document.getElementById('editNhomMau').value    = nhomMau;
+            document.getElementById('editCanNang').value    = canNang;
+            document.getElementById('editNgayBD').value     = ngayBD || '';
+            document.getElementById('editHanDK').value      = hanDK  || '';
+            document.getElementById('editMoTa').value       = moTa;
+            document.getElementById('editDieuKien').value   = dieuKien;
+
+            const m = document.getElementById('editModal');
+            m.classList.remove('hidden');
+            m.classList.add('flex');
+        }
+        function closeEditModal() {
+            const m = document.getElementById('editModal');
+            m.classList.add('hidden');
+            m.classList.remove('flex');
+        }
+
+        // ── Xác nhận xóa ──
+        function confirmDelete(id, tenDot) {
+            if (confirm('Bạn có chắc muốn xóa đợt "' + tenDot + '"?')) {
+                document.getElementById('deleteForm_' + id).submit();
+            }
+        }
+
+        // Đóng modal khi click bên ngoài
+        ['createModal', 'editModal'].forEach(function(id) {
+            document.getElementById(id).addEventListener('click', function(e) {
+                if (e.target === this) {
+                    this.classList.add('hidden');
+                    this.classList.remove('flex');
+                }
+            });
+        });
+    </script>
+}

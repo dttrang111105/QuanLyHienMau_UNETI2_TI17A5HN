@@ -1,9 +1,10 @@
-using System.Globalization;
+﻿using System.Globalization;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using QuanLyHienMau_UNETI2_TI17A5HN.Data;
 using QuanLyHienMau_UNETI2_TI17A5HN.Models;
+using QuanLyHienMau_UNETI2_TI17A5HN.Repositories;
 
 namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
 {
@@ -11,10 +12,15 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
     public class AdminController : Controller
     {
         private readonly ApplicationDbContext _context;
+        // Ho va ten: NGUYEN THI PHUONG THAO
+        // Ma sinh vien: 23103100272
+        // Noi dung: Quan ly dot hien mau (Admin panel)
+        private readonly IDotHienMauRepository _dotRepo;
 
-        public AdminController(ApplicationDbContext context)
+        public AdminController(ApplicationDbContext context, IDotHienMauRepository dotRepo)
         {
             _context = context;
+            _dotRepo = dotRepo;
         }
 
         private static bool TryParseDateTime(string? input, out DateTime result)
@@ -994,6 +1000,187 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
         public IActionResult KhoLanhIoT()
         {
             return View();
+        }
+
+        // ==============================================================
+        // Ho va ten: NGUYEN THI PHUONG THAO
+        // Ma sinh vien: 23103100272
+        // Noi dung thuc hien: Quan ly dot hien mau, tim kiem,
+        //   loc, sap xep va phan trang (Admin Panel - Module 2)
+        // ==============================================================
+
+        // GET: /Admin/DotHienMau
+        public async Task<IActionResult> DotHienMau(
+            string? search, string? status, int? donViId,
+            string? nhomMau, double? canNang, string? thoiHan,
+            string? sort, int page = 1)
+        {
+            int pageSize = 10;
+
+            var query = _dotRepo.GetQueryable();
+            query = _dotRepo.ApplySearch(query, search);
+            query = _dotRepo.ApplyFilterTrangThai(query, status);
+            query = _dotRepo.ApplyFilterDonVi(query, donViId);
+            query = _dotRepo.ApplyFilterNhomMau(query, nhomMau);
+            query = _dotRepo.ApplyFilterCanNang(query, canNang);
+            query = _dotRepo.ApplyFilterThoiHan(query, thoiHan);
+            query = _dotRepo.ApplySort(query, sort);
+
+            int totalCount = await _dotRepo.CountAsync(query);
+            var items = await _dotRepo.GetPagedAsync(query, page, pageSize);
+
+            // Metric cards
+            var all = _dotRepo.GetQueryable();
+            ViewBag.TotalCount   = await _dotRepo.CountAsync(all);
+            ViewBag.ChuaMoCount  = await _dotRepo.CountAsync(all.Where(d => d.TrangThai == "Chưa mở"));
+            ViewBag.DangMoCount  = await _dotRepo.CountAsync(all.Where(d => d.TrangThai == "Đang mở đăng ký"));
+            ViewBag.TamDungCount = await _dotRepo.CountAsync(all.Where(d => d.TrangThai == "Tạm dừng"));
+            ViewBag.DaDongCount  = await _dotRepo.CountAsync(all.Where(d => d.TrangThai == "Đã đóng"));
+
+            // Paging info
+            ViewBag.CurrentPage = page;
+            ViewBag.TotalPages  = (int)Math.Ceiling((double)totalCount / pageSize);
+            ViewBag.TotalItems  = totalCount;
+
+            // Filter preservation
+            ViewBag.Search  = search;
+            ViewBag.Status  = status;
+            ViewBag.DonViId = donViId;
+            ViewBag.NhomMau = nhomMau;
+            ViewBag.CanNang = canNang;
+            ViewBag.ThoiHan = thoiHan;
+            ViewBag.Sort    = sort;
+
+            ViewBag.DonViList = await _dotRepo.GetActiveDonViToChucsAsync();
+
+            return View(items);
+        }
+
+        // POST: /Admin/AdminCreateDot
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> AdminCreateDot(DotHienMau model)
+        {
+            if (!ModelState.IsValid)
+            {
+                TempData["ErrorMessage"] = "Du lieu khong hop le. Vui long kiem tra lai.";
+                return RedirectToAction(nameof(DotHienMau));
+            }
+            try
+            {
+                model.TrangThai = "Chưa mở";
+                await _dotRepo.AddAsync(model);
+                await _dotRepo.SaveChangesAsync();
+                TempData["SuccessMessage"] = "Them dot hien mau thanh cong!";
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Loi khi them: " + ex.Message;
+            }
+            return RedirectToAction(nameof(DotHienMau));
+        }
+
+        // POST: /Admin/AdminEditDot
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> AdminEditDot(int id, DotHienMau model)
+        {
+            if (id != model.MaDot)
+            {
+                TempData["ErrorMessage"] = "Du lieu khong hop le.";
+                return RedirectToAction(nameof(DotHienMau));
+            }
+            if (!ModelState.IsValid)
+            {
+                TempData["ErrorMessage"] = "Du lieu khong hop le. Vui long kiem tra lai.";
+                return RedirectToAction(nameof(DotHienMau));
+            }
+            try
+            {
+                var existing = await _dotRepo.GetByIdAsync(id);
+                if (existing == null)
+                {
+                    TempData["ErrorMessage"] = "Khong tim thay dot hien mau.";
+                    return RedirectToAction(nameof(DotHienMau));
+                }
+                existing.TenDot            = model.TenDot;
+                existing.MaDonViToChuc     = model.MaDonViToChuc;
+                existing.ChiTieuDonViMau   = model.ChiTieuDonViMau;
+                existing.NhomMauUuTien     = model.NhomMauUuTien;
+                existing.CanNangToiThieu   = model.CanNangToiThieu;
+                existing.NgayBatDauDangKy  = model.NgayBatDauDangKy;
+                existing.HanDangKy         = model.HanDangKy;
+                existing.MoTaDot           = model.MoTaDot;
+                existing.DieuKienNguoiHien = model.DieuKienNguoiHien;
+
+                await _dotRepo.UpdateAsync(existing);
+                await _dotRepo.SaveChangesAsync();
+                TempData["SuccessMessage"] = "Cap nhat dot hien mau thanh cong!";
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Loi khi cap nhat: " + ex.Message;
+            }
+            return RedirectToAction(nameof(DotHienMau));
+        }
+
+        // POST: /Admin/AdminChangeStatusDot
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> AdminChangeStatusDot(int id, string trangThai)
+        {
+            try
+            {
+                var dot = await _dotRepo.GetByIdAsync(id);
+                if (dot == null)
+                {
+                    TempData["ErrorMessage"] = "Khong tim thay dot hien mau.";
+                    return RedirectToAction(nameof(DotHienMau));
+                }
+                dot.TrangThai = trangThai;
+                await _dotRepo.UpdateAsync(dot);
+                await _dotRepo.SaveChangesAsync();
+                TempData["SuccessMessage"] = "Cap nhat trang thai thanh cong!";
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Loi khi cap nhat trang thai: " + ex.Message;
+            }
+            return RedirectToAction(nameof(DotHienMau));
+        }
+
+        // POST: /Admin/AdminDeleteDot
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> AdminDeleteDot(int id)
+        {
+            try
+            {
+                var dot = await _dotRepo.GetByIdAsync(id);
+                if (dot == null)
+                {
+                    TempData["ErrorMessage"] = "Khong tim thay dot hien mau.";
+                    return RedirectToAction(nameof(DotHienMau));
+                }
+                bool hasPhieu = await _dotRepo.HasPhieuDangKyAsync(id);
+                if (hasPhieu)
+                {
+                    TempData["ErrorMessage"] = "Khong the xoa dot nay vi da co phieu dang ky lien quan.";
+                    return RedirectToAction(nameof(DotHienMau));
+                }
+                await _dotRepo.DeleteAsync(dot);
+                await _dotRepo.SaveChangesAsync();
+                TempData["SuccessMessage"] = "Xoa dot hien mau thanh cong!";
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Loi khi xoa: " + ex.Message;
+            }
+            return RedirectToAction(nameof(DotHienMau));
         }
     }
 }
