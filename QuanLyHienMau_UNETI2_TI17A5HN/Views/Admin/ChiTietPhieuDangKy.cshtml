@@ -5,6 +5,9 @@
 
     var lichSuKhac = ViewBag.LichSuPhieuKhac as List<QuanLyHienMau_UNETI2_TI17A5HN.Models.PhieuDangKyHienMau> ?? new List<QuanLyHienMau_UNETI2_TI17A5HN.Models.PhieuDangKyHienMau>();
     var latestLich = Model.LichKhamSangLocs.OrderByDescending(l => l.ThoiGianBatDau).FirstOrDefault();
+    var soPhieuThanhCongDot = (int?)ViewBag.SoPhieuThanhCongDot ?? 0;
+    var chiTieuDot = Model.DotHienMau?.ChiTieuDonViMau ?? 0;
+    var tienDoChiTieu = chiTieuDot > 0 ? Math.Min(100, (int)Math.Round(soPhieuThanhCongDot * 100.0 / chiTieuDot)) : 0;
 }
 
 <div class="flex flex-col w-full">
@@ -408,6 +411,25 @@
                                 <p>Đơn vị: <strong class="text-on-surface">@(Model.DotHienMau.DonViToChuc?.TenDonViToChuc ?? "Chưa rõ")</strong></p>
                                 <p>Thời gian đăng ký: <strong>@Model.DotHienMau.NgayBatDauDangKy.ToString("dd/MM/yyyy") - @Model.DotHienMau.HanDangKy.ToString("dd/MM/yyyy")</strong></p>
                                 <p>Chỉ tiêu: <strong>@Model.DotHienMau.ChiTieuDonViMau đơn vị máu</strong> • Cân nặng tối thiểu: <strong>≥ @Model.DotHienMau.CanNangToiThieu kg</strong></p>
+                                <div class="mt-2 p-3 rounded-xl bg-surface-container-low">
+                                    <div class="flex items-center justify-between text-[12px] font-semibold text-on-surface-variant">
+                                        <span>Tiến độ chỉ tiêu</span>
+                                        <span>@soPhieuThanhCongDot / @chiTieuDot người hiến thành công</span>
+                                    </div>
+                                    <div class="mt-2 h-2.5 rounded-full bg-surface-container overflow-hidden">
+                                        <div class="h-full rounded-full @(tienDoChiTieu >= 100 ? "bg-emerald-500" : "bg-primary" ) transition-all" style="width: @(tienDoChiTieu)%"></div>
+                                    </div>
+                                    @if (chiTieuDot > 0 && soPhieuThanhCongDot >= chiTieuDot)
+                                    {
+                                        <p class="mt-2 text-xs font-bold text-emerald-800">Đã đạt chỉ tiêu; vui lòng cân nhắc đóng đợt và tiếp tục xử lý các phiếu còn lại theo quy trình.</p>
+                                    }
+                                </div>
+                                <div class="mt-2 p-3 rounded-xl border border-primary/15 bg-primary/5 text-xs text-on-surface-variant">
+                                    <p class="font-bold text-on-surface mb-1">Đối chiếu tham khảo</p>
+                                    <p>Người hiến: <strong>@(Model.NguoiHienMau?.TrangThai ?? "Chưa rõ" )</strong> • Nhóm máu: <strong>@(Model.NguoiHienMau?.NhomMau ?? "Chưa khai báo" )</strong> • Cân nặng: <strong>@(Model.NguoiHienMau?.CanNang?.ToString("0.#" ) ?? "Chưa cập nhật" ) kg</strong></p>
+                                    <p class="mt-1">Điều kiện cân nặng của đợt: ≥ @Model.DotHienMau.CanNangToiThieu kg • Nhóm máu ưu tiên: @(string.IsNullOrWhiteSpace(Model.DotHienMau.NhomMauUuTien) ? "Không quy định" : Model.DotHienMau.NhomMauUuTien)</p>
+                                    <p class="mt-1 font-semibold">Thông tin chỉ để tham khảo; Nhân viên y tế đánh giá tổng thể và tự quyết định kết quả xác nhận.</p>
+                                </div>
                                 @if (!string.IsNullOrWhiteSpace(Model.DotHienMau.NhomMauUuTien))
                                 {
                                     <p>Nhóm máu ưu tiên: <strong class="text-on-surface">@Model.DotHienMau.NhomMauUuTien</strong></p>
@@ -850,3 +872,4 @@
         function closeEditScheduleModal() { document.getElementById('editScheduleModal').classList.add('hidden'); }
     </script>
 }
+

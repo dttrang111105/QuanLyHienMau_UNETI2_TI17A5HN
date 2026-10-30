@@ -1,10 +1,12 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using QuanLyHienMau_UNETI2_TI17A5HN.Data;
+using QuanLyHienMau_UNETI2_TI17A5HN.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddScoped<IPhieuDangKyRepository, EfPhieuDangKyRepository>();
 builder.Services.AddControllersWithViews();
 
 // Register DbContext with SQL Server
@@ -66,3 +68,4 @@ app.MapControllerRoute(
     .WithStaticAssets();
 
 app.Run();
+
