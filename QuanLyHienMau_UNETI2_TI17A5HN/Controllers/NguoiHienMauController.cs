@@ -6,20 +6,19 @@ using System.Security.Claims;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using QuanLyHienMau_UNETI2_TI17A5HN.Data;
 using QuanLyHienMau_UNETI2_TI17A5HN.Models;
+using QuanLyHienMau_UNETI2_TI17A5HN.Repositories.Interfaces;
 
 namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
 {
     [Authorize]
     public class NguoiHienMauController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly INguoiHienMauRepository _nguoiHienMauRepo;
 
-        public NguoiHienMauController(ApplicationDbContext context)
+        public NguoiHienMauController(INguoiHienMauRepository nguoiHienMauRepo)
         {
-            _context = context;
+            _nguoiHienMauRepo = nguoiHienMauRepo;
         }
 
         // GET: /NguoiHienMau
@@ -40,23 +39,14 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
                 return Challenge();
             }
 
-            var taiKhoan = await _context.TaiKhoans.FindAsync(maTaiKhoan);
+            var taiKhoan = await _nguoiHienMauRepo.GetTaiKhoanByIdAsync(maTaiKhoan);
             if (taiKhoan == null || taiKhoan.TrangThai != "Hoạt động")
             {
                 TempData["ErrorMessage"] = "Tài khoản của bạn hiện không tồn tại hoặc đã bị khóa.";
                 return RedirectToAction("Login", "Account");
             }
 
-            var nguoiHienMau = await _context.NguoiHienMaus
-                .Include(n => n.TaiKhoan)
-                .Include(n => n.PhieuDangKyHienMaus)
-                    .ThenInclude(p => p.DotHienMau!)
-                        .ThenInclude(d => d.DonViToChuc)
-                .Include(n => n.PhieuDangKyHienMaus)
-                    .ThenInclude(p => p.LichKhamSangLocs)
-                .Include(n => n.PhieuDangKyHienMaus)
-                    .ThenInclude(p => p.KetQuaHienMau)
-                .FirstOrDefaultAsync(n => n.MaTaiKhoan == maTaiKhoan);
+            var nguoiHienMau = await _nguoiHienMauRepo.GetProfileWithFullHistoryAsync(maTaiKhoan);
 
             if (nguoiHienMau == null)
             {
@@ -68,8 +58,8 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
                     Email = taiKhoan.Email,
                     TrangThai = "Hoạt động"
                 };
-                _context.NguoiHienMaus.Add(nguoiHienMau);
-                await _context.SaveChangesAsync();
+                await _nguoiHienMauRepo.AddAsync(nguoiHienMau);
+                await _nguoiHienMauRepo.SaveChangesAsync();
             }
 
             return View(nguoiHienMau);
@@ -86,16 +76,14 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
                 return Challenge();
             }
 
-            var taiKhoan = await _context.TaiKhoans.FindAsync(maTaiKhoan);
+            var taiKhoan = await _nguoiHienMauRepo.GetTaiKhoanByIdAsync(maTaiKhoan);
             if (taiKhoan == null || taiKhoan.TrangThai != "Hoạt động")
             {
                 TempData["ErrorMessage"] = "Tài khoản của bạn hiện không tồn tại hoặc đã bị khóa.";
                 return RedirectToAction("Login", "Account");
             }
 
-            var nguoiHienMau = await _context.NguoiHienMaus
-                .Include(n => n.TaiKhoan)
-                .FirstOrDefaultAsync(n => n.MaTaiKhoan == maTaiKhoan);
+            var nguoiHienMau = await _nguoiHienMauRepo.GetByTaiKhoanWithAccountAsync(maTaiKhoan);
 
             if (nguoiHienMau == null)
             {
@@ -106,7 +94,7 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
                     Email = taiKhoan.Email,
                     TrangThai = "Hoạt động"
                 };
-                _context.NguoiHienMaus.Add(nguoiHienMau);
+                await _nguoiHienMauRepo.AddAsync(nguoiHienMau);
             }
 
             if (nguoiHienMau.TrangThai != "Hoạt động")
@@ -189,8 +177,7 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
                 }
                 else
                 {
-                    bool emailTaken = await _context.TaiKhoans
-                        .AnyAsync(t => t.MaTaiKhoan != maTaiKhoan && t.Email != null && t.Email.ToLower() == email.ToLower());
+                    bool emailTaken = await _nguoiHienMauRepo.IsEmailTakenByOtherAccountAsync(maTaiKhoan, email);
                     if (emailTaken)
                     {
                         ModelState.AddModelError("Email", "Địa chỉ email này đã được sử dụng bởi một tài khoản khác.");
@@ -235,18 +222,8 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
                 nguoiHienMau.CanNang = model.CanNang;
                 nguoiHienMau.GhiChuSucKhoe = model.GhiChuSucKhoe;
 
-                // Tải lại các quan hệ phiếu để View không bị lỗi hiển thị
-                if (nguoiHienMau.MaNguoiHien > 0)
-                {
-                    await _context.Entry(nguoiHienMau)
-                        .Collection(n => n.PhieuDangKyHienMaus)
-                        .Query()
-                        .Include(p => p.DotHienMau!)
-                            .ThenInclude(d => d.DonViToChuc)
-                        .Include(p => p.LichKhamSangLocs)
-                        .Include(p => p.KetQuaHienMau)
-                        .LoadAsync();
-                }
+                // Tải lại các quan hệ phiếu qua Repository để View không bị lỗi hiển thị
+                await _nguoiHienMauRepo.LoadDonationHistoryCollectionAsync(nguoiHienMau);
 
                 ViewBag.OpenEditModal = true;
                 TempData["ErrorMessage"] = "Cập nhật hồ sơ thất bại. Vui lòng kiểm tra các trường báo lỗi.";
@@ -276,7 +253,7 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
                 }
             }
 
-            await _context.SaveChangesAsync();
+            await _nguoiHienMauRepo.SaveChangesAsync();
             TempData["SuccessMessage"] = "Cập nhật hồ sơ thông tin người hiến máu thành công!";
             return RedirectToAction(nameof(HoSoCaNhan));
         }

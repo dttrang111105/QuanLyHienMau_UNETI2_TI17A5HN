@@ -3,23 +3,21 @@
 
 using System.Collections.Concurrent;
 using System.ComponentModel.DataAnnotations;
-using System.Data;
 using System.Security.Claims;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using QuanLyHienMau_UNETI2_TI17A5HN.Data;
 using QuanLyHienMau_UNETI2_TI17A5HN.Models;
+using QuanLyHienMau_UNETI2_TI17A5HN.Repositories.Interfaces;
 
 namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
 {
     [Authorize]
     public class DangKyController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IPhieuDangKyRepository _phieuDangKyRepo;
+        private readonly INguoiHienMauRepository _nguoiHienMauRepo;
 
-        // Quy định khoảng cách tối thiểu giữa 2 lần hiến máu toàn phần thành công: 84 ngày (12 tuần / ~3 tháng theo chuẩn Bộ Y Tế)
         public const int SoNgayChoToiThieuGiuaHaiLanHien = 84;
 
         // Khóa đồng bộ theo từng tài khoản/người hiến để ngăn chặn nhiều request nộp phiếu đồng thời (Race Condition)
@@ -177,9 +175,12 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
                 ErrorMessage: null);
         }
 
-        public DangKyController(ApplicationDbContext context)
+        public DangKyController(
+            IPhieuDangKyRepository phieuDangKyRepo,
+            INguoiHienMauRepository nguoiHienMauRepo)
         {
-            _context = context;
+            _phieuDangKyRepo = phieuDangKyRepo;
+            _nguoiHienMauRepo = nguoiHienMauRepo;
         }
 
         // GET: /DangKy
@@ -199,16 +200,14 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
                 return Challenge();
             }
 
-            var taiKhoan = await _context.TaiKhoans.FindAsync(maTaiKhoan);
+            var taiKhoan = await _nguoiHienMauRepo.GetTaiKhoanByIdAsync(maTaiKhoan);
             if (taiKhoan == null || taiKhoan.TrangThai != "Hoạt động")
             {
                 TempData["ErrorMessage"] = "Tài khoản của bạn hiện không tồn tại hoặc đã bị khóa.";
                 return RedirectToAction("Login", "Account");
             }
 
-            var nguoiHienMau = await _context.NguoiHienMaus
-                .Include(n => n.TaiKhoan)
-                .FirstOrDefaultAsync(n => n.MaTaiKhoan == maTaiKhoan);
+            var nguoiHienMau = await _nguoiHienMauRepo.GetByTaiKhoanWithAccountAsync(maTaiKhoan);
 
             if (nguoiHienMau == null)
             {
@@ -219,8 +218,8 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
                     Email = taiKhoan.Email,
                     TrangThai = "Hoạt động"
                 };
-                _context.NguoiHienMaus.Add(nguoiHienMau);
-                await _context.SaveChangesAsync();
+                await _nguoiHienMauRepo.AddAsync(nguoiHienMau);
+                await _nguoiHienMauRepo.SaveChangesAsync();
             }
 
             // 1. Kiểm tra trạng thái hoạt động của người hiến
@@ -233,18 +232,11 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
             DotHienMau? dotHienMau = null;
             if (maDot.HasValue)
             {
-                dotHienMau = await _context.DotHienMaus
-                    .Include(d => d.DonViToChuc)
-                    .FirstOrDefaultAsync(d => d.MaDot == maDot.Value);
+                dotHienMau = await _phieuDangKyRepo.GetDotHienMauWithDonViByIdAsync(maDot.Value);
             }
             else
             {
-                var today = DateTime.Today;
-                dotHienMau = await _context.DotHienMaus
-                    .Include(d => d.DonViToChuc)
-                    .Where(d => d.TrangThai == "Đang mở đăng ký" && d.NgayBatDauDangKy <= today && d.HanDangKy >= today)
-                    .OrderByDescending(d => d.NgayBatDauDangKy)
-                    .FirstOrDefaultAsync();
+                dotHienMau = await _phieuDangKyRepo.GetLatestOpenDotHienMauAsync(DateTime.Today);
             }
 
             if (dotHienMau == null)
@@ -274,11 +266,7 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
             }
 
             // 4. Kiểm tra điều kiện thời gian chờ kể từ lần hiến máu thành công gần nhất của chính người dùng đang đăng nhập
-            var lichSuPhieu = await _context.PhieuDangKyHienMaus
-                .Include(p => p.KetQuaHienMau)
-                .Include(p => p.DotHienMau)
-                .Where(p => p.MaNguoiHien == nguoiHienMau.MaNguoiHien)
-                .ToListAsync();
+            var lichSuPhieu = await _phieuDangKyRepo.GetHistoryByNguoiHienAsync(nguoiHienMau.MaNguoiHien);
 
             var recentEligibility = EvaluateRecentDonationEligibility(lichSuPhieu, DateTime.Today);
             ViewBag.RecentDonationEligibility = recentEligibility;
@@ -336,16 +324,14 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
                 return Challenge();
             }
 
-            var taiKhoan = await _context.TaiKhoans.FindAsync(maTaiKhoan);
+            var taiKhoan = await _nguoiHienMauRepo.GetTaiKhoanByIdAsync(maTaiKhoan);
             if (taiKhoan == null || taiKhoan.TrangThai != "Hoạt động")
             {
                 TempData["ErrorMessage"] = "Tài khoản của bạn hiện không tồn tại hoặc đã bị khóa.";
                 return RedirectToAction("Login", "Account");
             }
 
-            var nguoiHienMau = await _context.NguoiHienMaus
-                .Include(n => n.TaiKhoan)
-                .FirstOrDefaultAsync(n => n.MaTaiKhoan == maTaiKhoan);
+            var nguoiHienMau = await _nguoiHienMauRepo.GetByTaiKhoanWithAccountAsync(maTaiKhoan);
 
             if (nguoiHienMau == null)
             {
@@ -360,9 +346,7 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
                 return RedirectToAction("HoSoCaNhan", "NguoiHienMau");
             }
 
-            var dotHienMau = await _context.DotHienMaus
-                .Include(d => d.DonViToChuc)
-                .FirstOrDefaultAsync(d => d.MaDot == maDot);
+            var dotHienMau = await _phieuDangKyRepo.GetDotHienMauWithDonViByIdAsync(maDot);
 
             if (dotHienMau == null)
             {
@@ -410,11 +394,7 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
             }
 
             // 4. Kiểm tra điều kiện thời gian chờ kể từ lần hiến máu thành công gần nhất của chính người dùng đang đăng nhập (chặn POST trực tiếp)
-            var lichSuPhieuPreCheck = await _context.PhieuDangKyHienMaus
-                .Include(p => p.KetQuaHienMau)
-                .Include(p => p.DotHienMau)
-                .Where(p => p.MaNguoiHien == nguoiHienMau.MaNguoiHien)
-                .ToListAsync();
+            var lichSuPhieuPreCheck = await _phieuDangKyRepo.GetHistoryByNguoiHienAsync(nguoiHienMau.MaNguoiHien);
 
             var preCheckEligibility = EvaluateRecentDonationEligibility(lichSuPhieuPreCheck, DateTime.Today);
             ViewBag.RecentDonationEligibility = preCheckEligibility;
@@ -481,8 +461,7 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
                     return ReturnInvalidForm("Địa chỉ email không đúng định dạng hoặc vượt quá 100 ký tự.");
                 }
 
-                bool emailExistsInOtherAccount = await _context.TaiKhoans
-                    .AnyAsync(t => t.MaTaiKhoan != maTaiKhoan && t.Email != null && t.Email.ToLower() == finalEmail.ToLower());
+                bool emailExistsInOtherAccount = await _nguoiHienMauRepo.IsEmailTakenByOtherAccountAsync(maTaiKhoan, finalEmail);
                 if (emailExistsInOtherAccount)
                 {
                     return ReturnInvalidForm("Địa chỉ email này đã được sử dụng bởi một tài khoản khác trong hệ thống.");
@@ -533,13 +512,9 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
             await userLock.WaitAsync();
             try
             {
-                await using var transaction = await _context.Database.BeginTransactionAsync(IsolationLevel.Serializable);
+                await using var transaction = await _phieuDangKyRepo.BeginSerializableTransactionAsync();
 
-                var lichSuPhieuInTx = await _context.PhieuDangKyHienMaus
-                    .Include(p => p.KetQuaHienMau)
-                    .Include(p => p.DotHienMau)
-                    .Where(p => p.MaNguoiHien == nguoiHienMau.MaNguoiHien)
-                    .ToListAsync();
+                var lichSuPhieuInTx = await _phieuDangKyRepo.GetHistoryByNguoiHienAsync(nguoiHienMau.MaNguoiHien);
 
                 var txEligibility = EvaluateRecentDonationEligibility(lichSuPhieuInTx, DateTime.Today);
                 if (!txEligibility.IsEligible)
@@ -603,8 +578,8 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
                     GhiChuXacNhan = null
                 };
 
-                _context.PhieuDangKyHienMaus.Add(phieu);
-                await _context.SaveChangesAsync();
+                await _phieuDangKyRepo.AddAsync(phieu);
+                await _phieuDangKyRepo.SaveChangesAsync();
                 await transaction.CommitAsync();
 
                 TempData["SuccessMessage"] = $"Đăng ký hiến máu thành công! Mã phiếu của bạn là #DKHM-{phieu.MaPhieu:D5}. Vui lòng chờ ban tổ chức xác nhận.";
@@ -626,17 +601,9 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
                 return Challenge();
             }
 
-            var nguoiHienMau = await _context.NguoiHienMaus
-                .FirstOrDefaultAsync(n => n.MaTaiKhoan == maTaiKhoan);
+            var nguoiHienMau = await _nguoiHienMauRepo.GetByTaiKhoanAsync(maTaiKhoan);
 
             var userRole = User.FindFirst(ClaimTypes.Role)?.Value;
-
-            IQueryable<PhieuDangKyHienMau> query = _context.PhieuDangKyHienMaus
-                .Include(p => p.DotHienMau!)
-                    .ThenInclude(d => d.DonViToChuc)
-                .Include(p => p.NguoiHienMau)
-                .Include(p => p.LichKhamSangLocs)
-                .Include(p => p.KetQuaHienMau);
 
             List<PhieuDangKyHienMau> userPhieuList = new List<PhieuDangKyHienMau>();
             bool isStaffOrAdmin = userRole == "Admin" || userRole == "Medical Staff" || userRole == "NhanVienYTe" || userRole == "Nhân viên y tế";
@@ -646,19 +613,13 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
                 if (nguoiHienMau != null)
                 {
                     // Donor CHỈ ĐƯỢC XEM phiếu của chính mình
-                    userPhieuList = await query
-                        .Where(p => p.MaNguoiHien == nguoiHienMau.MaNguoiHien)
-                        .OrderByDescending(p => p.NgayNop)
-                        .ToListAsync();
+                    userPhieuList = await _phieuDangKyRepo.GetTrackingListByNguoiHienAsync(nguoiHienMau.MaNguoiHien);
                 }
             }
             else
             {
                 // Admin / Medical Staff
-                userPhieuList = await query
-                    .OrderByDescending(p => p.NgayNop)
-                    .Take(30)
-                    .ToListAsync();
+                userPhieuList = await _phieuDangKyRepo.GetRecentTrackingListForStaffAsync(30);
             }
 
             PhieuDangKyHienMau? selectedPhieu = null;
@@ -672,7 +633,7 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
                 {
                     if (isStaffOrAdmin)
                     {
-                        selectedPhieu = await query.FirstOrDefaultAsync(p => p.MaPhieu == id.Value);
+                        selectedPhieu = await _phieuDangKyRepo.GetByIdWithTrackingDetailsAsync(id.Value);
                     }
 
                     if (selectedPhieu == null)
@@ -691,7 +652,7 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
                     selectedPhieu = userPhieuList.FirstOrDefault(p => p.MaPhieu == parsedId);
                     if (selectedPhieu == null && isStaffOrAdmin)
                     {
-                        selectedPhieu = await query.FirstOrDefaultAsync(p => p.MaPhieu == parsedId);
+                        selectedPhieu = await _phieuDangKyRepo.GetByIdWithTrackingDetailsAsync(parsedId);
                     }
                 }
 
@@ -727,20 +688,16 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
                 return Challenge();
             }
 
-            var taiKhoan = await _context.TaiKhoans.FindAsync(maTaiKhoan);
+            var taiKhoan = await _nguoiHienMauRepo.GetTaiKhoanByIdAsync(maTaiKhoan);
             if (taiKhoan == null || taiKhoan.TrangThai != "Hoạt động")
             {
                 TempData["ErrorMessage"] = "Tài khoản của bạn hiện không tồn tại hoặc đã bị khóa.";
                 return RedirectToAction("Login", "Account");
             }
 
-            var nguoiHienMau = await _context.NguoiHienMaus
-                .FirstOrDefaultAsync(n => n.MaTaiKhoan == maTaiKhoan);
+            var nguoiHienMau = await _nguoiHienMauRepo.GetByTaiKhoanAsync(maTaiKhoan);
 
-            var phieu = await _context.PhieuDangKyHienMaus
-                .Include(p => p.LichKhamSangLocs)
-                .Include(p => p.KetQuaHienMau)
-                .FirstOrDefaultAsync(p => p.MaPhieu == id);
+            var phieu = await _phieuDangKyRepo.GetByIdForCancelAsync(id);
 
             if (phieu == null)
             {
@@ -794,7 +751,7 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
             phieu.NgayXuLy = DateTime.Now;
             phieu.GhiChuXacNhan = "Người hiến đã chủ động hủy phiếu đăng ký trên cổng thông tin.";
 
-            await _context.SaveChangesAsync();
+            await _phieuDangKyRepo.SaveChangesAsync();
             TempData["SuccessMessage"] = $"Đã hủy thành công phiếu đăng ký #DKHM-{phieu.MaPhieu:D5}.";
 
             return RedirectToAction(nameof(TheoDoi), new { id = phieu.MaPhieu });
