@@ -52,7 +52,7 @@ giao diện trang đăng nhập. -->
                 </div>
                 <div class="space-y-1">
                     <p class="font-body-sm text-on-surface italic leading-normal">
-                        "Nhờ ứng dụng Vitalis, tôi nhận thông báo kịp thời khi bệnh viện nhi cần nhóm máu O hiếm và đã kịp cứu sống một em nhỏ."
+                        "Nhờ hệ thống hiến máu, tôi nhận thông báo kịp thời khi bệnh viện nhi cần nhóm máu O hiếm và đã kịp cứu sống một em nhỏ."
                     </p>
                     <div class="flex items-center gap-2">
                         <span class="font-label-sm text-on-surface font-bold">Nguyễn Thảo My</span>
@@ -64,7 +64,7 @@ giao diện trang đăng nhập. -->
             <!-- Ministry of Health Safe guarantee -->
             <div class="flex items-center gap-2 text-secondary text-xs">
                 <span class="material-symbols-outlined text-primary text-[18px]" style="font-variation-settings: 'FILL' 1;">verified</span>
-                <span>Hệ thống bảo mật dữ liệu y tế cá nhân theo Thông tư 26/2013/TT-BYT</span>
+                <span>Hệ thống bảo mật thông tin người hiến máu theo quy định của Bộ Y Tế</span>
             </div>
         </section>
 
@@ -106,36 +106,6 @@ giao diện trang đăng nhập. -->
                             <span class="font-body-sm text-sm font-semibold">@ViewBag.LoginError</span>
                         </div>
                     }
-
-                    <!-- Quick 1-tap Social Login Section -->
-                    <div class="space-y-3">
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <!-- Google Button -->
-                            <button onclick="alert('Tính năng liên kết Google OAuth 2.0 (Giai đoạn giao diện)')" class="flex items-center justify-center gap-3 px-4 py-3 rounded-xl border border-outline-variant/80 hover:border-outline bg-surface-container-lowest hover:bg-surface-container-low transition-all font-label-md text-on-surface shadow-sm group cursor-pointer" type="button">
-                                <svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24">
-                                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"></path>
-                                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"></path>
-                                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"></path>
-                                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z" fill="#EA4335"></path>
-                                </svg>
-                                <span class="font-bold text-[14px]">Tiếp tục với Google</span>
-                            </button>
-
-                            <!-- VNeID Button -->
-                            <a asp-controller="Account" asp-action="VNeIDAuth" class="flex items-center justify-center gap-2.5 px-4 py-3 rounded-xl border border-red-200 bg-red-50/50 hover:bg-red-50 text-red-900 transition-all font-label-md shadow-sm group cursor-pointer">
-                                <div class="w-5 h-5 rounded-full bg-primary flex items-center justify-center text-yellow-300 font-extrabold text-[9px] shadow-xs">
-                                    <span class="material-symbols-outlined text-[13px]">shield</span>
-                                </div>
-                                <span class="font-bold text-[14px] text-primary">Đăng nhập qua VNeID</span>
-                            </a>
-                        </div>
-                    </div>
-
-                    <!-- Divider -->
-                    <div class="relative flex items-center justify-center my-1">
-                        <div class="w-full border-t border-surface-container-high"></div>
-                        <span class="bg-surface-container-lowest px-3 text-secondary text-xs uppercase font-semibold tracking-wider">đăng nhập bằng tài khoản</span>
-                    </div>
 
                     <!-- Main Login Form -->
                     <form method="post" asp-controller="Account" asp-action="Login" class="space-y-4">
@@ -185,26 +155,26 @@ giao diện trang đăng nhập. -->
                         </button>
                     </form>
 
-                    <!-- Default Test Accounts Guidance -->
+                    <!-- Default Accounts Guidance -->
                     <div class="p-3.5 rounded-2xl bg-surface-container-low text-xs text-on-surface-variant space-y-1">
                         <div class="font-bold text-on-surface flex items-center gap-1">
                             <span class="material-symbols-outlined text-[16px] text-primary">key</span>
-                            <span>Tài khoản mẫu thử nghiệm:</span>
+                            <span>Tài khoản hướng dẫn đăng nhập:</span>
                         </div>
-                        <div class="grid grid-cols-3 gap-2 pt-1 font-mono text-[11px]">
+                        <div class="grid grid-cols-3 gap-2 pt-1 text-[11px]">
                             <div class="bg-surface-container-lowest p-2 rounded-lg border border-surface-container">
-                                <div class="text-primary font-bold">Admin</div>
-                                <div>admin</div>
+                                <div class="text-primary font-bold">Quản trị viên</div>
+                                <div class="font-semibold">admin</div>
                                 <div class="text-secondary">Admin@123</div>
                             </div>
                             <div class="bg-surface-container-lowest p-2 rounded-lg border border-surface-container">
-                                <div class="text-primary font-bold">Bác sĩ</div>
-                                <div>bacsi</div>
+                                <div class="text-primary font-bold">Nhân viên y tế</div>
+                                <div class="font-semibold">bacsi</div>
                                 <div class="text-secondary">BacSi@123</div>
                             </div>
                             <div class="bg-surface-container-lowest p-2 rounded-lg border border-surface-container">
-                                <div class="text-primary font-bold">Donor</div>
-                                <div>donor</div>
+                                <div class="text-primary font-bold">Người hiến máu</div>
+                                <div class="font-semibold">donor</div>
                                 <div class="text-secondary">Donor@123</div>
                             </div>
                         </div>
@@ -360,7 +330,7 @@ giao diện trang đăng nhập. -->
                         <label class="flex items-start gap-2.5 cursor-pointer select-none pt-1">
                             <input id="chk-terms" class="w-4 h-4 rounded mt-0.5 text-primary focus:ring-primary/20 border-outline-variant accent-primary cursor-pointer" type="checkbox" onchange="toggleRegisterButton()" @(ViewBag.RegDongYDieuKhoan == true ? "checked" : null) />
                             <span class="font-body-sm text-[12px] text-on-surface-variant leading-tight">
-                                Tôi đồng ý với <a class="text-primary font-bold hover:underline" href="javascript:void(0)">Điều khoản phục vụ</a> &amp; <a class="text-primary font-bold hover:underline" href="javascript:void(0)">Chính sách quyền riêng tư y tế</a> của Vitalis Blood Community.
+                                Tôi đồng ý với <a class="text-primary font-bold hover:underline" href="javascript:void(0)">Điều khoản tham gia</a> &amp; <a class="text-primary font-bold hover:underline" href="javascript:void(0)">Chính sách bảo mật thông tin người hiến máu</a>.
                             </span>
                         </label>
 

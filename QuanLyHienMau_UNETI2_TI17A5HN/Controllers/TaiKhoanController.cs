@@ -151,7 +151,13 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
                 await _taiKhoanRepository.SaveChangesAsync();
             }
 
-            TempData["SuccessMessage"] = $"Đã tạo mới tài khoản '{account.TenDangNhap}' ({account.VaiTro}) thành công!";
+            var tenVaiTro = account.VaiTro switch
+            {
+                "Admin" => "Quản trị viên",
+                "Medical Staff" => "Nhân viên y tế",
+                _ => "Người hiến máu"
+            };
+            TempData["SuccessMessage"] = $"Đã tạo mới tài khoản '{account.TenDangNhap}' ({tenVaiTro}) thành công!";
             return RedirectToAction(nameof(Index));
         }
 

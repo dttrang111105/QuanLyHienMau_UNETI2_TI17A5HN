@@ -350,15 +350,7 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
         [HttpGet]
         public IActionResult AccessDenied()
         {
-            ViewData["Title"] = "Không Có Quyền Truy Cập (403)";
-            return View();
-        }
-
-        // GET: /Account/VNeIDAuth
-        [HttpGet]
-        public IActionResult VNeIDAuth()
-        {
-            ViewData["Title"] = "Xác Thực CCCD / VNeID Cổng Định Danh Y Tế Số";
+            ViewData["Title"] = "Từ Chối Quyền Truy Cập";
             return View();
         }
 
