@@ -1027,6 +1027,7 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
             query = _dotRepo.ApplySort(query, sort);
 
             int totalCount = await _dotRepo.CountAsync(query);
+            page = Math.Clamp(page, 1, Math.Max(1, (int)Math.Ceiling(totalCount / (double)pageSize)));
             var items = await _dotRepo.GetPagedAsync(query, page, pageSize);
 
             // Metric cards
@@ -1034,6 +1035,8 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
             ViewBag.TotalCount   = await _dotRepo.CountAsync(all);
             ViewBag.ChuaMoCount  = await _dotRepo.CountAsync(all.Where(d => d.TrangThai == "Chưa mở"));
             ViewBag.DangMoCount  = await _dotRepo.CountAsync(all.Where(d => d.TrangThai == "Đang mở đăng ký"));
+            var today = DateTime.Today;
+            ViewBag.DangNhanCount = await _dotRepo.CountAsync(all.Where(d => d.TrangThai == "Đang mở đăng ký" && d.NgayBatDauDangKy.Date <= today && d.HanDangKy.Date >= today));
             ViewBag.TamDungCount = await _dotRepo.CountAsync(all.Where(d => d.TrangThai == "Tạm dừng"));
             ViewBag.DaDongCount  = await _dotRepo.CountAsync(all.Where(d => d.TrangThai == "Đã đóng"));
 
@@ -1059,12 +1062,14 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
         // POST: /Admin/AdminCreateDot
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,Medical Staff")]
         public async Task<IActionResult> AdminCreateDot(DotHienMau model)
         {
+            if (!(await _dotRepo.GetActiveDonViToChucsAsync()).Any(d => d.MaDonViToChuc == model.MaDonViToChuc))
+                ModelState.AddModelError(nameof(model.MaDonViToChuc), "Vui lòng chọn đơn vị tổ chức đang hoạt động.");
             if (!ModelState.IsValid)
             {
-                TempData["ErrorMessage"] = "Du lieu khong hop le. Vui long kiem tra lai.";
+                TempData["ErrorMessage"] = string.Join(" ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
                 return RedirectToAction(nameof(DotHienMau));
             }
             try
@@ -1072,11 +1077,11 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
                 model.TrangThai = "Chưa mở";
                 await _dotRepo.AddAsync(model);
                 await _dotRepo.SaveChangesAsync();
-                TempData["SuccessMessage"] = "Them dot hien mau thanh cong!";
+                TempData["SuccessMessage"] = "Thêm đợt hiến máu thành công!";
             }
             catch (Exception ex)
             {
-                TempData["ErrorMessage"] = "Loi khi them: " + ex.Message;
+                TempData["ErrorMessage"] = "Lỗi khi thêm: " + ex.Message;
             }
             return RedirectToAction(nameof(DotHienMau));
         }
@@ -1084,17 +1089,19 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
         // POST: /Admin/AdminEditDot
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,Medical Staff")]
         public async Task<IActionResult> AdminEditDot(int id, DotHienMau model)
         {
+            if (!(await _dotRepo.GetActiveDonViToChucsAsync()).Any(d => d.MaDonViToChuc == model.MaDonViToChuc))
+                ModelState.AddModelError(nameof(model.MaDonViToChuc), "Vui lòng chọn đơn vị tổ chức đang hoạt động.");
             if (id != model.MaDot)
             {
-                TempData["ErrorMessage"] = "Du lieu khong hop le.";
+                TempData["ErrorMessage"] = "Dữ liệu không hợp lệ.";
                 return RedirectToAction(nameof(DotHienMau));
             }
             if (!ModelState.IsValid)
             {
-                TempData["ErrorMessage"] = "Du lieu khong hop le. Vui long kiem tra lai.";
+                TempData["ErrorMessage"] = string.Join(" ", ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage));
                 return RedirectToAction(nameof(DotHienMau));
             }
             try
@@ -1102,7 +1109,7 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
                 var existing = await _dotRepo.GetByIdAsync(id);
                 if (existing == null)
                 {
-                    TempData["ErrorMessage"] = "Khong tim thay dot hien mau.";
+                    TempData["ErrorMessage"] = "Không tìm thấy đợt hiến máu.";
                     return RedirectToAction(nameof(DotHienMau));
                 }
                 existing.TenDot            = model.TenDot;
@@ -1117,11 +1124,11 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
 
                 await _dotRepo.UpdateAsync(existing);
                 await _dotRepo.SaveChangesAsync();
-                TempData["SuccessMessage"] = "Cap nhat dot hien mau thanh cong!";
+                TempData["SuccessMessage"] = "Cập nhật đợt hiến máu thành công!";
             }
             catch (Exception ex)
             {
-                TempData["ErrorMessage"] = "Loi khi cap nhat: " + ex.Message;
+                TempData["ErrorMessage"] = "Lỗi khi cập nhật: " + ex.Message;
             }
             return RedirectToAction(nameof(DotHienMau));
         }
@@ -1129,7 +1136,7 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
         // POST: /Admin/AdminChangeStatusDot
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,Medical Staff")]
         public async Task<IActionResult> AdminChangeStatusDot(int id, string trangThai)
         {
             try
@@ -1137,17 +1144,25 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
                 var dot = await _dotRepo.GetByIdAsync(id);
                 if (dot == null)
                 {
-                    TempData["ErrorMessage"] = "Khong tim thay dot hien mau.";
+                    TempData["ErrorMessage"] = "Không tìm thấy đợt hiến máu.";
                     return RedirectToAction(nameof(DotHienMau));
                 }
                 dot.TrangThai = trangThai;
+                var errors = new List<System.ComponentModel.DataAnnotations.ValidationResult>();
+                if (!System.ComponentModel.DataAnnotations.Validator.TryValidateObject(dot,
+                    new System.ComponentModel.DataAnnotations.ValidationContext(dot), errors, true)
+                    || !(await _dotRepo.GetActiveDonViToChucsAsync()).Any(d => d.MaDonViToChuc == dot.MaDonViToChuc))
+                {
+                    TempData["ErrorMessage"] = "Dữ liệu đợt hoặc đơn vị tổ chức chưa hợp lệ. " + string.Join(" ", errors.Select(e => e.ErrorMessage));
+                    return RedirectToAction(nameof(DotHienMau));
+                }
                 await _dotRepo.UpdateAsync(dot);
                 await _dotRepo.SaveChangesAsync();
-                TempData["SuccessMessage"] = "Cap nhat trang thai thanh cong!";
+                TempData["SuccessMessage"] = "Cập nhật trạng thái thành công!";
             }
             catch (Exception ex)
             {
-                TempData["ErrorMessage"] = "Loi khi cap nhat trang thai: " + ex.Message;
+                TempData["ErrorMessage"] = "Lỗi khi cập nhật trạng thái: " + ex.Message;
             }
             return RedirectToAction(nameof(DotHienMau));
         }
@@ -1155,7 +1170,7 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
         // POST: /Admin/AdminDeleteDot
         [HttpPost]
         [ValidateAntiForgeryToken]
-        [Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin,Medical Staff")]
         public async Task<IActionResult> AdminDeleteDot(int id)
         {
             try
@@ -1163,22 +1178,22 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
                 var dot = await _dotRepo.GetByIdAsync(id);
                 if (dot == null)
                 {
-                    TempData["ErrorMessage"] = "Khong tim thay dot hien mau.";
+                    TempData["ErrorMessage"] = "Không tìm thấy đợt hiến máu.";
                     return RedirectToAction(nameof(DotHienMau));
                 }
                 bool hasPhieu = await _dotRepo.HasPhieuDangKyAsync(id);
                 if (hasPhieu)
                 {
-                    TempData["ErrorMessage"] = "Khong the xoa dot nay vi da co phieu dang ky lien quan.";
+                    TempData["ErrorMessage"] = "Không thể xóa đợt này vì đã có phiếu đăng ký liên quan.";
                     return RedirectToAction(nameof(DotHienMau));
                 }
                 await _dotRepo.DeleteAsync(dot);
                 await _dotRepo.SaveChangesAsync();
-                TempData["SuccessMessage"] = "Xoa dot hien mau thanh cong!";
+                TempData["SuccessMessage"] = "Xóa đợt hiến máu thành công!";
             }
             catch (Exception ex)
             {
-                TempData["ErrorMessage"] = "Loi khi xoa: " + ex.Message;
+                TempData["ErrorMessage"] = "Lỗi khi xóa: " + ex.Message;
             }
             return RedirectToAction(nameof(DotHienMau));
         }

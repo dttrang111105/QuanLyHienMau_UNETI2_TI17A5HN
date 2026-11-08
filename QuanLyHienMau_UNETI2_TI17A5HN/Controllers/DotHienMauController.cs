@@ -48,7 +48,9 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
             // 3. Lọc theo nhiều điều kiện kết hợp
             query = _repo.ApplyFilterDonVi(query, donViId);
             query = _repo.ApplyFilterNhomMau(query, nhomMau);
-            query = _repo.ApplyFilterTrangThai(query, status);
+            query = status == "Đang mở đăng ký"
+                ? _repo.ApplyFilterDangNhanDangKy(query)
+                : _repo.ApplyFilterTrangThai(query, status);
             query = _repo.ApplyFilterCanNang(query, canNang);
             query = _repo.ApplyFilterThoiHan(query, thoiHan);
 
@@ -61,7 +63,7 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
 
             // Đảm bảo page hợp lệ
             if (page < 1) page = 1;
-            if (totalPages > 0 && page > totalPages) page = totalPages;
+            page = Math.Min(page, Math.Max(1, totalPages));
 
             // 6. Lấy dữ liệu phân trang (Skip + Take trên EF Core LINQ)
             var result = await _repo.GetPagedAsync(query, page, PageSize);
@@ -111,7 +113,7 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
         {
             // Dropdown đơn vị tổ chức lấy từ DB qua Repository
             ViewBag.DonViList = await _repo.GetActiveDonViToChucsAsync();
-            return View();
+            return View(new DotHienMau { NgayBatDauDangKy = DateTime.Today, HanDangKy = DateTime.Today });
         }
 
         // ════════════════════════════════════════════════════════════════════════
@@ -127,6 +129,9 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
 
             // Xóa lỗi binding cũ cho trường TrangThai (không nhập từ form)
             ModelState.Remove(nameof(model.TrangThai));
+
+            if (!(await _repo.GetActiveDonViToChucsAsync()).Any(d => d.MaDonViToChuc == model.MaDonViToChuc))
+                ModelState.AddModelError(nameof(model.MaDonViToChuc), "Vui lòng chọn đơn vị tổ chức đang hoạt động.");
 
             // Validation nghiệp vụ: hạn đăng ký phải >= ngày bắt đầu
             if (model.HanDangKy < model.NgayBatDauDangKy)
@@ -176,6 +181,9 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
         {
             if (id != model.MaDot)
                 return NotFound();
+
+            if (!(await _repo.GetActiveDonViToChucsAsync()).Any(d => d.MaDonViToChuc == model.MaDonViToChuc))
+                ModelState.AddModelError(nameof(model.MaDonViToChuc), "Vui lòng chọn đơn vị tổ chức đang hoạt động.");
 
             // Validation nghiệp vụ
             if (model.HanDangKy < model.NgayBatDauDangKy)
@@ -240,7 +248,8 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
                 if (string.IsNullOrWhiteSpace(dot.TenDot)   ||
                     dot.ChiTieuDonViMau <= 0                 ||
                     dot.CanNangToiThieu < 0                  ||
-                    dot.HanDangKy < dot.NgayBatDauDangKy)
+                    dot.HanDangKy < dot.NgayBatDauDangKy || dot.NgayBatDauDangKy == default || dot.HanDangKy == default ||
+                    !(await _repo.GetActiveDonViToChucsAsync()).Any(d => d.MaDonViToChuc == dot.MaDonViToChuc))
                 {
                     TempData["ErrorMessage"] =
                         "Dữ liệu chưa hợp lệ nên không thể mở đăng ký.";

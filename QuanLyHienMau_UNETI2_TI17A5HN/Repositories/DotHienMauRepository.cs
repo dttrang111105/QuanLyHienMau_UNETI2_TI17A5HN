@@ -128,11 +128,22 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Repositories
             if (string.IsNullOrWhiteSpace(nhomMau))
                 return query;
 
+            var group = nhomMau.Trim().ToUpperInvariant();
+            var includeRh = new[] { "A", "B", "AB", "O" }.Contains(group);
             return query.Where(d => d.NhomMauUuTien != null &&
-                                    d.NhomMauUuTien.Contains(nhomMau));
+                (("," + d.NhomMauUuTien.Replace("(Khẩn cấp)", "").Replace(" ", "").ToUpper() + ",").Contains("," + group + ",") ||
+                 (includeRh && (("," + d.NhomMauUuTien.Replace("(Khẩn cấp)", "").Replace(" ", "").ToUpper() + ",").Contains("," + group + "+,") ||
+                                ("," + d.NhomMauUuTien.Replace("(Khẩn cấp)", "").Replace(" ", "").ToUpper() + ",").Contains("," + group + "-,")))));
         }
 
-        /// <summary>Lọc theo trạng thái đợt hiến máu.</summary>
+        /// <summary>Lọc đợt thực sự đang nhận đăng ký, bao gồm cả ngày bắt đầu và ngày hết hạn.</summary>
+        public IQueryable<DotHienMau> ApplyFilterDangNhanDangKy(IQueryable<DotHienMau> query)
+        {
+            var today = DateTime.Today;
+            return query.Where(d => d.TrangThai == "Đang mở đăng ký"
+                && d.NgayBatDauDangKy.Date <= today && d.HanDangKy.Date >= today);
+        }
+
         public IQueryable<DotHienMau> ApplyFilterTrangThai(IQueryable<DotHienMau> query, string? status)
         {
             if (string.IsNullOrWhiteSpace(status) || status == "all")
@@ -148,7 +159,7 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Repositories
         /// </summary>
         public IQueryable<DotHienMau> ApplyFilterCanNang(IQueryable<DotHienMau> query, double? canNang)
         {
-            if (!canNang.HasValue || canNang.Value <= 0)
+            if (!canNang.HasValue || canNang.Value < 0)
                 return query;
 
             return query.Where(d => d.CanNangToiThieu <= canNang.Value);
@@ -166,6 +177,7 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Repositories
             {
                 "conhan"  => query.Where(d => d.HanDangKy >= today),
                 "hethan"  => query.Where(d => d.HanDangKy < today),
+                "7ngay" => query.Where(d => d.HanDangKy >= today && d.HanDangKy < today.AddDays(8)),
                 _         => query
             };
         }
@@ -179,13 +191,13 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Repositories
         {
             return sort switch
             {
-                "name_asc"      => query.OrderBy(d => d.TenDot),
-                "name_desc"     => query.OrderByDescending(d => d.TenDot),
-                "deadline_asc"  => query.OrderBy(d => d.HanDangKy),
-                "deadline_desc" => query.OrderByDescending(d => d.HanDangKy),
-                "quota_asc"     => query.OrderBy(d => d.ChiTieuDonViMau),
-                "quota_desc"    => query.OrderByDescending(d => d.ChiTieuDonViMau),
-                _               => query.OrderByDescending(d => d.NgayBatDauDangKy)
+                "name_asc"      => query.OrderBy(d => d.TenDot).ThenBy(d => d.MaDot),
+                "name_desc"     => query.OrderByDescending(d => d.TenDot).ThenBy(d => d.MaDot),
+                "deadline_asc"  => query.OrderBy(d => d.HanDangKy).ThenBy(d => d.MaDot),
+                "deadline_desc" => query.OrderByDescending(d => d.HanDangKy).ThenBy(d => d.MaDot),
+                "quota_asc"     => query.OrderBy(d => d.ChiTieuDonViMau).ThenBy(d => d.MaDot),
+                "quota_desc"    => query.OrderByDescending(d => d.ChiTieuDonViMau).ThenBy(d => d.MaDot),
+                _               => query.OrderByDescending(d => d.NgayBatDauDangKy).ThenBy(d => d.MaDot)
             };
         }
 

@@ -53,6 +53,9 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Repositories
         /// <summary>Lọc theo trạng thái</summary>
         IQueryable<DotHienMau> ApplyFilterTrangThai(IQueryable<DotHienMau> query, string? status);
 
+        /// <summary>Chỉ lấy đợt đang mở và nằm trong khoảng ngày nhận đăng ký.</summary>
+        IQueryable<DotHienMau> ApplyFilterDangNhanDangKy(IQueryable<DotHienMau> query);
+
         /// <summary>Lọc theo cân nặng tối thiểu</summary>
         IQueryable<DotHienMau> ApplyFilterCanNang(IQueryable<DotHienMau> query, double? canNang);
 

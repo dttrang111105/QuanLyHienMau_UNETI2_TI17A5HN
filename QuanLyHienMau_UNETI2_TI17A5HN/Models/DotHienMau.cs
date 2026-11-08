@@ -8,8 +8,10 @@ using System.ComponentModel.DataAnnotations.Schema;
 namespace QuanLyHienMau_UNETI2_TI17A5HN.Models
 {
     [Table("DotHienMau")]
-    public class DotHienMau
+    public class DotHienMau : IValidatableObject
     {
+        public static readonly string[] NhomMauOptions = { "A", "B", "AB", "O", "A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-" };
+
         [Key]
         public int MaDot { get; set; }
 
@@ -17,7 +19,7 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Models
         [StringLength(200, ErrorMessage = "Tên đợt hiến máu tối đa 200 ký tự")]
         public string TenDot { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Mã đơn vị tổ chức không được để trống")]
+        [Range(1, int.MaxValue, ErrorMessage = "Vui lòng chọn đơn vị tổ chức hợp lệ")]
         public int MaDonViToChuc { get; set; }
 
         [Range(1, 10000, ErrorMessage = "Chỉ tiêu đơn vị máu phải lớn hơn 0")]
@@ -44,6 +46,25 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Models
         [Required]
         [StringLength(50)]
         public string TrangThai { get; set; } = "Chưa mở"; // Chưa mở, Đang mở đăng ký, Tạm dừng, Đã đóng
+
+        [NotMapped]
+        public bool CoTheDangKy => TrangThai == "Đang mở đăng ký"
+            && NgayBatDauDangKy.Date <= DateTime.Today && HanDangKy.Date >= DateTime.Today;
+
+        [NotMapped]
+        public string ThoiHanHienThi => DateTime.Today < NgayBatDauDangKy.Date
+            ? "Chưa đến ngày đăng ký" : DateTime.Today > HanDangKy.Date
+                ? "Hết hạn đăng ký" : "Còn hạn đăng ký";
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            if (NgayBatDauDangKy == default)
+                yield return new ValidationResult("Vui lòng nhập ngày bắt đầu đăng ký.", new[] { nameof(NgayBatDauDangKy) });
+            if (HanDangKy == default || HanDangKy < NgayBatDauDangKy)
+                yield return new ValidationResult("Hạn đăng ký phải sau hoặc bằng ngày bắt đầu đăng ký.", new[] { nameof(HanDangKy) });
+            if (!new[] { "Chưa mở", "Đang mở đăng ký", "Tạm dừng", "Đã đóng" }.Contains(TrangThai))
+                yield return new ValidationResult("Trạng thái đợt hiến máu không hợp lệ.", new[] { nameof(TrangThai) });
+        }
 
         // Navigation Properties
         [ForeignKey("MaDonViToChuc")]

@@ -31,7 +31,27 @@
                    ?? Enumerable.Empty<QuanLyHienMau_UNETI2_TI17A5HN.Models.DonViToChuc>();
 }
 
-<div class="p-space-lg space-y-space-lg max-w-[1600px] mx-auto w-full">
+<style>
+    #module2-admin td { vertical-align: middle; }
+    #module2-admin td:nth-child(7) > span { white-space: nowrap; }
+    #module2-admin table { min-width: 900px; }
+    @@media (max-width: 1023px) {
+        body:has(#module2-admin) > aside { display: none; }
+        body:has(#module2-admin) > div.pl-72 { padding-left: 0; }
+        body:has(#module2-admin) header { left: 0; }
+        #module2-admin { padding: 16px; }
+        #module2-admin form > select { min-width: 0; width: 100%; }
+    }
+    @@media (max-width: 639px) {
+        body:has(#module2-admin) header > div:first-child { display: none; }
+        body:has(#module2-admin) header { justify-content: flex-end; }
+    }
+</style>
+<div id="module2-admin" class="p-space-lg space-y-space-lg max-w-[1600px] mx-auto w-full">
+    <nav class="flex flex-wrap gap-4 lg:hidden text-primary text-sm" aria-label="Điều hướng quản lý đợt">
+        <a asp-controller="Admin" asp-action="Dashboard">Bảng điều hành</a>
+        <a asp-controller="DotHienMau" asp-action="Index">Trang cộng đồng</a>
+    </nav>
 
     @* ── Thông báo ── *@
     @if (TempData["SuccessMessage"] != null)
@@ -131,7 +151,7 @@
             <div class="pt-4 flex items-center justify-between">
                 <div class="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 font-label-sm text-label-sm font-semibold">
                     <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                    <span>Đang nhận phiếu đăng ký</span>
+                    <span>@ViewBag.DangNhanCount đợt đang trong thời hạn nhận phiếu</span>
                 </div>
             </div>
         </div>
@@ -183,7 +203,7 @@
                     <h2 class="font-headline-sm text-headline-sm text-on-surface">Danh Sách Đợt Hiến Máu</h2>
                     <span class="px-2.5 py-0.5 rounded-full bg-primary/10 text-primary font-label-sm text-label-sm font-bold">@totalItems Đợt</span>
                 </div>
-                <p class="font-body-sm text-body-sm text-on-surface-variant">Dữ liệu được phân trang (Skip/Take), lọc và sắp xếp trực tiếp trên EF Core IQueryable</p>
+                <p class="font-body-sm text-body-sm text-on-surface-variant">Kết hợp bộ lọc để tìm đợt hiến máu phù hợp.</p>
             </div>
         </div>
 
@@ -195,7 +215,7 @@
                 <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">search</span>
                 <input name="search" value="@searchVal"
                        class="w-full h-10 pl-10 pr-4 bg-surface-container-lowest rounded-xl font-body-sm text-body-sm text-on-surface placeholder:text-on-surface-variant/70 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all shadow-xs"
-                       placeholder="Tìm tên đợt, mô tả..."
+                       placeholder="Tìm tên đợt hoặc đơn vị tổ chức..."
                        type="text" />
             </div>
             @* Trạng thái *@
@@ -217,7 +237,7 @@
             @* Nhóm máu *@
             <select name="nhomMau" class="h-10 px-3 bg-surface-container-lowest rounded-xl font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-xs">
                 <option value="">-- Tất cả nhóm máu --</option>
-                @foreach (var nm in new[] { "A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-" })
+                @foreach (var nm in QuanLyHienMau_UNETI2_TI17A5HN.Models.DotHienMau.NhomMauOptions)
                 {
                     <option value="@nm" selected="@(nhomMauVal == nm)">@nm</option>
                 }
@@ -225,15 +245,15 @@
             @* Cân nặng tối thiểu *@
             <select name="canNang" class="h-10 px-3 bg-surface-container-lowest rounded-xl font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-xs">
                 <option value="">-- Cân nặng tối thiểu --</option>
-                <option value="45" selected="@(canNangVal == 45)">≥ 45 kg</option>
-                <option value="50" selected="@(canNangVal == 50)">≥ 50 kg</option>
-                <option value="55" selected="@(canNangVal == 55)">≥ 55 kg</option>
+                <option value="45" selected="@(canNangVal == 45)">Yêu cầu ≤ 45 kg</option>
+                <option value="50" selected="@(canNangVal == 50)">Yêu cầu ≤ 50 kg</option>
+                <option value="55" selected="@(canNangVal == 55)">Yêu cầu ≤ 55 kg</option>
             </select>
             @* Thời hạn *@
             <select name="thoiHan" class="h-10 px-3 bg-surface-container-lowest rounded-xl font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20 shadow-xs">
                 <option value="">-- Thời hạn đăng ký --</option>
                 <option value="conhan"   selected="@(thoiHanVal == "conhan")">Còn hạn</option>
-                <option value="hethong" selected="@(thoiHanVal == "hethong")">Hết hạn</option>
+                <option value="hethan" selected="@(thoiHanVal == "hethan")">Hết hạn</option>
                 <option value="7ngay"   selected="@(thoiHanVal == "7ngay")">Sắp hết hạn (7 ngày)</option>
             </select>
             @* Sắp xếp *@
@@ -340,7 +360,8 @@
                                     <div class="flex items-center justify-center gap-1 flex-wrap">
                                         @* Nút Sửa *@
                                         <button type="button"
-                                                onclick="openEditModal(@dot.MaDot, '@Html.Raw(Html.Encode(dot.TenDot))', @dot.MaDonViToChuc, @dot.ChiTieuDonViMau, '@Html.Raw(Html.Encode(dot.NhomMauUuTien ?? ""))', @dot.CanNangToiThieu, '@dot.NgayBatDauDangKy.ToString("yyyy-MM-dd")', '@dot.HanDangKy.ToString("yyyy-MM-dd")', '@Html.Raw(Html.Encode(dot.MoTaDot ?? ""))', '@Html.Raw(Html.Encode(dot.DieuKienNguoiHien ?? ""))')"
+                                                data-dot="@System.Text.Json.JsonSerializer.Serialize(new { dot.MaDot, dot.TenDot, dot.MaDonViToChuc, dot.ChiTieuDonViMau, dot.NhomMauUuTien, dot.CanNangToiThieu, NgayBatDauDangKy = dot.NgayBatDauDangKy.ToString("yyyy-MM-dd"), HanDangKy = dot.HanDangKy.ToString("yyyy-MM-dd"), dot.MoTaDot, dot.DieuKienNguoiHien })"
+                                                onclick="editDot(this)"
                                                 class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-blue-50 text-blue-700 hover:bg-blue-100 font-label-sm text-label-sm transition-colors">
                                             <span class="material-symbols-outlined text-[16px]">edit</span>
                                             Sửa
@@ -352,7 +373,7 @@
                                                 <span class="material-symbols-outlined text-[16px]">sync</span>
                                                 Trạng thái
                                             </button>
-                                            <div class="absolute right-0 top-full mt-1 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-lg z-10 hidden group-hover/status:block min-w-[170px] py-1">
+                                            <div class="absolute right-0 top-full mt-1 bg-surface-container-lowest border border-outline-variant rounded-xl shadow-lg z-10 hidden group-hover/status:block group-focus-within/status:block min-w-[170px] py-1">
                                                 @foreach (var ts in new (string val, string lbl, string icon)[] {
                                                     ("Chưa mở",          "Chưa mở",          "schedule"),
                                                     ("Đang mở đăng ký",  "Đang mở đăng ký",  "how_to_reg"),
@@ -376,13 +397,12 @@
                                                 }
                                             </div>
                                         </div>
-                                        @* Xóa — dùng JS confirm, không có C# trong attribute form *@
+                                        @* Xác nhận xóa bằng hộp thoại dùng chung của module 2 *@
                                         <form method="post" asp-controller="Admin" asp-action="AdminDeleteDot"
-                                              id="deleteForm_@dot.MaDot">
+                                              id="deleteForm_@dot.MaDot" data-module2-delete data-name="@dot.TenDot">
                                             @Html.AntiForgeryToken()
                                             <input type="hidden" name="id" value="@dot.MaDot" />
-                                            <button type="button"
-                                                    onclick="confirmDelete(@dot.MaDot, '@tenDotEncoded')"
+                                            <button type="submit"
                                                     class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-red-50 text-red-700 hover:bg-red-100 font-label-sm text-label-sm transition-colors">
                                                 <span class="material-symbols-outlined text-[16px]">delete</span>
                                                 Xóa
@@ -618,7 +638,7 @@
                     Hủy
                 </button>
                 <button type="submit"
-                        class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 text-white font-label-md text-label-md shadow hover:bg-blue-700 transition-all">
+                        class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-on-primary font-label-md text-label-md shadow hover:bg-primary-container transition-all">
                     <span class="material-symbols-outlined text-[18px]">save</span>
                     Lưu thay đổi
                 </button>
@@ -629,6 +649,20 @@
 
 @section Scripts {
     <script>
+        function editDot(button) {
+            const d = JSON.parse(button.dataset.dot);
+            openEditModal(d.MaDot, d.TenDot, d.MaDonViToChuc, d.ChiTieuDonViMau, d.NhomMauUuTien || '', d.CanNangToiThieu, d.NgayBatDauDangKy, d.HanDangKy, d.MoTaDot || '', d.DieuKienNguoiHien || '');
+        }
+        document.querySelectorAll('#createModal form, #editModal form').forEach(form => {
+            const start = form.querySelector('[name="NgayBatDauDangKy"]');
+            const end = form.querySelector('[name="HanDangKy"]');
+            form.addEventListener('submit', event => {
+                end.setCustomValidity(end.value < start.value ? 'Hạn đăng ký phải sau hoặc bằng ngày bắt đầu.' : '');
+                if (!form.reportValidity()) event.preventDefault();
+            });
+            end.addEventListener('input', () => end.setCustomValidity(''));
+            start.addEventListener('input', () => end.setCustomValidity(''));
+        });
         // ── Create Modal ──
         function openCreateModal() {
             const m = document.getElementById('createModal');
@@ -666,11 +700,7 @@
         }
 
         // ── Xác nhận xóa ──
-        function confirmDelete(id, tenDot) {
-            if (confirm('Bạn có chắc muốn xóa đợt "' + tenDot + '"?')) {
-                document.getElementById('deleteForm_' + id).submit();
-            }
-        }
+
 
         // Đóng modal khi click bên ngoài
         ['createModal', 'editModal'].forEach(function(id) {
@@ -683,3 +713,5 @@
         });
     </script>
 }
+
+<partial name="~/Views/DotHienMau/_DeleteConfirmation.cshtml" />
