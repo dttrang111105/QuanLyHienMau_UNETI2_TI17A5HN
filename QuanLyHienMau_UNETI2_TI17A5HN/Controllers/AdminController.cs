@@ -16,7 +16,7 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
 
         public IActionResult LichKhamSangLoc()
         {
-            return View();
+            return RedirectToAction("Index", "LichKhamSangLoc");
         }
 
         public IActionResult HoSoBenhSu()
@@ -26,7 +26,7 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
 
         public IActionResult KetQuaXetNghiem()
         {
-            return View();
+            return RedirectToAction("Index", "KetQuaHienMau");
         }
 
         public IActionResult KhoLuuTruMau()
@@ -56,7 +56,7 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
 
         public IActionResult BaoCao()
         {
-            return View();
+            return RedirectToAction("Index", "ThongKe");
         }
 
         public IActionResult NhanSu()
