@@ -1,8 +1,7 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.EntityFrameworkCore;
-using QuanLyHienMau_UNETI2_TI17A5HN.Data;
+using QuanLyHienMau_UNETI2_TI17A5HN.Repositories;
 using QuanLyHienMau_UNETI2_TI17A5HN.Models;
 
 namespace QuanLyHienMau_UNETI2_TI17A5HN.Filters;
@@ -32,9 +31,8 @@ public sealed class KiemTraQuyenAttribute : Attribute, IAsyncAuthorizationFilter
         var taiKhoan = http.Items[typeof(TaiKhoan)] as TaiKhoan;
         if (taiKhoan is null)
         {
-            var db = http.RequestServices.GetRequiredService<ApplicationDbContext>();
-            taiKhoan = await db.Set<TaiKhoan>().AsNoTracking()
-                .SingleOrDefaultAsync(x => x.MaTaiKhoan == maTaiKhoan.Value);
+            var repository = http.RequestServices.GetRequiredService<TaiKhoanRepository>();
+            taiKhoan = await repository.TimTheoMaAsync(maTaiKhoan.Value);
         }
 
         var vaiTro = TrangThaiHienMau.VaiTro.ChuanHoa(taiKhoan?.VaiTro);

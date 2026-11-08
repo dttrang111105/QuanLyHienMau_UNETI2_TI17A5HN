@@ -1,7 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
-using QuanLyHienMau_UNETI2_TI17A5HN.Data;
+using QuanLyHienMau_UNETI2_TI17A5HN.Repositories;
 using QuanLyHienMau_UNETI2_TI17A5HN.Filters;
 using QuanLyHienMau_UNETI2_TI17A5HN.Models;
 using QuanLyHienMau_UNETI2_TI17A5HN.Services;
@@ -10,24 +8,23 @@ using QuanLyHienMau_UNETI2_TI17A5HN.ViewModels;
 namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers;
 
 [KiemTraQuyen]
-public class LichKhamSangLocController(ApplicationDbContext db, KhamSangLocService service, DongHoHeThong clock) : Controller
+public class LichKhamSangLocController(LichKhamSangLocRepository repository, KhamSangLocService service, DongHoHeThong clock) : Controller
 {
-    private const int PageSize = 10;
     private TaiKhoan TaiKhoan => (TaiKhoan)HttpContext.Items[typeof(TaiKhoan)]!;
     private bool LaNhanVien => TrangThaiHienMau.VaiTro.LaNhanVien(TaiKhoan.VaiTro);
 
     [HttpGet, KiemTraQuyen(ChiNhanVien = true)]
     public async Task<IActionResult> Index(string? search, string? trangThai, int? maDot, DateTime? ngay, int page = 1) =>
-        View("Index", await DanhSachAsync(search, trangThai, maDot, ngay, page, false));
+        View("Index", await repository.DanhSachAsync(search, trangThai, maDot, ngay, page));
 
     [HttpGet]
     public async Task<IActionResult> CuaToi(string? search, string? trangThai, int? maDot, DateTime? ngay, int page = 1) =>
-        View("Index", await DanhSachAsync(search, trangThai, maDot, ngay, page, true));
+        View("Index", await repository.DanhSachAsync(search, trangThai, maDot, ngay, page, TaiKhoan.MaTaiKhoan));
 
     [HttpGet]
     public async Task<IActionResult> Details(int id)
     {
-        var lich = await GioiHanQuyen(DuLieuDayDu()).SingleOrDefaultAsync(x => x.MaLichKhamSangLoc == id);
+        var lich = await repository.ChiTietAsync(id, LaNhanVien ? null : TaiKhoan.MaTaiKhoan);
         if (lich is null) return NotFound();
         ViewData["LaNhanVien"] = LaNhanVien;
         return View(lich);
@@ -43,7 +40,7 @@ public class LichKhamSangLocController(ApplicationDbContext db, KhamSangLocServi
             ThoiGianBatDau = new DateTime(batDau.Year, batDau.Month, batDau.Day, batDau.Hour, batDau.Minute, 0),
             ThoiGianKetThuc = new DateTime(batDau.Year, batDau.Month, batDau.Day, batDau.Hour, batDau.Minute, 0).AddMinutes(30)
         };
-        await NapLuaChonAsync(model);
+        await repository.NapLuaChonAsync(model);
         return View("Form", model);
     }
 
@@ -61,15 +58,14 @@ public class LichKhamSangLocController(ApplicationDbContext db, KhamSangLocServi
             }
             ModelState.AddModelError("", result.Message);
         }
-        await NapLuaChonAsync(model);
+        await repository.NapLuaChonAsync(model);
         return View("Form", model);
     }
 
     [HttpGet, KiemTraQuyen(ChiNhanVien = true)]
     public async Task<IActionResult> Edit(int id)
     {
-        var lich = await db.Set<LichKhamSangLoc>().AsNoTracking().Include(x => x.PhieuDangKyHienMau)
-            .SingleOrDefaultAsync(x => x.MaLichKhamSangLoc == id);
+        var lich = await repository.LichDeSuaAsync(id);
         if (lich is null) return NotFound();
         if (lich.TrangThai != TrangThaiHienMau.LichKham.DaLenLich ||
             lich.PhieuDangKyHienMau?.TrangThai != TrangThaiHienMau.Phieu.ChoKhamSangLoc)
@@ -85,7 +81,7 @@ public class LichKhamSangLocController(ApplicationDbContext db, KhamSangLocServi
             DiaDiemHoacLienKet = lich.DiaDiemHoacLienKet ?? "",
             BacSiSangLoc = lich.BacSiSangLoc ?? "", GhiChu = lich.GhiChu
         };
-        await NapLuaChonAsync(model);
+        await repository.NapLuaChonAsync(model);
         return View("Form", model);
     }
 
@@ -103,7 +99,7 @@ public class LichKhamSangLocController(ApplicationDbContext db, KhamSangLocServi
             }
             ModelState.AddModelError("", result.Message);
         }
-        await NapLuaChonAsync(model);
+        await repository.NapLuaChonAsync(model);
         return View("Form", model);
     }
 
@@ -121,75 +117,5 @@ public class LichKhamSangLocController(ApplicationDbContext db, KhamSangLocServi
         var result = await service.HoanThanhLichAsync(id);
         TempData[result.Success ? "ThongBaoThanhCong" : "ThongBaoLoi"] = result.Message;
         return RedirectToAction(nameof(Details), new { id });
-    }
-
-    private IQueryable<LichKhamSangLoc> DuLieuDayDu() => db.Set<LichKhamSangLoc>().AsNoTracking()
-        .Include(x => x.PhieuDangKyHienMau!).ThenInclude(x => x!.NguoiHienMau)
-        .Include(x => x.PhieuDangKyHienMau!).ThenInclude(x => x.DotHienMau!).ThenInclude(x => x.DonViToChuc)
-        .Include(x => x.PhieuDangKyHienMau!).ThenInclude(x => x!.KetQuaHienMau);
-
-    private IQueryable<LichKhamSangLoc> GioiHanQuyen(IQueryable<LichKhamSangLoc> query) => LaNhanVien
-        ? query : query.Where(x => x.PhieuDangKyHienMau != null && x.PhieuDangKyHienMau!.NguoiHienMau != null && x.PhieuDangKyHienMau!.NguoiHienMau.MaTaiKhoan == TaiKhoan.MaTaiKhoan);
-
-    private async Task<LichKhamListViewModel> DanhSachAsync(string? search, string? trangThai,
-        int? maDot, DateTime? ngay, int page, bool chiCuaToi)
-    {
-        var query = DuLieuDayDu();
-        if (chiCuaToi)
-            query = query.Where(x => x.PhieuDangKyHienMau != null && x.PhieuDangKyHienMau!.NguoiHienMau != null && x.PhieuDangKyHienMau!.NguoiHienMau.MaTaiKhoan == TaiKhoan.MaTaiKhoan);
-        var now = clock.Now;
-        var homNay = now.Date;
-        var ngayMai = homNay.AddDays(1);
-        var model = new LichKhamListViewModel
-        {
-            Search = search?.Trim(), TrangThai = trangThai, MaDot = maDot, Ngay = ngay, ChiCuaToi = chiCuaToi,
-            SoLichHomNay = await query.CountAsync(x => x.TrangThai != TrangThaiHienMau.LichKham.DaHuy &&
-                x.ThoiGianBatDau >= homNay && x.ThoiGianBatDau < ngayMai),
-            SoLichSapToi = await query.CountAsync(x => x.TrangThai == TrangThaiHienMau.LichKham.DaLenLich && x.ThoiGianBatDau >= now),
-            SoLichHoanThanh = await query.CountAsync(x => x.TrangThai == TrangThaiHienMau.LichKham.DaHoanThanh)
-        };
-        if (!string.IsNullOrWhiteSpace(model.Search))
-        {
-            var tuKhoa = model.Search;
-            var coMa = int.TryParse(tuKhoa.TrimStart('#'), out var ma);
-            query = query.Where(x => (x.PhieuDangKyHienMau != null && x.PhieuDangKyHienMau!.NguoiHienMau != null && x.PhieuDangKyHienMau!.NguoiHienMau.HoTen.Contains(tuKhoa)) ||
-                (x.PhieuDangKyHienMau != null && x.PhieuDangKyHienMau!.DotHienMau != null && x.PhieuDangKyHienMau!.DotHienMau.TenDot.Contains(tuKhoa)) ||
-                (x.BacSiSangLoc != null && x.BacSiSangLoc.Contains(tuKhoa)) ||
-                (coMa && (x.MaPhieu == ma || x.MaLichKhamSangLoc == ma)));
-        }
-        if (!string.IsNullOrWhiteSpace(trangThai)) query = query.Where(x => x.TrangThai == trangThai);
-        if (maDot.HasValue) query = query.Where(x => x.PhieuDangKyHienMau != null && x.PhieuDangKyHienMau!.MaDot == maDot);
-        if (ngay.HasValue)
-        {
-            var tuNgay = ngay.Value.Date;
-            var denNgay = tuNgay.AddDays(1);
-            query = query.Where(x => x.ThoiGianBatDau >= tuNgay && x.ThoiGianBatDau < denNgay);
-        }
-        model.TotalCount = await query.CountAsync();
-        model.TotalPages = (int)Math.Ceiling(model.TotalCount / (double)PageSize);
-        model.Page = Math.Clamp(page, 1, Math.Max(1, model.TotalPages));
-        model.Items = await query.OrderByDescending(x => x.ThoiGianBatDau).ThenByDescending(x => x.MaLichKhamSangLoc)
-            .Skip((model.Page - 1) * PageSize).Take(PageSize).ToListAsync();
-        var dots = db.Set<DotHienMau>().AsNoTracking();
-        if (chiCuaToi) dots = dots.Where(x => x.PhieuDangKyHienMaus.Any(p => p.NguoiHienMau != null && p.NguoiHienMau.MaTaiKhoan == TaiKhoan.MaTaiKhoan));
-        model.DotOptions = await dots.OrderBy(x => x.TenDot)
-            .Select(x => new SelectListItem(x.TenDot, x.MaDot.ToString())).ToListAsync();
-        return model;
-    }
-
-    private async Task NapLuaChonAsync(LichKhamFormViewModel model)
-    {
-        var phieus = db.Set<PhieuDangKyHienMau>().AsNoTracking().Where(x => model.MaLichKhamSangLoc.HasValue
-            ? x.MaPhieu == model.MaPhieu
-            : x.TrangThai == TrangThaiHienMau.Phieu.DaXacNhan && x.NguoiHienMau != null && (x.NguoiHienMau.TrangThai!.ToString() == "True" || x.NguoiHienMau.TrangThai!.ToString() == TrangThaiHienMau.HoatDong) &&
-                x.KetQuaHienMau == null && !x.LichKhamSangLocs.Any(l => l.TrangThai != TrangThaiHienMau.LichKham.DaHuy));
-        var rows = await phieus.OrderBy(x => x.NguoiHienMau!.HoTen)
-            .Select(x => new { x.MaPhieu, x.NguoiHienMau!.HoTen, x.DotHienMau!.TenDot }).ToListAsync();
-        model.PhieuOptions = rows.Select(x => new SelectListItem($"#{x.MaPhieu} · {x.HoTen} · {x.TenDot}", x.MaPhieu.ToString())).ToList();
-        var bacSiDaCo = db.Set<LichKhamSangLoc>().AsNoTracking().Where(x => x.BacSiSangLoc != null).Select(x => x.BacSiSangLoc!);
-        var nhanVien = db.Set<TaiKhoan>().AsNoTracking().Where(x => (x.TrangThai!.ToString() == "True" || x.TrangThai!.ToString() == TrangThaiHienMau.HoatDong) &&
-            (x.VaiTro == TrangThaiHienMau.VaiTro.NhanVienYTe || x.VaiTro == "NhanVienYTe" || x.VaiTro == "NhanVien" || x.VaiTro == "Medical Staff"))
-            .Select(x => x.HoTen);
-        model.BacSiOptions = await bacSiDaCo.Union(nhanVien).OrderBy(x => x).ToListAsync();
     }
 }

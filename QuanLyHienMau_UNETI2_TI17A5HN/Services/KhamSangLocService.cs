@@ -1,26 +1,29 @@
 using System.ComponentModel.DataAnnotations;
-using System.Data;
 using System.Data.Common;
 using Microsoft.EntityFrameworkCore;
-using QuanLyHienMau_UNETI2_TI17A5HN.Data;
+using QuanLyHienMau_UNETI2_TI17A5HN.Repositories;
 using QuanLyHienMau_UNETI2_TI17A5HN.Models;
 using QuanLyHienMau_UNETI2_TI17A5HN.ViewModels;
 
 namespace QuanLyHienMau_UNETI2_TI17A5HN.Services;
 
-public sealed class KhamSangLocService(ApplicationDbContext db, DongHoHeThong clock, ILogger<KhamSangLocService> logger)
+public sealed class KhamSangLocService(
+    LichKhamSangLocRepository lichRepository,
+    KetQuaHienMauRepository ketQuaRepository,
+    DongHoHeThong clock,
+    ILogger<KhamSangLocService> logger)
 {
     public Task<KetQuaXuLy> KhoiPhucPhieuChoKhamAsync(int maPhieu) => ThucHienAsync(async () =>
     {
-        var phieu = await db.PhieuDangKyHienMaus.SingleOrDefaultAsync(p => p.MaPhieu == maPhieu);
+        var phieu = await lichRepository.TimPhieuDeGhiAsync(maPhieu);
         if (phieu?.TrangThai != TrangThaiHienMau.Phieu.ChoKhamSangLoc ||
-            await db.LichKhamSangLocs.AnyAsync(l => l.MaPhieu == maPhieu && l.TrangThai != TrangThaiHienMau.LichKham.DaHuy) ||
-            await db.KetQuaHienMaus.AnyAsync(k => k.MaPhieu == maPhieu))
+            await lichRepository.CoLichHieuLucAsync(maPhieu) ||
+            await ketQuaRepository.CoKetQuaAsync(maPhieu))
             return KetQuaXuLy.Fail("Phiếu đã có lịch hoặc kết quả và không thể lập thêm lịch.");
 
         // Phiếu được chuyển sang chờ khám từ luồng cũ mà chưa tạo lịch.
         phieu.TrangThai = TrangThaiHienMau.Phieu.DaXacNhan;
-        await db.SaveChangesAsync();
+        await lichRepository.LuuThayDoiAsync();
         return KetQuaXuLy.Ok("Phiếu đã sẵn sàng để lập lịch.", maPhieu);
     });
 
@@ -37,7 +40,7 @@ public sealed class KhamSangLocService(ApplicationDbContext db, DongHoHeThong cl
             LichKhamSangLoc? lich = null;
             if (id.HasValue)
             {
-                lich = await db.Set<LichKhamSangLoc>().SingleOrDefaultAsync(x => x.MaLichKhamSangLoc == id.Value);
+                lich = await lichRepository.TimLichDeGhiAsync(id.Value);
                 if (lich is null) return KetQuaXuLy.Fail("Lịch khám không tồn tại.");
                 if (lich.MaPhieu != model.MaPhieu)
                     return KetQuaXuLy.Fail("Không được đổi phiếu đăng ký của lịch khám.");
@@ -45,8 +48,7 @@ public sealed class KhamSangLocService(ApplicationDbContext db, DongHoHeThong cl
                     return KetQuaXuLy.Fail("Chỉ lịch đang lên lịch mới được thay đổi.");
             }
 
-            var phieu = await db.Set<PhieuDangKyHienMau>().Include(x => x.NguoiHienMau)
-                .Include(x => x.DotHienMau).SingleOrDefaultAsync(x => x.MaPhieu == model.MaPhieu);
+            var phieu = await lichRepository.TimPhieuLapLichAsync(model.MaPhieu);
             if (phieu is null) return KetQuaXuLy.Fail("Phiếu đăng ký không tồn tại.");
             var trangThaiCanCo = id.HasValue ? TrangThaiHienMau.Phieu.ChoKhamSangLoc : TrangThaiHienMau.Phieu.DaXacNhan;
             if (phieu.TrangThai != trangThaiCanCo)
@@ -55,26 +57,22 @@ public sealed class KhamSangLocService(ApplicationDbContext db, DongHoHeThong cl
                     : "Chỉ phiếu Đã xác nhận mới được lập lịch khám sàng lọc.");
             if (phieu.NguoiHienMau is null || !TrangThaiHienMau.DangHoatDong(phieu.NguoiHienMau.TrangThai))
                 return KetQuaXuLy.Fail("Người hiến máu hiện không hoạt động.");
-            if (await db.Set<KetQuaHienMau>().AnyAsync(x => x.MaPhieu == model.MaPhieu))
+            if (await ketQuaRepository.CoKetQuaAsync(model.MaPhieu))
                 return KetQuaXuLy.Fail("Phiếu đã có kết quả cuối cùng.");
 
-            var lichKhac = db.Set<LichKhamSangLoc>().Where(x =>
-                x.TrangThai != TrangThaiHienMau.LichKham.DaHuy && (!id.HasValue || x.MaLichKhamSangLoc != id.Value));
-            if (await lichKhac.AnyAsync(x => x.MaPhieu == model.MaPhieu))
+            if (await lichRepository.CoLichHieuLucAsync(model.MaPhieu, id))
                 return KetQuaXuLy.Fail("Phiếu đã có một lịch khám đang hiệu lực.");
 
-            var giaoNhau = lichKhac.Where(x => x.ThoiGianBatDau < ketThuc && batDau < x.ThoiGianKetThuc);
-            if (await giaoNhau.AnyAsync(x => x.PhieuDangKyHienMau != null && x.PhieuDangKyHienMau.MaNguoiHien == phieu.MaNguoiHien))
+            if (await lichRepository.CoLichTrungNguoiHienAsync(phieu.MaNguoiHien, batDau, ketThuc, id))
                 return KetQuaXuLy.Fail("Người hiến máu đã có lịch khám trùng khoảng thời gian này.");
             var bacSi = ChuanHoaTen(model.BacSiSangLoc);
-            var bacSiSoSanh = bacSi.ToUpperInvariant();
-            if (await giaoNhau.AnyAsync(x => x.BacSiSangLoc != null && x.BacSiSangLoc.ToUpper() == bacSiSoSanh))
+            if (await lichRepository.CoLichTrungBacSiAsync(bacSi, batDau, ketThuc, id))
                 return KetQuaXuLy.Fail("Bác sĩ sàng lọc đã có lịch trùng khoảng thời gian này.");
 
             if (lich is null)
             {
                 lich = new LichKhamSangLoc { MaPhieu = model.MaPhieu };
-                db.Set<LichKhamSangLoc>().Add(lich);
+                lichRepository.ThemLich(lich);
             }
             lich.ThoiGianBatDau = batDau;
             lich.ThoiGianKetThuc = ketThuc;
@@ -83,22 +81,20 @@ public sealed class KhamSangLocService(ApplicationDbContext db, DongHoHeThong cl
             lich.BacSiSangLoc = bacSi;
             lich.GhiChu = model.GhiChu?.Trim();
             phieu.TrangThai = TrangThaiHienMau.Phieu.ChoKhamSangLoc;
-            await db.SaveChangesAsync();
+            await lichRepository.LuuThayDoiAsync();
             return KetQuaXuLy.Ok(id.HasValue ? "Đã cập nhật lịch khám." : "Đã lập lịch khám sàng lọc.", lich.MaLichKhamSangLoc);
         });
 
     public Task<KetQuaXuLy> HuyLichAsync(int id, string? ghiChu = null) => ThucHienAsync(async () =>
     {
-        var lich = await db.Set<LichKhamSangLoc>().Include(x => x.PhieuDangKyHienMau)
-            .SingleOrDefaultAsync(x => x.MaLichKhamSangLoc == id);
+        var lich = await lichRepository.TimLichDeGhiAsync(id);
         if (lich is null) return KetQuaXuLy.Fail("Lịch khám không tồn tại.");
         if (lich.TrangThai != TrangThaiHienMau.LichKham.DaLenLich ||
             lich.PhieuDangKyHienMau?.TrangThai != TrangThaiHienMau.Phieu.ChoKhamSangLoc)
             return KetQuaXuLy.Fail("Chỉ lịch đang lên lịch của phiếu Chờ khám sàng lọc mới được hủy.");
-        if (await db.Set<KetQuaHienMau>().AnyAsync(x => x.MaPhieu == lich.MaPhieu))
+        if (await ketQuaRepository.CoKetQuaAsync(lich.MaPhieu))
             return KetQuaXuLy.Fail("Phiếu đã có kết quả cuối cùng, không được hủy lịch.");
-        if (await db.Set<LichKhamSangLoc>().AnyAsync(x => x.MaPhieu == lich.MaPhieu &&
-            x.MaLichKhamSangLoc != id && x.TrangThai != TrangThaiHienMau.LichKham.DaHuy))
+        if (await lichRepository.CoLichHieuLucAsync(lich.MaPhieu, id))
             return KetQuaXuLy.Fail("Phiếu có lịch hiệu lực khác; vui lòng kiểm tra lại trước khi hủy.");
         if (!string.IsNullOrWhiteSpace(ghiChu))
         {
@@ -109,25 +105,24 @@ public sealed class KhamSangLocService(ApplicationDbContext db, DongHoHeThong cl
         }
         lich.TrangThai = TrangThaiHienMau.LichKham.DaHuy;
         lich.PhieuDangKyHienMau.TrangThai = TrangThaiHienMau.Phieu.DaXacNhan;
-        await db.SaveChangesAsync();
+        await lichRepository.LuuThayDoiAsync();
         return KetQuaXuLy.Ok("Đã hủy lịch khám. Phiếu trở về Đã xác nhận để có thể lập lịch mới.", id);
     });
 
     public Task<KetQuaXuLy> HoanThanhLichAsync(int id) => ThucHienAsync(async () =>
     {
-        var lich = await db.Set<LichKhamSangLoc>().Include(x => x.PhieuDangKyHienMau)
-            .SingleOrDefaultAsync(x => x.MaLichKhamSangLoc == id);
+        var lich = await lichRepository.TimLichDeGhiAsync(id);
         if (lich is null) return KetQuaXuLy.Fail("Lịch khám không tồn tại.");
         if (lich.TrangThai != TrangThaiHienMau.LichKham.DaLenLich ||
             lich.PhieuDangKyHienMau?.TrangThai != TrangThaiHienMau.Phieu.ChoKhamSangLoc)
             return KetQuaXuLy.Fail("Lịch đã hủy, đã hoàn thành hoặc phiếu không còn chờ khám.");
         if (lich.ThoiGianBatDau > clock.Now)
             return KetQuaXuLy.Fail("Chưa đến thời gian khám, không thể đánh dấu hoàn thành.");
-        if (await db.Set<KetQuaHienMau>().AnyAsync(x => x.MaPhieu == lich.MaPhieu))
+        if (await ketQuaRepository.CoKetQuaAsync(lich.MaPhieu))
             return KetQuaXuLy.Fail("Phiếu đã có kết quả cuối cùng.");
         lich.TrangThai = TrangThaiHienMau.LichKham.DaHoanThanh;
         lich.PhieuDangKyHienMau.TrangThai = TrangThaiHienMau.Phieu.DaKhamSangLoc;
-        await db.SaveChangesAsync();
+        await lichRepository.LuuThayDoiAsync();
         return KetQuaXuLy.Ok("Đã hoàn thành khám sàng lọc. Phiếu có thể được ghi nhận kết quả.", id);
     });
 
@@ -135,10 +130,9 @@ public sealed class KhamSangLocService(ApplicationDbContext db, DongHoHeThong cl
     {
         var error = KiemTraForm(model);
         if (error is not null) return KetQuaXuLy.Fail(error);
-        var phieu = await db.Set<PhieuDangKyHienMau>().Include(x => x.DotHienMau)
-            .SingleOrDefaultAsync(x => x.MaPhieu == model.MaPhieu);
+        var phieu = await ketQuaRepository.TimPhieuGhiKetQuaAsync(model.MaPhieu);
         if (phieu is null) return KetQuaXuLy.Fail("Phiếu đăng ký không tồn tại.");
-        var ketQua = await db.Set<KetQuaHienMau>().SingleOrDefaultAsync(x => x.MaPhieu == model.MaPhieu);
+        var ketQua = await ketQuaRepository.TimKetQuaCuaPhieuAsync(model.MaPhieu);
         if (!maKetQua.HasValue)
         {
             if (phieu.TrangThai != TrangThaiHienMau.Phieu.DaKhamSangLoc)
@@ -153,14 +147,13 @@ public sealed class KhamSangLocService(ApplicationDbContext db, DongHoHeThong cl
             return KetQuaXuLy.Fail("Kết quả và trạng thái phiếu không còn hợp lệ để cập nhật.");
         }
 
-        if (!await db.Set<LichKhamSangLoc>().AnyAsync(x => x.MaPhieu == model.MaPhieu &&
-            x.TrangThai == TrangThaiHienMau.LichKham.DaHoanThanh))
+        if (!await lichRepository.CoLichHoanThanhAsync(model.MaPhieu))
             return KetQuaXuLy.Fail("Phiếu chưa có lịch khám đã hoàn thành.");
 
         if (ketQua is null)
         {
             ketQua = new KetQuaHienMau { MaPhieu = model.MaPhieu };
-            db.Set<KetQuaHienMau>().Add(ketQua);
+            ketQuaRepository.ThemKetQua(ketQua);
         }
 
         ketQua.DiemDanhGia = (double?)model.DiemDanhGia;
@@ -168,9 +161,8 @@ public sealed class KhamSangLocService(ApplicationDbContext db, DongHoHeThong cl
         ketQua.KetQua = model.KetQua;
         ketQua.NgayCapNhat = clock.Now;
         phieu.TrangThai = model.KetQua;
-        await db.SaveChangesAsync();
-        var soThanhCong = await db.Set<PhieuDangKyHienMau>().CountAsync(x =>
-            x.MaDot == phieu.MaDot && x.TrangThai == TrangThaiHienMau.Phieu.HienMauThanhCong);
+        await lichRepository.LuuThayDoiAsync();
+        var soThanhCong = await ketQuaRepository.DemPhieuThanhCongAsync(phieu.MaDot);
         var canhBao = phieu.DotHienMau is not null && phieu.DotHienMau.ChiTieuDonViMau > 0 && soThanhCong >= phieu.DotHienMau.ChiTieuDonViMau
             ? $" Đợt {phieu.DotHienMau.TenDot} đã đạt chỉ tiêu ({soThanhCong}/{phieu.DotHienMau.ChiTieuDonViMau})."
             : "";
@@ -182,7 +174,7 @@ public sealed class KhamSangLocService(ApplicationDbContext db, DongHoHeThong cl
     {
         try
         {
-            await using var transaction = await db.Database.BeginTransactionAsync(IsolationLevel.Serializable);
+            await using var transaction = await lichRepository.BatDauGiaoDichAsync();
             var result = await action();
             if (result.Success) await transaction.CommitAsync();
             return result;
