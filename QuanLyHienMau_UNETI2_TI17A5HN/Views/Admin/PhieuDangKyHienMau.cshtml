@@ -4,6 +4,7 @@
     ViewData["Title"] = "Quản Lý & Duyệt Phiếu Đăng Ký Hiến Máu";
 
     var donViToChucs = ViewBag.DonViToChucs as List<QuanLyHienMau_UNETI2_TI17A5HN.Models.DonViToChuc> ?? new List<QuanLyHienMau_UNETI2_TI17A5HN.Models.DonViToChuc>();
+    var dotDatChiTieu = ViewBag.DotDatChiTieu as List<QuanLyHienMau_UNETI2_TI17A5HN.Models.DotQuotaAlert> ?? new List<QuanLyHienMau_UNETI2_TI17A5HN.Models.DotQuotaAlert>();
     var currentTenNguoiHien = ViewBag.CurrentTenNguoiHien as string;
     var currentTenDot = ViewBag.CurrentTenDot as string;
     var currentTrangThai = ViewBag.CurrentTrangThai as string;
@@ -148,6 +149,25 @@
             <div class="p-space-md rounded-2xl bg-error-container/60 border border-error text-on-error-container flex items-center gap-3 shadow-sm">
                 <span class="material-symbols-outlined text-error text-[24px]">error</span>
                 <div class="flex-1 font-body-md text-body-md font-medium">@TempData["ErrorMessage"]</div>
+            </div>
+        }
+
+        @if (dotDatChiTieu.Count > 0)
+        {
+            <div class="rounded-2xl border border-amber-300 bg-amber-50 p-4 text-amber-950 shadow-sm">
+                <div class="flex items-start gap-3">
+                    <span class="material-symbols-outlined text-amber-600">campaign</span>
+                    <div>
+                        <p class="font-bold">Cảnh báo chỉ tiêu đợt hiến máu</p>
+                        <p class="mt-1 text-sm">Các đợt sau đã đạt hoặc vượt chỉ tiêu; nhân viên y tế có thể xem xét đóng đợt. Phiếu hiện có vẫn được giữ nguyên.</p>
+                        <ul class="mt-2 flex flex-wrap gap-2">
+                            @foreach (var dot in dotDatChiTieu)
+                            {
+                                <li class="rounded-lg bg-white/80 px-3 py-1 text-sm font-semibold">@dot.TenDot <span class="text-amber-700">@dot.DaHien/@dot.ChiTieu</span></li>
+                            }
+                        </ul>
+                    </div>
+                </div>
             </div>
         }
 

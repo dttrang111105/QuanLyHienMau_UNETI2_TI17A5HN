@@ -123,6 +123,17 @@
                         <span>Xem Chi Tiết Kết Quả</span>
                     </a>
                 }
+                @if (Model.TrangThai != "Đã hủy" && Model.TrangThai != "Từ chối" && Model.TrangThai != "Hiến máu thành công" && Model.TrangThai != "Không đủ điều kiện hiến" && Model.KetQuaHienMau == null)
+                {
+                    <form method="post" asp-controller="Admin" asp-action="HuyPhieu" onsubmit="return confirm('Xác nhận hủy phiếu này? Các lịch khám chưa hoàn thành sẽ được hủy.');" class="inline">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@Model.MaPhieu" />
+                        <button type="submit" class="flex items-center gap-1.5 px-4 py-2 rounded-xl border border-error/30 bg-white text-error hover:bg-error-container/40 font-label-md text-label-md font-bold transition-all">
+                            <span class="material-symbols-outlined text-[18px]">block</span>
+                            <span>Hủy phiếu</span>
+                        </button>
+                    </form>
+                }
             </div>
         </div>
     </div>

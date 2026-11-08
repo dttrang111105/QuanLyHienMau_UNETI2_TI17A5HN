@@ -132,6 +132,20 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
             ViewBag.TotalPages = result.TotalPages;
             ViewBag.TotalItems = result.TotalItems;
             ViewBag.DonViToChucs = result.DonViToChucs;
+            ViewBag.DotDatChiTieu = (await _context.DotHienMaus.AsNoTracking()
+                .Where(d => d.ChiTieuDonViMau > 0)
+                .Select(d => new
+                {
+                    d.MaDot,
+                    d.TenDot,
+                    ChiTieu = d.ChiTieuDonViMau,
+                    DaHien = d.PhieuDangKyHienMaus.Count(p => p.TrangThai == "Hiến máu thành công")
+                })
+                .Where(d => d.DaHien >= d.ChiTieu)
+                .OrderBy(d => d.TenDot)
+                .ToListAsync())
+                .Select(d => new DotQuotaAlert(d.MaDot, d.TenDot, d.ChiTieu, d.DaHien))
+                .ToList();
             return View(result.Items);
         }
 
@@ -225,6 +239,42 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
                 phieu.GhiChuXacNhan = lyDoTuChoi.Trim();
                 await _phieuRepository.SaveChangesAsync();
                 TempData["SuccessMessage"] = $"Đã từ chối phiếu #DKHM-{phieu.MaPhieu:D5}. Lý do: {lyDoTuChoi.Trim()}.";
+            }
+
+            if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl)) return Redirect(returnUrl);
+            return RedirectToAction(nameof(ChiTietPhieuDangKy), new { id });
+        }
+
+        // POST: /Admin/HuyPhieu - chỉ hủy phiếu chưa có kết quả cuối cùng
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> HuyPhieu(int id, string? ghiChu, string? returnUrl)
+        {
+            var phieu = await _phieuRepository.GetForUpdateAsync(id);
+            if (phieu is null)
+                TempData["ErrorMessage"] = "Không tìm thấy phiếu đăng ký.";
+            else if (phieu.TrangThai == "Đã hủy")
+                TempData["ErrorMessage"] = "Phiếu đã được hủy trước đó.";
+            else if (phieu.TrangThai == "Từ chối" || phieu.TrangThai == "Hiến máu thành công" || phieu.TrangThai == "Không đủ điều kiện hiến" || phieu.KetQuaHienMau is not null)
+                TempData["ErrorMessage"] = "Không thể hủy phiếu đã bị từ chối hoặc đã có kết quả cuối cùng.";
+            else if (ghiChu?.Trim().Length > 500)
+                TempData["ErrorMessage"] = "Ghi chú hủy không được vượt quá 500 ký tự.";
+            else
+            {
+                phieu.TrangThai = "Đã hủy";
+                phieu.NgayXuLy = DateTime.Now;
+                if (!string.IsNullOrWhiteSpace(ghiChu))
+                    phieu.GhiChuXacNhan = string.IsNullOrWhiteSpace(phieu.GhiChuXacNhan)
+                        ? $"[Hủy phiếu] {ghiChu.Trim()}"
+                        : $"{phieu.GhiChuXacNhan} [Hủy phiếu] {ghiChu.Trim()}";
+                foreach (var lich in phieu.LichKhamSangLocs.Where(l => l.TrangThai == "Đã lên lịch"))
+                {
+                    lich.TrangThai = "Đã hủy";
+                    var ghiChuLich = "Phiếu đăng ký đã hủy";
+                    lich.GhiChu = string.IsNullOrWhiteSpace(lich.GhiChu) ? ghiChuLich : $"{lich.GhiChu} [{ghiChuLich}]";
+                }
+                await _phieuRepository.SaveChangesAsync();
+                TempData["SuccessMessage"] = $"Đã hủy phiếu #DKHM-{phieu.MaPhieu:D5}; các lịch khám chưa hoàn thành đã được hủy.";
             }
 
             if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl)) return Redirect(returnUrl);
@@ -518,6 +568,10 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
             if (lich.TrangThai != "Đã lên lịch")
             {
                 TempData["ErrorMessage"] = $"Chỉ có thể xác nhận hoàn thành cho lịch khám đang ở trạng thái 'Đã lên lịch'.";
+            }
+            else if (lich.PhieuDangKyHienMau is null || lich.PhieuDangKyHienMau.TrangThai != "Chờ khám sàng lọc" || lich.PhieuDangKyHienMau.KetQuaHienMau is not null)
+            {
+                TempData["ErrorMessage"] = "Không thể hoàn tất lịch: phiếu phải đang ở trạng thái 'Chờ khám sàng lọc' và chưa có kết quả cuối cùng.";
             }
             else
             {
