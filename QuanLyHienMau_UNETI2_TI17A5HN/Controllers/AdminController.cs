@@ -1227,7 +1227,7 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
         }
         public IActionResult BaoCao()
         {
-            return View();
+            return RedirectToAction("Index", "ThongKe");
         }
 
         [Authorize(Roles = "Admin")]

@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using QuanLyHienMau_UNETI2_TI17A5HN.Data;
 using QuanLyHienMau_UNETI2_TI17A5HN.Repositories;
 using QuanLyHienMau_UNETI2_TI17A5HN.Repositories.Interfaces;
+using QuanLyHienMau_UNETI2_TI17A5HN.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,6 +34,7 @@ builder.Services.AddScoped<QuanLyHienMau_UNETI2_TI17A5HN.Repositories.IPhieuDang
 builder.Services.AddScoped(typeof(QuanLyHienMau_UNETI2_TI17A5HN.Repositories.IRepository<>), typeof(EfGenericRepository<>));
 builder.Services.AddScoped<ITaiKhoanRepository, TaiKhoanRepository>();
 builder.Services.AddScoped<IDonViToChucRepository, DonViToChucRepository>();
+builder.Services.AddDichVuHienMau();
 
 // ========================================================
 // CẤU HÌNH SESSION CHO ĐĂNG NHẬP & PHÂN QUYỀN (Mục 5.2 & 5.3)

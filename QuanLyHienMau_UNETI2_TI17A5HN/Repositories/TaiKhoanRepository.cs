@@ -195,5 +195,8 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Repositories
         {
             return await _dbSet.CountAsync(t => t.TrangThai == trangThai);
         }
+
+        public Task<TaiKhoan?> TimTheoMaAsync(int maTaiKhoan) =>
+            _dbSet.AsNoTracking().SingleOrDefaultAsync(x => x.MaTaiKhoan == maTaiKhoan);
     }
 }
