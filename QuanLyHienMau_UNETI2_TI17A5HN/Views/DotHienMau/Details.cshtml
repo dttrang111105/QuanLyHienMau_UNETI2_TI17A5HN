@@ -1,5 +1,11 @@
+@model QuanLyHienMau_UNETI2_TI17A5HN.Models.DotHienMau
+
 @{
-    ViewData["Title"] = "Chi Tiết Đợt Hiến Máu – Giọt Hồng UNETI";
+    ViewData["Title"] = $"Chi Tiết Đợt Hiến Máu – {Model.TenDot}";
+    var isDangMo = Model.TrangThai == "Đang mở đăng ký";
+    var isChuaMo = Model.TrangThai == "Chưa mở";
+    var isTamDung = Model.TrangThai == "Tạm dừng";
+    var isDaDong = Model.TrangThai == "Đã đóng";
 }
 
 <div class="flex flex-col w-full">
@@ -17,7 +23,7 @@
             <span class="material-symbols-outlined text-[14px] text-outline-variant">chevron_right</span>
             <a asp-controller="DotHienMau" asp-action="Index" class="hover:text-primary transition-colors">Đợt hiến máu</a>
             <span class="material-symbols-outlined text-[14px] text-outline-variant">chevron_right</span>
-            <span class="text-on-surface font-semibold truncate max-w-xs sm:max-w-md">Giọt Hồng UNETI – Trao Đời Sự Sống</span>
+            <span class="text-on-surface font-semibold truncate max-w-xs sm:max-w-md">@Model.TenDot</span>
         </nav>
 
         <!-- 2. Campaign Header & Impact Bar -->
@@ -25,27 +31,52 @@
             <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                 <div class="flex-1 space-y-3">
                     <div class="flex flex-wrap items-center gap-3">
-                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 font-label-sm text-label-sm">
-                            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                            ĐANG MỞ ĐĂNG KÝ
-                        </span>
+                        @if (isDangMo)
+                        {
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 font-label-sm text-label-sm">
+                                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                                ĐANG MỞ ĐĂNG KÝ
+                            </span>
+                        }
+                        else if (isChuaMo)
+                        {
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-blue-700 font-label-sm text-label-sm">
+                                <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+                                CHƯA MỞ
+                            </span>
+                        }
+                        else if (isTamDung)
+                        {
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 text-amber-700 font-label-sm text-label-sm">
+                                <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                                TẠM DỪNG
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gray-100 text-gray-700 font-label-sm text-label-sm">
+                                <span class="w-2 h-2 rounded-full bg-gray-400"></span>
+                                ĐÃ ĐÓNG
+                            </span>
+                        }
+
                         <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-surface-container-low text-on-surface-variant font-label-sm text-label-sm">
                             <span class="material-symbols-outlined text-[15px] text-primary">timer</span>
-                            Còn 5 ngày để đăng ký
+                            Hạn đăng ký: @Model.HanDangKy.ToString("dd/MM/yyyy")
                         </span>
                         <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm">
-                            Mã đợt: #VTL-UNETI-HN09
+                            Mã đợt: #DOT-@Model.MaDot.ToString("D4")
                         </span>
                     </div>
                     <h1 class="font-display-hero text-headline-lg lg:text-display-hero text-on-surface tracking-tight leading-tight">
-                        Giọt Hồng UNETI – Trao Đời Sự Sống 2026
+                        @Model.TenDot
                     </h1>
                     <div class="flex items-center gap-2.5 text-on-surface-variant font-body-md text-body-md pt-1">
                         <div class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
-                            <span class="material-symbols-outlined text-[18px]">verified</span>
+                            <span class="material-symbols-outlined text-[18px]">apartment</span>
                         </div>
                         <p>
-                            <strong class="text-on-surface font-semibold">Đoàn Thanh Niên UNETI</strong> &amp; <strong class="text-on-surface font-semibold">Viện Huyết Học Truyền Máu TW</strong> phối hợp tổ chức
+                            Đơn vị chủ trì: <strong class="text-on-surface font-semibold">@(Model.DonViToChuc?.TenDonViToChuc ?? "Đơn vị tổ chức UNETI")</strong>
                         </p>
                     </div>
                 </div>
@@ -56,7 +87,7 @@
                         </div>
                         <div>
                             <div class="font-label-sm text-label-sm uppercase text-secondary">Mục tiêu đợt</div>
-                            <div class="font-headline-sm text-headline-sm text-on-surface font-bold">200 Đơn vị</div>
+                            <div class="font-headline-sm text-headline-sm text-on-surface font-bold">@Model.ChiTieuDonViMau Đơn vị</div>
                         </div>
                     </div>
                 </div>
@@ -67,7 +98,7 @@
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             <!-- LEFT COLUMN: 8 Columns -->
             <div class="lg:col-span-8 space-y-8 min-w-0">
-                <!-- 3A. Key Metrics Grid & Map Mini -->
+                <!-- 3A. Key Metrics Grid -->
                 <div class="bg-surface-container-lowest rounded-3xl p-6 sm:p-7 shadow-sm space-y-6">
                     <h2 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2">
                         <span class="material-symbols-outlined text-primary text-[22px]">calendar_clock</span>
@@ -79,21 +110,19 @@
                                 <span class="material-symbols-outlined text-[22px]">calendar_month</span>
                             </div>
                             <div class="min-w-0">
-                                <p class="font-label-sm text-label-sm uppercase text-secondary">Thời gian tổ chức</p>
-                                <p class="font-headline-sm text-title-md text-on-surface font-semibold mt-0.5">15/11/2026 - 25/11/2026</p>
-                                <p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Hạn chót đăng ký: <span class="text-primary font-medium">25/11/2026</span></p>
+                                <p class="font-label-sm text-label-sm uppercase text-secondary">Thời gian mở đăng ký</p>
+                                <p class="font-headline-sm text-title-md text-on-surface font-semibold mt-0.5">@Model.NgayBatDauDangKy.ToString("dd/MM/yyyy") - @Model.HanDangKy.ToString("dd/MM/yyyy")</p>
+                                <p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Hạn chót đăng ký: <span class="text-primary font-medium">@Model.HanDangKy.ToString("dd/MM/yyyy")</span></p>
                             </div>
                         </div>
                         <div class="p-4 rounded-2xl bg-surface-container-low flex gap-3.5">
                             <div class="w-10 h-10 rounded-xl bg-surface-container-highest flex items-center justify-center text-primary shrink-0">
-                                <span class="material-symbols-outlined text-[22px]">schedule</span>
+                                <span class="material-symbols-outlined text-[22px]">bloodtype</span>
                             </div>
                             <div class="min-w-0">
-                                <p class="font-label-sm text-label-sm uppercase text-secondary">Khung giờ tiếp nhận</p>
-                                <div class="mt-0.5 space-y-0.5 font-body-sm text-body-sm text-on-surface">
-                                    <div class="flex items-center gap-1.5"><span class="font-semibold text-primary">Sáng:</span> 07:30 – 11:30</div>
-                                    <div class="flex items-center gap-1.5"><span class="font-semibold text-primary">Chiều:</span> 13:30 – 17:00</div>
-                                </div>
+                                <p class="font-label-sm text-label-sm uppercase text-secondary">Nhóm máu ưu tiên</p>
+                                <p class="font-headline-sm text-title-md text-on-surface font-semibold mt-0.5">@(string.IsNullOrEmpty(Model.NhomMauUuTien) ? "Tất cả nhóm máu" : Model.NhomMauUuTien)</p>
+                                <p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Cân nặng tối thiểu: <span class="text-primary font-medium">≥ @Model.CanNangToiThieu kg</span></p>
                             </div>
                         </div>
                     </div>
@@ -103,12 +132,12 @@
                                 <span class="material-symbols-outlined text-[22px]">pin_drop</span>
                             </div>
                             <div class="flex-1 min-w-0">
-                                <p class="font-label-sm text-label-sm uppercase text-secondary">Địa điểm tổ chức</p>
-                                <p class="font-headline-sm text-title-md text-on-surface font-bold mt-0.5">Hội trường Nhà C - Đại học UNETI</p>
-                                <p class="font-body-md text-body-md text-on-surface-variant mt-0.5">218 Lĩnh Nam, Phường Lĩnh Nam, Quận Hoàng Mai, Hà Nội</p>
+                                <p class="font-label-sm text-label-sm uppercase text-secondary">Địa điểm &amp; Đơn vị tổ chức</p>
+                                <p class="font-headline-sm text-title-md text-on-surface font-bold mt-0.5">@(Model.DonViToChuc?.TenDonViToChuc ?? "Đơn vị tổ chức UNETI")</p>
+                                <p class="font-body-md text-body-md text-on-surface-variant mt-0.5">@(string.IsNullOrEmpty(Model.DonViToChuc?.MoTa) ? "Trường Đại học Kinh tế - Kỹ thuật Công nghiệp (UNETI)" : Model.DonViToChuc.MoTa)</p>
                                 <div class="mt-2 flex items-center gap-2">
                                     <span class="inline-flex items-center gap-1 text-primary font-label-sm text-label-sm bg-primary/10 px-2.5 py-1 rounded-lg">
-                                        <span class="material-symbols-outlined text-[14px]">local_parking</span> Có bãi đỗ xe ô tô &amp; xe máy miễn phí
+                                        <span class="material-symbols-outlined text-[14px]">email</span> Email liên hệ: @(Model.DonViToChuc?.EmailLienHe ?? "lienhe@uneti.edu.vn")
                                     </span>
                                 </div>
                             </div>
@@ -122,70 +151,22 @@
                         <div>
                             <h2 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2">
                                 <span class="material-symbols-outlined text-primary text-[22px]">vital_signs</span>
-                                Tiến Độ Tiếp Nhận Toàn Đợt
+                                Tiến Độ Tiếp Nhận Đợt Hiến Máu
                             </h2>
                             <p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Cập nhật trực tiếp theo thời gian thực từ cơ sở tiếp nhận</p>
                         </div>
                         <span class="inline-flex items-center gap-1 font-label-sm text-label-sm font-bold text-primary bg-primary/10 px-3 py-1.5 rounded-full">
-                            71% HOÀN THÀNH CHỈ TIÊU
+                            CHỈ TIÊU: @Model.ChiTieuDonViMau ĐƠN VỊ
                         </span>
                     </div>
                     <!-- Big Progress Meter -->
                     <div class="space-y-2">
                         <div class="flex justify-between items-end font-label-md text-label-md">
-                            <span class="text-on-surface font-bold text-headline-sm"><span class="text-primary text-headline-md font-bold">142</span> / 200 đơn vị máu</span>
-                            <span class="text-secondary font-medium">Còn thiếu 58 đơn vị</span>
+                            <span class="text-on-surface font-bold text-headline-sm"><span class="text-primary text-headline-md font-bold">@Model.ChiTieuDonViMau</span> đơn vị máu</span>
+                            <span class="text-secondary font-medium">Trạng thái: @Model.TrangThai</span>
                         </div>
                         <div class="w-full h-4 bg-surface-container-highest rounded-full overflow-hidden p-0.5">
-                            <div class="h-full bg-gradient-to-r from-primary to-primary-container rounded-full transition-all duration-700 ease-out" style="width: 71%;"></div>
-                        </div>
-                    </div>
-                    <!-- Blood Urgency Micro Badges -->
-                    <div class="p-4 rounded-2xl bg-surface-container-low flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                        <div class="flex items-center gap-2.5">
-                            <span class="material-symbols-outlined text-error text-[24px]">crisis_alert</span>
-                            <div>
-                                <span class="font-label-md text-label-md text-error block">KÊU GỌI KHẨN CẤP NHÓM MÁU THIẾU HỤT:</span>
-                                <span class="font-body-sm text-body-sm text-on-surface-variant">Kho dự trữ huyết thanh khu vực đang thiếu hụt trầm trọng 2 nhóm này</span>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-2 shrink-0">
-                            <span class="px-3.5 py-1.5 rounded-xl bg-error/10 text-error font-headline-sm text-headline-sm font-bold">O+</span>
-                            <span class="px-3.5 py-1.5 rounded-xl bg-error/10 text-error font-headline-sm text-headline-sm font-bold">B+</span>
-                        </div>
-                    </div>
-                    <!-- Distribution Breakdown By Blood Type -->
-                    <div class="space-y-3">
-                        <span class="font-label-sm text-label-sm uppercase tracking-wider text-secondary">Phân bổ túi máu đã tiếp nhận</span>
-                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                            <div class="p-3.5 rounded-2xl bg-surface-container-low text-center space-y-1">
-                                <span class="inline-block px-2.5 py-0.5 rounded-full bg-primary/10 text-primary font-bold text-label-md">Nhóm O</span>
-                                <p class="font-headline-sm text-headline-sm text-on-surface font-bold">62 <span class="font-body-sm text-body-sm font-normal text-secondary">đv</span></p>
-                                <div class="w-full bg-surface-container-highest h-1.5 rounded-full overflow-hidden">
-                                    <div class="bg-primary h-full rounded-full" style="width: 85%;"></div>
-                                </div>
-                            </div>
-                            <div class="p-3.5 rounded-2xl bg-surface-container-low text-center space-y-1">
-                                <span class="inline-block px-2.5 py-0.5 rounded-full bg-primary/10 text-primary font-bold text-label-md">Nhóm A</span>
-                                <p class="font-headline-sm text-headline-sm text-on-surface font-bold">45 <span class="font-body-sm text-body-sm font-normal text-secondary">đv</span></p>
-                                <div class="w-full bg-surface-container-highest h-1.5 rounded-full overflow-hidden">
-                                    <div class="bg-primary h-full rounded-full" style="width: 65%;"></div>
-                                </div>
-                            </div>
-                            <div class="p-3.5 rounded-2xl bg-surface-container-low text-center space-y-1">
-                                <span class="inline-block px-2.5 py-0.5 rounded-full bg-primary/10 text-primary font-bold text-label-md">Nhóm B</span>
-                                <p class="font-headline-sm text-headline-sm text-on-surface font-bold">25 <span class="font-body-sm text-body-sm font-normal text-secondary">đv</span></p>
-                                <div class="w-full bg-surface-container-highest h-1.5 rounded-full overflow-hidden">
-                                    <div class="bg-primary h-full rounded-full" style="width: 40%;"></div>
-                                </div>
-                            </div>
-                            <div class="p-3.5 rounded-2xl bg-surface-container-low text-center space-y-1">
-                                <span class="inline-block px-2.5 py-0.5 rounded-full bg-primary/10 text-primary font-bold text-label-md">Nhóm AB</span>
-                                <p class="font-headline-sm text-headline-sm text-on-surface font-bold">10 <span class="font-body-sm text-body-sm font-normal text-secondary">đv</span></p>
-                                <div class="w-full bg-surface-container-highest h-1.5 rounded-full overflow-hidden">
-                                    <div class="bg-primary h-full rounded-full" style="width: 20%;"></div>
-                                </div>
-                            </div>
+                            <div class="h-full bg-gradient-to-r from-primary to-primary-container rounded-full transition-all duration-700 ease-out" style="width: 70%;"></div>
                         </div>
                     </div>
                 </div>
@@ -194,10 +175,10 @@
                 <div class="bg-surface-container-lowest rounded-3xl p-6 sm:p-7 shadow-sm space-y-4">
                     <h2 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2">
                         <span class="material-symbols-outlined text-primary text-[22px]">diversity_1</span>
-                        Mục Đích &amp; Ý Nghĩa Chiến Dịch
+                        Mục Đích &amp; Ý Nghĩa Đợt Hiến Máu
                     </h2>
                     <p class="font-body-lg text-body-lg text-on-surface-variant leading-relaxed">
-                        Chiến dịch "Giọt Hồng UNETI – Trao Đời Sự Sống 2026" hướng tới việc huy động nguồn máu dự trữ an toàn, phục vụ công tác cấp cứu và điều trị cho các bệnh viện tuyến đầu. Mỗi túi máu trao tặng không chỉ là liệu pháp y tế cứu sống những bệnh nhân tan máu bẩm sinh (Thalassemia), nạn nhân tai nạn hay bệnh nhân phẫu thuật, mà còn là ngọn lửa ấm áp của tinh thần sinh viên UNETI vì sự sống cộng đồng.
+                        @(string.IsNullOrEmpty(Model.MoTaDot) ? "Chiến dịch hiến máu nhân đạo vì cộng đồng của trường Đại học Kinh tế - Kỹ thuật Công nghiệp (UNETI) phối hợp cùng các đơn vị y tế, hướng tới huy động nguồn máu an toàn cứu sống người bệnh." : Model.MoTaDot)
                     </p>
                 </div>
 
@@ -209,6 +190,11 @@
                             Điều Kiện Tham Gia Hiến Máu
                         </h2>
                         <span class="font-label-sm text-label-sm px-2.5 py-1 rounded-full bg-surface-container-high text-on-surface-variant">Bắt buộc đối chiếu</span>
+                    </div>
+                    <div class="p-4 rounded-2xl bg-surface-container-low mb-4">
+                        <p class="font-body-md text-body-md text-on-surface leading-relaxed">
+                            @(string.IsNullOrEmpty(Model.DieuKienNguoiHien) ? "Người hiến máu khỏe mạnh, không mắc các bệnh truyền nhiễm qua đường máu, mang theo CCCD/VNeID khi đi hiến máu." : Model.DieuKienNguoiHien)
+                        </p>
                     </div>
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                         <div class="p-4 rounded-2xl bg-surface-container-low flex items-start gap-3">
@@ -226,7 +212,7 @@
                             </div>
                             <div class="space-y-0.5">
                                 <span class="font-headline-sm text-title-md text-on-surface font-semibold block">Cân nặng tiêu chuẩn</span>
-                                <p class="font-body-sm text-body-sm text-on-surface-variant">Nam <strong>≥ 45kg</strong>, Nữ <strong>≥ 42kg</strong> (áp dụng hiến 250ml/350ml).</p>
+                                <p class="font-body-sm text-body-sm text-on-surface-variant">Tối thiểu <strong>≥ @Model.CanNangToiThieu kg</strong>.</p>
                             </div>
                         </div>
                         <div class="p-4 rounded-2xl bg-surface-container-low flex items-start gap-3">
@@ -244,7 +230,7 @@
                             </div>
                             <div class="space-y-0.5">
                                 <span class="font-headline-sm text-title-md text-on-surface font-semibold block">Giấy tờ tùy thân</span>
-                                <p class="font-body-sm text-body-sm text-on-surface-variant">Mang theo <strong>CCCD gắn chip</strong> hoặc tài khoản <strong>VNeID mức 2</strong>.</p>
+                                <p class="font-body-sm text-body-sm text-on-surface-variant">Mang theo <strong>CCCD gắn chip</strong> hoặc tài khoản <strong>VNeID</strong>.</p>
                             </div>
                         </div>
                     </div>
@@ -271,24 +257,34 @@
                             <div class="flex items-center justify-between text-body-sm font-body-sm">
                                 <span class="text-on-surface-variant flex items-center gap-1.5">
                                     <span class="material-symbols-outlined text-[16px] text-primary">pie_chart</span>
-                                    Chỉ tiêu còn lại:
+                                    Chỉ tiêu tiếp nhận:
                                 </span>
-                                <span class="font-bold text-primary font-headline-sm text-title-md">58 đơn vị</span>
+                                <span class="font-bold text-primary font-headline-sm text-title-md">@Model.ChiTieuDonViMau ĐV</span>
                             </div>
                             <div class="flex items-center justify-between text-body-sm font-body-sm">
                                 <span class="text-on-surface-variant flex items-center gap-1.5">
                                     <span class="material-symbols-outlined text-[16px] text-secondary">event_busy</span>
                                     Hạn chót tiếp nhận:
                                 </span>
-                                <span class="font-semibold text-on-surface">23:59 - 25/11/2026</span>
+                                <span class="font-semibold text-on-surface">@Model.HanDangKy.ToString("dd/MM/yyyy")</span>
                             </div>
                         </div>
                         <div class="space-y-3">
-                            <a asp-controller="DangKy" asp-action="Create" class="w-full inline-flex items-center justify-center gap-3 bg-gradient-to-r from-primary to-primary-container text-on-primary font-label-lg text-label-lg py-4 px-6 rounded-2xl shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 hover:-translate-y-0.5 active:translate-y-0 transition-all font-bold text-center">
-                                <span class="material-symbols-outlined text-[20px]">volunteer_activism</span>
-                                <span>ĐĂNG KÝ HIẾN MÁU NGAY</span>
-                                <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
-                            </a>
+                            @if (isDangMo)
+                            {
+                                <a asp-controller="DangKy" asp-action="Create" asp-route-maDot="@Model.MaDot" class="w-full inline-flex items-center justify-center gap-3 bg-gradient-to-r from-primary to-primary-container text-on-primary font-label-lg text-label-lg py-4 px-6 rounded-2xl shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 hover:-translate-y-0.5 active:translate-y-0 transition-all font-bold text-center">
+                                    <span class="material-symbols-outlined text-[20px]">volunteer_activism</span>
+                                    <span>ĐĂNG KÝ HIẾN MÁU NGAY</span>
+                                    <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+                                </a>
+                            }
+                            else
+                            {
+                                <button disabled class="w-full inline-flex items-center justify-center gap-3 bg-surface-container-high text-on-surface-variant font-label-lg text-label-lg py-4 px-6 rounded-2xl font-bold text-center cursor-not-allowed opacity-60">
+                                    <span class="material-symbols-outlined text-[20px]">block</span>
+                                    <span>ĐỢT HIẾN MÁU @Model.TrangThai.ToUpper()</span>
+                                </button>
+                            }
                         </div>
                         <div class="space-y-3 pt-3">
                             <div class="p-3.5 rounded-2xl bg-surface-container-low/60 space-y-2 text-body-sm font-body-sm">
@@ -297,35 +293,19 @@
                                     <span>Hotline: <strong class="text-primary font-bold">1900 6868</strong></span>
                                 </div>
                                 <div class="flex items-center gap-2 text-on-surface">
-                                    <span class="material-symbols-outlined text-primary text-[18px]">stethoscope</span>
-                                    <span>Bác sĩ phụ trách: <strong class="font-medium text-on-surface">BS. Nguyễn Lan Anh</strong></span>
+                                    <span class="material-symbols-outlined text-primary text-[18px]">apartment</span>
+                                    <span>Đơn vị: <strong class="font-medium text-on-surface">@(Model.DonViToChuc?.TenDonViToChuc ?? "UNETI")</strong></span>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Digital Card Preview Teaser -->
-                    <div class="p-5 rounded-3xl bg-gradient-to-br from-primary to-primary-container text-on-primary space-y-4 shadow-lg">
-                        <div class="flex items-center justify-between">
-                            <div class="flex items-center gap-1.5">
-                                <span class="material-symbols-outlined text-[20px]">badge</span>
-                                <span class="font-label-sm text-label-sm uppercase tracking-wider opacity-90">Thẻ Hiến Máu Số</span>
-                            </div>
-                            <span class="material-symbols-outlined text-[22px] opacity-80">contactless</span>
-                        </div>
-                        <div class="space-y-1">
-                            <div class="font-label-sm text-label-sm opacity-80">Mã định danh cá nhân</div>
-                            <div class="font-headline-sm text-headline-sm font-mono tracking-wider font-bold">VTL-UNETI-2026</div>
-                        </div>
-                        <div class="flex items-center justify-between pt-2">
-                            <div>
-                                <p class="font-label-sm text-label-sm opacity-75">Tự động tích hợp</p>
-                                <p class="font-label-md text-label-md font-semibold">Mã QR Check-in tức thì</p>
-                            </div>
-                            <div class="w-10 h-10 rounded-xl bg-on-primary/15 flex items-center justify-center backdrop-blur-sm">
-                                <span class="material-symbols-outlined text-[22px]">qr_code_2</span>
-                            </div>
-                        </div>
+                    <!-- Back to list button -->
+                    <div class="text-center">
+                        <a asp-controller="DotHienMau" asp-action="Index" class="inline-flex items-center gap-2 text-primary hover:underline font-label-md text-label-md">
+                            <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+                            <span>Quay lại danh sách đợt hiến máu</span>
+                        </a>
                     </div>
                 </aside>
             </div>

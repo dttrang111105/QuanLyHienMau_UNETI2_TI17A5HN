@@ -106,13 +106,52 @@
                 <a asp-controller="DangKy" asp-action="Create" class="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors py-2">Quy trình</a>
                 <a asp-controller="DangKy" asp-action="TheoDoi" class="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors py-2">Tra cứu phiếu</a>
                 <a asp-controller="NguoiHienMau" asp-action="HoSoCaNhan" class="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors py-2">Hồ sơ cá nhân</a>
+                
+                @if (User.Identity?.IsAuthenticated == true && (User.IsInRole("Admin") || User.IsInRole("Medical Staff")))
+                {
+                    <a asp-controller="Admin" asp-action="Dashboard" class="font-label-md text-label-md text-primary font-bold hover:underline py-2 flex items-center gap-1">
+                        <span class="material-symbols-outlined text-[18px]">admin_panel_settings</span>
+                        <span>Quản trị y tế</span>
+                    </a>
+                }
             </nav>
 
             <!-- Actions Right -->
             <div class="flex items-center gap-3">
-                <a asp-controller="Account" asp-action="Login" class="hidden sm:inline-flex font-label-md text-label-md text-on-surface-variant hover:text-primary hover:bg-surface-container px-3.5 py-2 rounded-xl transition-all">
-                    Đăng nhập
-                </a>
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    var role = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? "Donor";
+                    var displayName = User.Identity.Name ?? "Tài khoản";
+
+                    <div class="flex items-center gap-2">
+                        <a asp-controller="NguoiHienMau" asp-action="HoSoCaNhan" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-surface-container-low hover:bg-surface-container transition-all">
+                            <div class="w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center font-bold text-xs">
+                                @(displayName.Length > 0 ? displayName[0].ToString().ToUpper() : "U")
+                            </div>
+                            <div class="hidden md:flex flex-col text-left">
+                                <span class="font-label-md text-label-md font-semibold text-on-surface line-clamp-1 leading-tight">@displayName</span>
+                                <span class="font-label-sm text-[10px] text-primary font-bold uppercase leading-tight">@role</span>
+                            </div>
+                        </a>
+
+                        <form method="post" asp-controller="Account" asp-action="Logout" class="inline">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="p-2 text-on-surface-variant hover:text-error hover:bg-error-container/40 rounded-xl transition-all cursor-pointer" title="Đăng xuất">
+                                <span class="material-symbols-outlined text-[20px]">logout</span>
+                            </button>
+                        </form>
+                    </div>
+                }
+                else
+                {
+                    <a asp-controller="Account" asp-action="Login" class="hidden sm:inline-flex font-label-md text-label-md text-on-surface-variant hover:text-primary hover:bg-surface-container px-3.5 py-2 rounded-xl transition-all">
+                        Đăng nhập
+                    </a>
+                    <a asp-controller="Account" asp-action="Register" class="hidden sm:inline-flex font-label-md text-label-md text-primary font-semibold hover:bg-surface-container px-3.5 py-2 rounded-xl transition-all">
+                        Đăng ký
+                    </a>
+                }
+
                 <a asp-controller="DangKy" asp-action="Create" class="inline-flex items-center gap-2 bg-gradient-to-r from-primary to-primary-container text-on-primary font-label-md text-label-md px-5 py-2.5 rounded-xl shadow-[0_4px_20px_-2px_rgba(198,40,61,0.25)] hover:shadow-[0_10px_25px_-3px_rgba(198,40,61,0.35)] hover:-translate-y-0.5 active:translate-y-0 transition-all">
                     <span class="material-symbols-outlined text-[18px]">favorite</span>
                     <span>ĐĂNG KÝ HIẾN MÁU</span>

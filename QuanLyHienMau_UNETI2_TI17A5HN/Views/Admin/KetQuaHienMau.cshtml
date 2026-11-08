@@ -1,0 +1,531 @@
+@model IEnumerable<QuanLyHienMau_UNETI2_TI17A5HN.Models.KetQuaHienMau>
+
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = "Quản Lý Kết Quả Hiến Máu Lâm Sàng & Xét Nghiệm";
+
+    int totalCount = ViewBag.TotalCount ?? 0;
+    int successCount = ViewBag.SuccessCount ?? 0;
+    int rejectCount = ViewBag.RejectCount ?? 0;
+    double successRate = totalCount > 0 ? Math.Round((double)successCount / totalCount * 100, 1) : 0;
+
+    var pendingResults = ViewBag.PendingResults as List<QuanLyHienMau_UNETI2_TI17A5HN.Models.PhieuDangKyHienMau> ?? new List<QuanLyHienMau_UNETI2_TI17A5HN.Models.PhieuDangKyHienMau>();
+    var dotList = ViewBag.DotList as List<QuanLyHienMau_UNETI2_TI17A5HN.Models.DotHienMau> ?? new List<QuanLyHienMau_UNETI2_TI17A5HN.Models.DotHienMau>();
+
+    int currentPage = ViewBag.CurrentPage ?? 1;
+    int totalPages = ViewBag.TotalPages ?? 1;
+    int totalFiltered = ViewBag.TotalFiltered ?? 0;
+    string currentSearch = ViewBag.CurrentSearch as string ?? "";
+    string currentKetQua = ViewBag.CurrentKetQua as string ?? "";
+    int? currentMaDot = ViewBag.CurrentMaDot as int?;
+}
+
+<div class="flex flex-col w-full">
+    <!-- TOP NOTIFICATIONS -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="fixed top-20 right-8 z-50 flex items-center gap-space-sm bg-surface-container-lowest px-space-md py-3 rounded-xl shadow-xl border border-emerald-200">
+            <div class="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-emerald-600 text-[18px]">verified</span>
+            </div>
+            <p class="font-body-sm text-body-sm text-on-surface font-semibold pr-2">@TempData["SuccessMessage"]</p>
+            <button class="p-1 text-on-surface-variant hover:text-on-surface" onclick="this.parentElement.remove()">
+                <span class="material-symbols-outlined text-[16px]">close</span>
+            </button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="fixed top-20 right-8 z-50 flex items-center gap-space-sm bg-surface-container-lowest px-space-md py-3 rounded-xl shadow-xl border border-rose-200">
+            <div class="w-8 h-8 rounded-full bg-rose-500/10 flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-rose-600 text-[18px]">error</span>
+            </div>
+            <p class="font-body-sm text-body-sm text-rose-800 font-semibold pr-2">@TempData["ErrorMessage"]</p>
+            <button class="p-1 text-on-surface-variant hover:text-on-surface" onclick="this.parentElement.remove()">
+                <span class="material-symbols-outlined text-[16px]">close</span>
+            </button>
+        </div>
+    }
+
+    <div class="p-space-lg max-w-[1600px] mx-auto w-full space-y-space-lg">
+        <!-- 1. HEADER SECTION -->
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md bg-surface-container-lowest p-space-lg rounded-2xl shadow-sm">
+            <div class="space-y-1">
+                <div class="flex items-center gap-2 text-on-surface-variant font-label-sm text-label-sm">
+                    <span>Hệ thống Quản trị Y tế</span>
+                    <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+                    <span class="text-primary font-semibold">Kết quả hiến máu &amp; Thẩm định</span>
+                </div>
+                <div class="flex flex-wrap items-center gap-3">
+                    <h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight font-bold">
+                        Quản Lý Kết Quả Hiến Máu Lâm Sàng
+                    </h1>
+                    <span class="px-3 py-1 rounded-full bg-primary/10 text-primary font-label-sm text-label-sm font-bold">
+                        Module 5
+                    </span>
+                </div>
+                <p class="font-body-md text-body-md text-on-surface-variant">
+                    Ghi nhận kết quả hiến máu, đánh giá thể trạng người hiến và đồng bộ trạng thái phiếu tự động vào CSDL.
+                </p>
+            </div>
+            <div class="flex items-center gap-space-sm">
+                <a asp-action="PhieuDangKyHienMau" class="px-4 py-2.5 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md transition-all flex items-center gap-2 shadow-sm">
+                    <span class="material-symbols-outlined text-[18px]">assignment_turned_in</span>
+                    <span>Danh sách phiếu</span>
+                </a>
+                <a asp-action="Dashboard" class="px-4 py-2.5 rounded-xl bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md transition-all flex items-center gap-2 shadow-sm font-bold">
+                    <span class="material-symbols-outlined text-[18px]">dashboard</span>
+                    <span>Dashboard</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- 2. KPI METRICS CARDS -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-space-md">
+            <!-- Card 1: Tổng số kết quả -->
+            <div class="bg-surface-container-lowest p-space-lg rounded-2xl shadow-sm flex flex-col justify-between">
+                <div class="flex items-start justify-between">
+                    <div class="space-y-1">
+                        <span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant font-semibold">Tổng Ca Đã Đánh Giá</span>
+                        <div class="font-headline-lg text-headline-lg text-on-surface font-bold">@totalCount <span class="font-title-md text-title-md font-normal text-on-surface-variant">kết quả</span></div>
+                    </div>
+                    <div class="w-12 h-12 rounded-2xl bg-surface-container-low flex items-center justify-center text-primary">
+                        <span class="material-symbols-outlined text-[26px]">biotech</span>
+                    </div>
+                </div>
+                <div class="mt-4 pt-3 flex items-center justify-between font-body-sm text-body-sm bg-surface-container-low/50 px-3 py-1.5 rounded-xl">
+                    <span class="text-on-surface-variant">Lưu trữ trên CSDL SQL Server</span>
+                    <span class="font-bold text-primary">100%</span>
+                </div>
+            </div>
+
+            <!-- Card 2: Hiến máu thành công -->
+            <div class="bg-surface-container-lowest p-space-lg rounded-2xl shadow-sm flex flex-col justify-between">
+                <div class="flex items-start justify-between">
+                    <div class="space-y-1">
+                        <span class="font-label-sm text-label-sm uppercase tracking-wider text-emerald-800 font-semibold">Hiến Máu Thành Công</span>
+                        <div class="font-headline-lg text-headline-lg text-emerald-700 font-bold">@successCount <span class="font-title-md text-title-md font-normal text-emerald-600">ca</span></div>
+                    </div>
+                    <div class="w-12 h-12 rounded-2xl bg-emerald-50 flex items-center justify-center text-emerald-600">
+                        <span class="material-symbols-outlined text-[26px]">check_circle</span>
+                    </div>
+                </div>
+                <div class="mt-4 pt-3 flex items-center justify-between font-body-sm text-body-sm bg-emerald-50/50 px-3 py-1.5 rounded-xl">
+                    <span class="text-emerald-800 font-semibold">Tỷ lệ thành công</span>
+                    <span class="font-bold text-emerald-700">@successRate%</span>
+                </div>
+            </div>
+
+            <!-- Card 3: Không đủ điều kiện hiến -->
+            <div class="bg-surface-container-lowest p-space-lg rounded-2xl shadow-sm flex flex-col justify-between">
+                <div class="flex items-start justify-between">
+                    <div class="space-y-1">
+                        <span class="font-label-sm text-label-sm uppercase tracking-wider text-rose-800 font-semibold">Không Đủ Điều Kiện</span>
+                        <div class="font-headline-lg text-headline-lg text-rose-700 font-bold">@rejectCount <span class="font-title-md text-title-md font-normal text-rose-600">ca</span></div>
+                    </div>
+                    <div class="w-12 h-12 rounded-2xl bg-rose-50 flex items-center justify-center text-rose-600">
+                        <span class="material-symbols-outlined text-[26px]">cancel</span>
+                    </div>
+                </div>
+                <div class="mt-4 pt-3 flex items-center justify-between font-body-sm text-body-sm bg-rose-50/50 px-3 py-1.5 rounded-xl">
+                    <span class="text-rose-800">Hoãn hiến lâm sàng</span>
+                    <span class="font-bold text-rose-700">@(100 - successRate)%</span>
+                </div>
+            </div>
+
+            <!-- Card 4: Hồ sơ đang chờ nhập kết quả -->
+            <div class="bg-surface-container-lowest p-space-lg rounded-2xl shadow-sm flex flex-col justify-between">
+                <div class="flex items-start justify-between">
+                    <div class="space-y-1">
+                        <span class="font-label-sm text-label-sm uppercase tracking-wider text-amber-800 font-semibold">Chờ Nhập Kết Quả</span>
+                        <div class="font-headline-lg text-headline-lg text-amber-700 font-bold">@pendingResults.Count <span class="font-title-md text-title-md font-normal text-amber-600">phiếu</span></div>
+                    </div>
+                    <div class="w-12 h-12 rounded-2xl bg-amber-50 flex items-center justify-center text-amber-600">
+                        <span class="material-symbols-outlined text-[26px]">hourglass_top</span>
+                    </div>
+                </div>
+                <div class="mt-4 pt-3 flex items-center justify-between font-body-sm text-body-sm bg-amber-50/50 px-3 py-1.5 rounded-xl">
+                    <span class="text-amber-800">Đã xong khám sàng lọc</span>
+                    <span class="font-bold text-amber-700">Cần xử lý</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. SECTION: HỒ SƠ CHỜ NHẬP KẾT QUẢ (NẾU CÓ) -->
+        @if (pendingResults.Any())
+        {
+            <div class="bg-surface-container-lowest p-space-lg rounded-2xl shadow-sm space-y-space-md border border-amber-200">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2.5">
+                        <span class="material-symbols-outlined text-amber-600 text-[24px]">pending_actions</span>
+                        <div>
+                            <h2 class="font-title-md text-title-md text-on-surface font-bold">
+                                Hồ Sơ Đã Khám Sàng Lọc – Chờ Ghi Nhận Kết Quả (@pendingResults.Count)
+                            </h2>
+                            <p class="font-body-sm text-body-sm text-on-surface-variant">
+                                Tình nguyện viên đã hoàn thành khám lâm sàng, sẵn sàng nhập kết quả lấy máu hoặc hoãn hiến.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-space-sm pt-2">
+                    @foreach (var p in pendingResults)
+                    {
+                        <div class="p-space-md rounded-xl bg-amber-50/40 border border-amber-200 flex flex-col justify-between space-y-3">
+                            <div class="flex items-start justify-between gap-2">
+                                <div>
+                                    <div class="flex items-center gap-2">
+                                        <span class="font-label-md text-label-md font-bold text-primary font-mono">#DKHM-@p.MaPhieu.ToString("D5")</span>
+                                        <span class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-900">
+                                            @p.TrangThai
+                                        </span>
+                                    </div>
+                                    <h3 class="font-title-md text-title-md font-bold text-on-surface mt-1">@(p.NguoiHienMau?.HoTen ?? "Người hiến")</h3>
+                                    <p class="text-body-sm text-body-sm text-on-surface-variant">
+                                        Đợt: <strong>@(p.DotHienMau?.TenDot ?? "UNETI")</strong>
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="pt-2 border-t border-amber-200/60 flex items-center justify-between gap-2">
+                                <a asp-action="ChiTietPhieuDangKy" asp-route-id="@p.MaPhieu" class="text-body-sm font-semibold text-on-surface hover:text-primary">
+                                    Xem hồ sơ
+                                </a>
+                                <button type="button" onclick="openCreateResultModal(@p.MaPhieu, '@(p.NguoiHienMau?.HoTen ?? "")')" class="px-3 py-1.5 rounded-xl bg-primary text-on-primary font-label-sm text-label-sm font-bold hover:bg-primary-container transition-all flex items-center gap-1 shadow-sm">
+                                    <span class="material-symbols-outlined text-[16px]">add_task</span>
+                                    <span>Nhập kết quả</span>
+                                </button>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+
+        <!-- 4. MAIN DATA TABLE: DANH SÁCH KẾT QUẢ HIẾN MÁU -->
+        <div class="bg-surface-container-lowest p-space-lg rounded-2xl shadow-sm space-y-space-md">
+            <!-- Filter Bar -->
+            <form method="get" asp-action="KetQuaHienMau" class="space-y-space-sm">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-space-md">
+                    <div>
+                        <h2 class="font-title-md text-title-md text-on-surface font-bold">Danh Sách Kết Quả Đã Ghi Nhận</h2>
+                        <p class="font-body-sm text-body-sm text-on-surface-variant">Tìm thấy @totalFiltered kết quả phù hợp với bộ lọc</p>
+                    </div>
+
+                    <div class="flex flex-wrap items-center gap-space-sm">
+                        <!-- Search input -->
+                        <div class="relative min-w-[240px]">
+                            <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">search</span>
+                            <input type="text" name="search" value="@currentSearch" placeholder="Tìm người hiến, mã phiếu, đợt..." class="w-full h-10 pl-9 pr-3 rounded-xl bg-surface-container-low font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20" />
+                        </div>
+
+                        <!-- Status Filter -->
+                        <select name="ketQua" class="h-10 px-3 rounded-xl bg-surface-container-low font-label-sm text-label-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20">
+                            <option value="all" selected="@(currentKetQua == "all" || string.IsNullOrEmpty(currentKetQua))">Tất cả kết quả</option>
+                            <option value="Hiến máu thành công" selected="@(currentKetQua == "Hiến máu thành công")">🟢 Hiến máu thành công</option>
+                            <option value="Không đủ điều kiện hiến" selected="@(currentKetQua == "Không đủ điều kiện hiến")">🔴 Không đủ điều kiện hiến</option>
+                        </select>
+
+                        <!-- Campaign Filter -->
+                        <select name="maDot" class="h-10 px-3 rounded-xl bg-surface-container-low font-label-sm text-label-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20">
+                            <option value="">Tất cả đợt hiến máu</option>
+                            @foreach (var d in dotList)
+                            {
+                                <option value="@d.MaDot" selected="@(currentMaDot == d.MaDot)">@d.TenDot</option>
+                            }
+                        </select>
+
+                        <button type="submit" class="h-10 px-4 rounded-xl bg-primary text-on-primary font-label-sm text-label-sm font-bold hover:bg-primary-container transition-all flex items-center gap-1 shadow-sm">
+                            <span class="material-symbols-outlined text-[18px]">filter_list</span>
+                            <span>Lọc</span>
+                        </button>
+
+                        @if (!string.IsNullOrEmpty(currentSearch) || (!string.IsNullOrEmpty(currentKetQua) && currentKetQua != "all") || currentMaDot.HasValue)
+                        {
+                            <a asp-action="KetQuaHienMau" class="h-10 px-3 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface font-label-sm text-label-sm flex items-center justify-center transition-all">
+                                Xóa lọc
+                            </a>
+                        }
+                    </div>
+                </div>
+            </form>
+
+            <!-- Table -->
+            <div class="overflow-x-auto">
+                <table class="w-full text-left font-body-md text-body-md border-collapse">
+                    <thead>
+                        <tr class="bg-surface-container-low text-on-surface-variant font-label-sm text-label-sm uppercase tracking-wider">
+                            <th class="py-3.5 px-4 rounded-l-xl">Mã KQ / Phiếu</th>
+                            <th class="py-3.5 px-4">Người Hiến Máu</th>
+                            <th class="py-3.5 px-4">Đợt Hiến Máu</th>
+                            <th class="py-3.5 px-4">Kết Quả Hiến</th>
+                            <th class="py-3.5 px-4">Điểm Đánh Giá</th>
+                            <th class="py-3.5 px-4">Ngày Cập Nhật</th>
+                            <th class="py-3.5 px-4 rounded-r-xl text-right">Thao Tác</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-surface-container text-on-surface">
+                        @if (!Model.Any())
+                        {
+                            <tr>
+                                <td colspan="7" class="py-12 text-center text-on-surface-variant">
+                                    <div class="flex flex-col items-center justify-center space-y-2">
+                                        <span class="material-symbols-outlined text-[48px] text-on-surface-variant/40">assignment_late</span>
+                                        <p class="font-label-md text-label-md font-semibold">Chưa có kết quả hiến máu nào phù hợp.</p>
+                                        <p class="text-body-sm text-body-sm">Hãy kiểm tra các phiếu ở trạng thái "Đã khám sàng lọc" để ghi nhận kết quả.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var item in Model)
+                            {
+                                var isSuccess = item.KetQua == "Hiến máu thành công";
+                                <tr class="hover:bg-surface-container-low/60 transition-colors">
+                                    <!-- Mã KQ & Phiếu -->
+                                    <td class="py-4 px-4 font-body-sm text-body-sm">
+                                        <div class="font-bold text-on-surface font-mono">#KQ-@item.MaKetQuaHienMau.ToString("D5")</div>
+                                        <a asp-action="ChiTietPhieuDangKy" asp-route-id="@item.MaPhieu" class="text-primary hover:underline font-mono text-xs font-semibold">
+                                            #DKHM-@item.MaPhieu.ToString("D5")
+                                        </a>
+                                    </td>
+
+                                    <!-- Người hiến -->
+                                    <td class="py-4 px-4">
+                                        <div class="font-bold text-on-surface">
+                                            @(item.PhieuDangKyHienMau?.NguoiHienMau?.HoTen ?? "Chưa rõ")
+                                        </div>
+                                        <div class="text-[12px] text-on-surface-variant">
+                                            Nhóm: <strong class="text-primary">@(item.PhieuDangKyHienMau?.NguoiHienMau?.NhomMau ?? "Chưa rõ")</strong> • @(item.PhieuDangKyHienMau?.NguoiHienMau?.SoDienThoai ?? "")
+                                        </div>
+                                    </td>
+
+                                    <!-- Đợt hiến -->
+                                    <td class="py-4 px-4 font-body-sm text-body-sm">
+                                        <div class="font-semibold text-on-surface max-w-xs truncate">
+                                            @(item.PhieuDangKyHienMau?.DotHienMau?.TenDot ?? "Đợt hiến máu UNETI")
+                                        </div>
+                                        <div class="text-[12px] text-on-surface-variant">
+                                            @(item.PhieuDangKyHienMau?.DotHienMau?.DonViToChuc?.TenDonViToChuc ?? "UNETI")
+                                        </div>
+                                    </td>
+
+                                    <!-- Kết quả -->
+                                    <td class="py-4 px-4">
+                                        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[12px] font-bold @(isSuccess ? "bg-emerald-100 text-emerald-800" : "bg-rose-100 text-rose-800")">
+                                            <span class="material-symbols-outlined text-[14px]">@(isSuccess ? "check_circle" : "cancel")</span>
+                                            @item.KetQua
+                                        </span>
+                                    </td>
+
+                                    <!-- Điểm đánh giá -->
+                                    <td class="py-4 px-4">
+                                        @if (item.DiemDanhGia.HasValue)
+                                        {
+                                            <div class="flex items-center gap-1">
+                                                <span class="material-symbols-outlined text-amber-500 text-[18px]">star</span>
+                                                <span class="font-bold text-on-surface">@item.DiemDanhGia.Value.ToString("0.0")</span>
+                                                <span class="text-xs text-on-surface-variant">/ 10</span>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-xs text-on-surface-variant italic">Chưa chấm điểm</span>
+                                        }
+                                    </td>
+
+                                    <!-- Ngày cập nhật -->
+                                    <td class="py-4 px-4 font-body-sm text-body-sm text-on-surface-variant">
+                                        <div>@(item.NgayCapNhat?.ToString("dd/MM/yyyy") ?? item.PhieuDangKyHienMau?.NgayNop.ToString("dd/MM/yyyy"))</div>
+                                        <div class="text-[11px]">@(item.NgayCapNhat?.ToString("HH:mm") ?? "")</div>
+                                    </td>
+
+                                    <!-- Thao tác -->
+                                    <td class="py-4 px-4 text-right">
+                                        <div class="flex items-center justify-end gap-1">
+                                            <a asp-action="ChiTietKetQua" asp-route-id="@item.MaKetQuaHienMau" class="p-1.5 rounded-lg hover:bg-surface-container text-on-surface-variant hover:text-primary transition-colors" title="Xem chi tiết kết quả">
+                                                <span class="material-symbols-outlined text-[18px]">visibility</span>
+                                            </a>
+                                            <button type="button" onclick="openEditResultModal(@item.MaKetQuaHienMau, '@item.KetQua', '@(item.DiemDanhGia?.ToString() ?? "")', '@(item.NhanXet?.Replace("'", "\\'") ?? "")')" class="p-1.5 rounded-lg hover:bg-surface-container text-on-surface-variant hover:text-primary transition-colors" title="Chỉnh sửa kết quả">
+                                                <span class="material-symbols-outlined text-[18px]">edit</span>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            @if (totalPages > 1)
+            {
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm pt-space-md border-t border-surface-container">
+                    <p class="font-body-sm text-body-sm text-on-surface-variant">
+                        Trang <strong>@currentPage</strong> / <strong>@totalPages</strong> (Hiển thị @Model.Count() / @totalFiltered kết quả)
+                    </p>
+                    <div class="flex items-center gap-1">
+                        @if (currentPage > 1)
+                        {
+                            <a asp-action="KetQuaHienMau" asp-route-page="@(currentPage - 1)" asp-route-search="@currentSearch" asp-route-ketQua="@currentKetQua" asp-route-maDot="@currentMaDot" class="p-2 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface transition-all flex items-center justify-center">
+                                <span class="material-symbols-outlined text-[18px]">chevron_left</span>
+                            </a>
+                        }
+
+                        @for (int p = Math.Max(1, currentPage - 2); p <= Math.Min(totalPages, currentPage + 2); p++)
+                        {
+                            <a asp-action="KetQuaHienMau" asp-route-page="@p" asp-route-search="@currentSearch" asp-route-ketQua="@currentKetQua" asp-route-maDot="@currentMaDot" class="px-3.5 py-1.5 rounded-xl font-label-sm text-label-sm font-semibold transition-all @(p == currentPage ? "bg-primary text-on-primary font-bold shadow-sm" : "bg-surface-container-low hover:bg-surface-container text-on-surface")">
+                                @p
+                            </a>
+                        }
+
+                        @if (currentPage < totalPages)
+                        {
+                            <a asp-action="KetQuaHienMau" asp-route-page="@(currentPage + 1)" asp-route-search="@currentSearch" asp-route-ketQua="@currentKetQua" asp-route-maDot="@currentMaDot" class="p-2 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface transition-all flex items-center justify-center">
+                                <span class="material-symbols-outlined text-[18px]">chevron_right</span>
+                            </a>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- MODAL 1: TẠO KẾT QUẢ HIẾN MÁU MỚI -->
+<div id="createResultModal" class="fixed inset-0 z-50 bg-inverse-surface/40 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-surface-container-lowest rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden flex flex-col">
+        <div class="p-space-md bg-surface-container flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary text-[22px]">add_task</span>
+                <h3 class="font-title-md text-title-md font-bold text-on-surface">Ghi Nhận Kết Quả Hiến Máu</h3>
+            </div>
+            <button class="w-8 h-8 rounded-lg bg-surface-container-low text-on-surface hover:bg-surface-container-highest flex items-center justify-center" onclick="closeCreateResultModal()">
+                <span class="material-symbols-outlined text-[18px]">close</span>
+            </button>
+        </div>
+        <form method="post" asp-action="TaoKetQua" class="p-space-lg space-y-space-md">
+            @Html.AntiForgeryToken()
+            <input type="hidden" id="createMaPhieu" name="maPhieu" value="" />
+            <input type="hidden" name="returnUrl" value="@Context.Request.Path@Context.Request.QueryString" />
+
+            <div class="p-3 rounded-xl bg-surface-container-low text-body-sm text-on-surface">
+                Phiếu đăng ký: <strong id="createDisplayTicket" class="text-primary font-mono font-bold">#DKHM-00000</strong>
+            </div>
+
+            <div>
+                <label class="block font-label-md text-label-md font-bold text-on-surface mb-1">
+                    Kết quả thực tế <span class="text-primary">*</span>
+                </label>
+                <select name="ketQua" required class="w-full h-11 px-3 bg-surface-container-low rounded-xl font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20">
+                    <option value="Hiến máu thành công">🟢 Hiến máu thành công</option>
+                    <option value="Không đủ điều kiện hiến">🔴 Không đủ điều kiện hiến</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block font-label-md text-label-md font-bold text-on-surface mb-1">
+                    Điểm đánh giá thể trạng / chất lượng (0 - 10)
+                </label>
+                <input type="number" step="0.5" min="0" max="10" name="diemDanhGia" placeholder="Ví dụ: 9.5" class="w-full h-11 px-3 bg-surface-container-low rounded-xl font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20" />
+            </div>
+
+            <div>
+                <label class="block font-label-md text-label-md font-bold text-on-surface mb-1">
+                    Nhận xét y tế / Lý do nếu hoãn hiến
+                </label>
+                <textarea name="nhanXet" rows="3" placeholder="Nhập ghi nhận lâm sàng hoặc lời dặn của bác sĩ..." class="w-full p-3 bg-surface-container-low rounded-xl font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20"></textarea>
+            </div>
+
+            <div class="flex items-center justify-end gap-space-sm pt-2">
+                <button type="button" class="px-4 py-2 rounded-xl bg-surface-container text-on-surface hover:bg-surface-container-high font-label-md text-label-md font-semibold transition-colors" onclick="closeCreateResultModal()">
+                    Hủy
+                </button>
+                <button type="submit" class="px-5 py-2 rounded-xl bg-primary text-on-primary hover:bg-primary-container font-label-md text-label-md font-bold shadow-md transition-all">
+                    Lưu Kết Quả
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- MODAL 2: SỬA KẾT QUẢ HIẾN MÁU -->
+<div id="editResultModal" class="fixed inset-0 z-50 bg-inverse-surface/40 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-surface-container-lowest rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden flex flex-col">
+        <div class="p-space-md bg-surface-container flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary text-[22px]">edit</span>
+                <h3 class="font-title-md text-title-md font-bold text-on-surface">Cập Nhật Kết Quả Hiến Máu</h3>
+            </div>
+            <button class="w-8 h-8 rounded-lg bg-surface-container-low text-on-surface hover:bg-surface-container-highest flex items-center justify-center" onclick="closeEditResultModal()">
+                <span class="material-symbols-outlined text-[18px]">close</span>
+            </button>
+        </div>
+        <form method="post" asp-action="SuaKetQua" class="p-space-lg space-y-space-md">
+            @Html.AntiForgeryToken()
+            <input type="hidden" id="editId" name="id" value="" />
+            <input type="hidden" name="returnUrl" value="@Context.Request.Path@Context.Request.QueryString" />
+
+            <div>
+                <label class="block font-label-md text-label-md font-bold text-on-surface mb-1">
+                    Kết quả thực tế <span class="text-primary">*</span>
+                </label>
+                <select id="editKetQua" name="ketQua" required class="w-full h-11 px-3 bg-surface-container-low rounded-xl font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20">
+                    <option value="Hiến máu thành công">🟢 Hiến máu thành công</option>
+                    <option value="Không đủ điều kiện hiến">🔴 Không đủ điều kiện hiến</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block font-label-md text-label-md font-bold text-on-surface mb-1">
+                    Điểm đánh giá thể trạng / chất lượng (0 - 10)
+                </label>
+                <input type="number" step="0.5" min="0" max="10" id="editDiemDanhGia" name="diemDanhGia" class="w-full h-11 px-3 bg-surface-container-low rounded-xl font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20" />
+            </div>
+
+            <div>
+                <label class="block font-label-md text-label-md font-bold text-on-surface mb-1">
+                    Nhận xét y tế / Lý do nếu hoãn hiến
+                </label>
+                <textarea id="editNhanXet" name="nhanXet" rows="3" class="w-full p-3 bg-surface-container-low rounded-xl font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20"></textarea>
+            </div>
+
+            <div class="flex items-center justify-end gap-space-sm pt-2">
+                <button type="button" class="px-4 py-2 rounded-xl bg-surface-container text-on-surface hover:bg-surface-container-high font-label-md text-label-md font-semibold transition-colors" onclick="closeEditResultModal()">
+                    Hủy
+                </button>
+                <button type="submit" class="px-5 py-2 rounded-xl bg-primary text-on-primary hover:bg-primary-container font-label-md text-label-md font-bold shadow-md transition-all">
+                    Lưu Thay Đổi
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function openCreateResultModal(maPhieu, hoTen) {
+            document.getElementById('createMaPhieu').value = maPhieu;
+            document.getElementById('createDisplayTicket').innerText = '#DKHM-' + String(maPhieu).padStart(5, '0') + ' (' + hoTen + ')';
+            document.getElementById('createResultModal').classList.remove('hidden');
+        }
+
+        function closeCreateResultModal() {
+            document.getElementById('createResultModal').classList.add('hidden');
+        }
+
+        function openEditResultModal(id, ketQua, diem, nhanXet) {
+            document.getElementById('editId').value = id;
+            document.getElementById('editKetQua').value = ketQua;
+            document.getElementById('editDiemDanhGia').value = diem || '';
+            document.getElementById('editNhanXet').value = nhanXet || '';
+            document.getElementById('editResultModal').classList.remove('hidden');
+        }
+
+        function closeEditResultModal() {
+            document.getElementById('editResultModal').classList.add('hidden');
+        }
+    </script>
+}

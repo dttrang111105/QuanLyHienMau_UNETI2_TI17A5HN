@@ -1,0 +1,336 @@
+@model QuanLyHienMau_UNETI2_TI17A5HN.Models.KetQuaHienMau
+
+@{
+    Layout = "_AdminLayout";
+    ViewData["Title"] = $"Chi Tiết Kết Quả Hiến Máu #KQ-{Model.MaKetQuaHienMau:D5}";
+
+    var isSuccess = Model.KetQua == "Hiến máu thành công";
+    var phieu = Model.PhieuDangKyHienMau;
+    var donor = phieu?.NguoiHienMau;
+    var camp = phieu?.DotHienMau;
+    var lichList = phieu?.LichKhamSangLocs?.OrderByDescending(l => l.ThoiGianBatDau).ToList() ?? new List<QuanLyHienMau_UNETI2_TI17A5HN.Models.LichKhamSangLoc>();
+}
+
+<div class="flex flex-col w-full">
+    <!-- TOP NOTIFICATIONS -->
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="fixed top-20 right-8 z-50 flex items-center gap-space-sm bg-surface-container-lowest px-space-md py-3 rounded-xl shadow-xl border border-emerald-200">
+            <div class="w-8 h-8 rounded-full bg-emerald-500/10 flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-emerald-600 text-[18px]">verified</span>
+            </div>
+            <p class="font-body-sm text-body-sm text-on-surface font-semibold pr-2">@TempData["SuccessMessage"]</p>
+            <button class="p-1 text-on-surface-variant hover:text-on-surface" onclick="this.parentElement.remove()">
+                <span class="material-symbols-outlined text-[16px]">close</span>
+            </button>
+        </div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="fixed top-20 right-8 z-50 flex items-center gap-space-sm bg-surface-container-lowest px-space-md py-3 rounded-xl shadow-xl border border-rose-200">
+            <div class="w-8 h-8 rounded-full bg-rose-500/10 flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-rose-600 text-[18px]">error</span>
+            </div>
+            <p class="font-body-sm text-body-sm text-rose-800 font-semibold pr-2">@TempData["ErrorMessage"]</p>
+            <button class="p-1 text-on-surface-variant hover:text-on-surface" onclick="this.parentElement.remove()">
+                <span class="material-symbols-outlined text-[16px]">close</span>
+            </button>
+        </div>
+    }
+
+    <div class="p-space-lg max-w-[1600px] mx-auto w-full space-y-space-lg">
+        <!-- 1. BREADCRUMB & HEADER -->
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md bg-surface-container-lowest p-space-lg rounded-2xl shadow-sm">
+            <div class="space-y-1">
+                <div class="flex items-center gap-2 text-on-surface-variant font-label-sm text-label-sm">
+                    <a asp-action="KetQuaHienMau" class="hover:text-primary transition-colors">Kết quả hiến máu</a>
+                    <span class="material-symbols-outlined text-[14px]">chevron_right</span>
+                    <span class="text-primary font-semibold">Chi tiết kết quả #KQ-@Model.MaKetQuaHienMau.ToString("D5")</span>
+                </div>
+                <div class="flex flex-wrap items-center gap-3">
+                    <h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight font-bold">
+                        Hồ Sơ Đánh Giá &amp; Kết Quả Hiến Máu
+                    </h1>
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[13px] font-bold @(isSuccess ? "bg-emerald-100 text-emerald-800" : "bg-rose-100 text-rose-800")">
+                        <span class="material-symbols-outlined text-[16px]">@(isSuccess ? "check_circle" : "cancel")</span>
+                        @Model.KetQua
+                    </span>
+                </div>
+                <p class="font-body-md text-body-md text-on-surface-variant">
+                    Liên kết với Phiếu đăng ký: <strong class="text-primary font-mono">#DKHM-@(phieu?.MaPhieu.ToString("D5") ?? "")</strong> • Người hiến: <strong class="text-on-surface">@(donor?.HoTen ?? "")</strong>
+                </p>
+            </div>
+            <div class="flex flex-wrap items-center gap-space-sm">
+                <a asp-action="KetQuaHienMau" class="px-4 py-2.5 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md transition-all flex items-center gap-2 shadow-sm font-semibold">
+                    <span class="material-symbols-outlined text-[18px]">arrow_back</span>
+                    <span>Quay lại danh sách</span>
+                </a>
+                <a asp-action="ChiTietPhieuDangKy" asp-route-id="@Model.MaPhieu" class="px-4 py-2.5 rounded-xl bg-surface-container-low hover:bg-surface-container text-on-surface font-label-md text-label-md transition-all flex items-center gap-2 shadow-sm font-semibold">
+                    <span class="material-symbols-outlined text-[18px]">description</span>
+                    <span>Xem phiếu đăng ký</span>
+                </a>
+                <button type="button" onclick="openEditResultModal()" class="px-5 py-2.5 rounded-xl bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md transition-all flex items-center gap-2 shadow-md font-bold">
+                    <span class="material-symbols-outlined text-[18px]">edit</span>
+                    <span>Cập nhật kết quả</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- 2. MAIN 2-COLUMN SECTION -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start">
+            <!-- LEFT COLUMN (7 COLS): THÔNG TIN KẾT QUẢ & NGƯỜI HIẾN -->
+            <div class="lg:col-span-7 space-y-space-lg">
+                <!-- PANEL 1: KẾT QUẢ HIẾN MÁU CHI TIẾT -->
+                <div class="bg-surface-container-lowest rounded-2xl p-space-lg shadow-sm space-y-space-md border @(isSuccess ? "border-emerald-200" : "border-rose-200")">
+                    <div class="flex items-center justify-between border-b border-surface-container pb-space-sm">
+                        <div class="flex items-center gap-2.5">
+                            <span class="material-symbols-outlined text-primary text-[24px]">biotech</span>
+                            <h2 class="font-title-md text-title-md font-bold text-on-surface">Kết Quả Lâm Sàng &amp; Đánh Giá</h2>
+                        </div>
+                        <span class="font-mono text-xs font-bold text-on-surface-variant">#KQ-@Model.MaKetQuaHienMau.ToString("D5")</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-space-md pt-2">
+                        <!-- Trạng thái kết quả -->
+                        <div class="p-4 rounded-xl @(isSuccess ? "bg-emerald-50/60 text-emerald-900" : "bg-rose-50/60 text-rose-900") flex flex-col justify-between">
+                            <span class="font-label-sm text-label-sm uppercase tracking-wider font-bold">Kết luận y tế</span>
+                            <div class="font-headline-sm text-headline-sm font-bold mt-1 flex items-center gap-2">
+                                <span class="material-symbols-outlined">@(isSuccess ? "check_circle" : "cancel")</span>
+                                <span>@Model.KetQua</span>
+                            </div>
+                            <span class="text-xs mt-2 opacity-80">Đồng bộ tự động vào trạng thái phiếu</span>
+                        </div>
+
+                        <!-- Điểm đánh giá -->
+                        <div class="p-4 rounded-xl bg-surface-container-low flex flex-col justify-between">
+                            <span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant font-semibold">Điểm đánh giá thể trạng</span>
+                            <div class="font-headline-sm text-headline-sm font-bold text-on-surface mt-1 flex items-center gap-2">
+                                @if (Model.DiemDanhGia.HasValue)
+                                {
+                                    <span class="material-symbols-outlined text-amber-500">star</span>
+                                    <span>@Model.DiemDanhGia.Value.ToString("0.0")</span>
+                                    <span class="text-base text-on-surface-variant font-normal">/ 10</span>
+                                }
+                                else
+                                {
+                                    <span class="text-base text-on-surface-variant italic font-normal">Chưa có điểm</span>
+                                }
+                            </div>
+                            <span class="text-xs text-on-surface-variant mt-2">Dựa trên thang đo tiêu chuẩn y tế</span>
+                        </div>
+                    </div>
+
+                    <!-- Nhận xét chi tiết -->
+                    <div class="space-y-1.5 pt-2">
+                        <span class="font-label-sm text-label-sm text-on-surface-variant font-bold uppercase tracking-wider">Nhận xét y tế &amp; Lời dặn lâm sàng</span>
+                        <div class="p-4 rounded-xl bg-surface-container-low text-body-md text-on-surface leading-relaxed">
+                            @if (!string.IsNullOrEmpty(Model.NhanXet))
+                            {
+                                @Model.NhanXet
+                            }
+                            else
+                            {
+                                <span class="text-on-surface-variant italic">Không có nhận xét bổ sung.</span>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Ngày cập nhật -->
+                    <div class="flex items-center justify-between text-body-sm text-on-surface-variant pt-2 border-t border-surface-container">
+                        <span>Thời điểm ghi nhận kết quả:</span>
+                        <strong class="text-on-surface">@(Model.NgayCapNhat?.ToString("HH:mm - dd/MM/yyyy") ?? "Chưa rõ")</strong>
+                    </div>
+                </div>
+
+                <!-- PANEL 2: THÔNG TIN NGƯỜI HIẾN MÁU -->
+                <div class="bg-surface-container-lowest rounded-2xl p-space-lg shadow-sm space-y-space-md">
+                    <div class="flex items-center justify-between border-b border-surface-container pb-space-sm">
+                        <div class="flex items-center gap-2.5">
+                            <span class="material-symbols-outlined text-primary text-[24px]">person</span>
+                            <h2 class="font-title-md text-title-md font-bold text-on-surface">Thông Tin Người Hiến Máu</h2>
+                        </div>
+                        <span class="font-mono text-xs font-bold text-primary">#NHM-@(donor?.MaNguoiHien.ToString("D5") ?? "")</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-space-md">
+                        <div>
+                            <span class="font-label-sm text-label-sm text-on-surface-variant block">Họ và tên</span>
+                            <span class="font-title-md text-title-md font-bold text-on-surface block mt-0.5">@(donor?.HoTen ?? "Chưa rõ")</span>
+                        </div>
+                        <div>
+                            <span class="font-label-sm text-label-sm text-on-surface-variant block">Mã người hiến</span>
+                            <span class="font-title-md text-title-md font-mono font-bold text-on-surface block mt-0.5">#@(donor?.MaNguoiHien.ToString("D5") ?? "Chưa rõ")</span>
+                        </div>
+                        <div>
+                            <span class="font-label-sm text-label-sm text-on-surface-variant block">Nhóm máu</span>
+                            <span class="font-title-md text-title-md font-bold text-primary block mt-0.5">@(donor?.NhomMau ?? "Chưa xác định")</span>
+                        </div>
+                        <div>
+                            <span class="font-label-sm text-label-sm text-on-surface-variant block">Cân nặng</span>
+                            <span class="font-title-md text-title-md font-bold text-on-surface block mt-0.5">@(donor?.CanNang.HasValue == true ? $"{donor.CanNang} kg" : "Chưa rõ")</span>
+                        </div>
+                        <div>
+                            <span class="font-label-sm text-label-sm text-on-surface-variant block">Ngày sinh &amp; Giới tính</span>
+                            <span class="font-body-md text-body-md font-semibold text-on-surface block mt-0.5">
+                                @(donor?.NgaySinh?.ToString("dd/MM/yyyy") ?? "Chưa rõ") • @(donor?.GioiTinh ?? "Chưa rõ")
+                            </span>
+                        </div>
+                        <div>
+                            <span class="font-label-sm text-label-sm text-on-surface-variant block">Số điện thoại</span>
+                            <span class="font-body-md text-body-md font-semibold text-on-surface block mt-0.5">@(donor?.SoDienThoai ?? "Chưa có")</span>
+                        </div>
+                        <div class="sm:col-span-2">
+                            <span class="font-label-sm text-label-sm text-on-surface-variant block">Email</span>
+                            <span class="font-body-md text-body-md font-semibold text-on-surface block mt-0.5">@(donor?.Email ?? "Chưa có email")</span>
+                        </div>
+                        <div class="sm:col-span-2">
+                            <span class="font-label-sm text-label-sm text-on-surface-variant block">Địa chỉ</span>
+                            <span class="font-body-md text-body-md text-on-surface block mt-0.5">@(donor?.DiaChi ?? "Chưa cập nhật")</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT COLUMN (5 COLS): ĐỢT HIẾN MÁU & KHÁM SÀNG LỌC -->
+            <div class="lg:col-span-5 space-y-space-lg">
+                <!-- PANEL 3: THÔNG TIN ĐỢT HIẾN MÁU -->
+                <div class="bg-surface-container-lowest rounded-2xl p-space-lg shadow-sm space-y-space-md">
+                    <div class="flex items-center gap-2.5 border-b border-surface-container pb-space-sm">
+                        <span class="material-symbols-outlined text-primary text-[24px]">campaign</span>
+                        <h2 class="font-title-md text-title-md font-bold text-on-surface">Đợt Hiến Máu Tiếp Nhận</h2>
+                    </div>
+
+                    <div class="space-y-space-sm">
+                        <div>
+                            <span class="font-label-sm text-label-sm text-on-surface-variant block">Tên chiến dịch đợt</span>
+                            <h3 class="font-title-md text-title-md font-bold text-on-surface mt-0.5">@(camp?.TenDot ?? "Hiến máu UNETI")</h3>
+                        </div>
+                        <div>
+                            <span class="font-label-sm text-label-sm text-on-surface-variant block">Đơn vị tổ chức</span>
+                            <p class="font-body-md text-body-md font-semibold text-on-surface mt-0.5">@(camp?.DonViToChuc?.TenDonViToChuc ?? "UNETI")</p>
+                        </div>
+                        <div class="grid grid-cols-2 gap-space-sm pt-1">
+                            <div>
+                                <span class="font-label-sm text-label-sm text-on-surface-variant block">Thời gian bắt đầu</span>
+                                <span class="font-body-md text-body-md font-semibold text-on-surface">@(camp?.NgayBatDauDangKy.ToString("dd/MM/yyyy") ?? "")</span>
+                            </div>
+                            <div>
+                                <span class="font-label-sm text-label-sm text-on-surface-variant block">Hạn đăng ký</span>
+                                <span class="font-body-md text-body-md font-semibold text-on-surface">@(camp?.HanDangKy.ToString("dd/MM/yyyy") ?? "")</span>
+                            </div>
+                        </div>
+                        <div>
+                            <span class="font-label-sm text-label-sm text-on-surface-variant block">Thông tin liên hệ</span>
+                            <p class="font-body-md text-body-md text-on-surface mt-0.5">@(camp?.DonViToChuc?.EmailLienHe ?? camp?.DonViToChuc?.MoTa ?? "Cơ sở UNETI Hà Nội")</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PANEL 4: LỊCH SỬ KHÁM SÀNG LỌC -->
+                <div class="bg-surface-container-lowest rounded-2xl p-space-lg shadow-sm space-y-space-md">
+                    <div class="flex items-center justify-between border-b border-surface-container pb-space-sm">
+                        <div class="flex items-center gap-2.5">
+                            <span class="material-symbols-outlined text-primary text-[24px]">medical_services</span>
+                            <h2 class="font-title-md text-title-md font-bold text-on-surface">Lịch Khám Sàng Lọc</h2>
+                        </div>
+                        <span class="px-2 py-0.5 rounded-full text-xs font-bold bg-surface-container text-on-surface-variant">@lichList.Count ca</span>
+                    </div>
+
+                    @if (!lichList.Any())
+                    {
+                        <div class="p-6 text-center text-on-surface-variant bg-surface-container-low rounded-xl">
+                            <span class="material-symbols-outlined text-[36px] text-on-surface-variant/40">event_busy</span>
+                            <p class="font-label-md text-label-md mt-1 font-semibold">Chưa có lịch khám nào.</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="space-y-space-sm">
+                            @foreach (var l in lichList)
+                            {
+                                <div class="p-3.5 rounded-xl bg-surface-container-low/50 border border-surface-container space-y-1">
+                                    <div class="flex items-center justify-between">
+                                        <span class="font-label-md text-label-md font-bold text-on-surface">
+                                            #LKS-@l.MaLichKhamSangLoc.ToString("D4") • @l.ThoiGianBatDau.ToString("dd/MM/yyyy HH:mm") - @l.ThoiGianKetThuc.ToString("HH:mm")
+                                        </span>
+                                        <span class="px-2 py-0.5 rounded-full text-[11px] font-bold @(l.TrangThai == "Đã hoàn thành" ? "bg-emerald-100 text-emerald-800" : l.TrangThai == "Đã hủy" ? "bg-surface-container text-on-surface-variant" : "bg-sky-100 text-sky-800")">
+                                            @l.TrangThai
+                                        </span>
+                                    </div>
+                                    <p class="text-body-sm text-body-sm text-on-surface-variant">
+                                        Bác sĩ: <strong class="text-on-surface">@(l.BacSiSangLoc ?? "BS. CKI Trần Mai Linh")</strong> • Địa điểm: <strong>@(l.DiaDiemHoacLienKet ?? "Điểm hiến")</strong>
+                                    </p>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL: CẬP NHẬT KẾT QUẢ HIẾN MÁU -->
+<div id="editResultModal" class="fixed inset-0 z-50 bg-inverse-surface/40 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-surface-container-lowest rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden flex flex-col">
+        <div class="p-space-md bg-surface-container flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <span class="material-symbols-outlined text-primary text-[22px]">edit</span>
+                <h3 class="font-title-md text-title-md font-bold text-on-surface">Cập Nhật Kết Quả Hiến Máu</h3>
+            </div>
+            <button class="w-8 h-8 rounded-lg bg-surface-container-low text-on-surface hover:bg-surface-container-highest flex items-center justify-center" onclick="closeEditResultModal()">
+                <span class="material-symbols-outlined text-[18px]">close</span>
+            </button>
+        </div>
+        <form method="post" asp-action="SuaKetQua" class="p-space-lg space-y-space-md">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="id" value="@Model.MaKetQuaHienMau" />
+            <input type="hidden" name="returnUrl" value="@Context.Request.Path@Context.Request.QueryString" />
+
+            <div>
+                <label class="block font-label-md text-label-md font-bold text-on-surface mb-1">
+                    Kết quả thực tế <span class="text-primary">*</span>
+                </label>
+                <select name="ketQua" required class="w-full h-11 px-3 bg-surface-container-low rounded-xl font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20">
+                    <option value="Hiến máu thành công" selected="@(Model.KetQua == "Hiến máu thành công")">🟢 Hiến máu thành công</option>
+                    <option value="Không đủ điều kiện hiến" selected="@(Model.KetQua == "Không đủ điều kiện hiến")">🔴 Không đủ điều kiện hiến</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block font-label-md text-label-md font-bold text-on-surface mb-1">
+                    Điểm đánh giá thể trạng / chất lượng (0 - 10)
+                </label>
+                <input type="number" step="0.5" min="0" max="10" name="diemDanhGia" value="@Model.DiemDanhGia" placeholder="Ví dụ: 9.5" class="w-full h-11 px-3 bg-surface-container-low rounded-xl font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20" />
+            </div>
+
+            <div>
+                <label class="block font-label-md text-label-md font-bold text-on-surface mb-1">
+                    Nhận xét y tế / Lý do nếu hoãn hiến
+                </label>
+                <textarea name="nhanXet" rows="3" class="w-full p-3 bg-surface-container-low rounded-xl font-body-sm text-body-sm text-on-surface focus:outline-none focus:ring-2 focus:ring-primary/20">@Model.NhanXet</textarea>
+            </div>
+
+            <div class="flex items-center justify-end gap-space-sm pt-2">
+                <button type="button" class="px-4 py-2 rounded-xl bg-surface-container text-on-surface hover:bg-surface-container-high font-label-md text-label-md font-semibold transition-colors" onclick="closeEditResultModal()">
+                    Hủy
+                </button>
+                <button type="submit" class="px-5 py-2 rounded-xl bg-primary text-on-primary hover:bg-primary-container font-label-md text-label-md font-bold shadow-md transition-all">
+                    Lưu Thay Đổi
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function openEditResultModal() {
+            document.getElementById('editResultModal').classList.remove('hidden');
+        }
+
+        function closeEditResultModal() {
+            document.getElementById('editResultModal').classList.add('hidden');
+        }
+    </script>
+}
