@@ -21,17 +21,29 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Repositories
 
         public virtual async Task<IEnumerable<T>> GetAllAsync()
         {
-            return await _dbSet.ToListAsync();
+            return await _dbSet.AsNoTracking().ToListAsync();
         }
 
         public virtual async Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate)
         {
-            return await _dbSet.Where(predicate).ToListAsync();
+            return await _dbSet.AsNoTracking().Where(predicate).ToListAsync();
         }
 
         public virtual async Task<T?> GetByIdAsync(object id)
         {
             return await _dbSet.FindAsync(id);
+        }
+
+        public virtual async Task<bool> AnyAsync(Expression<Func<T, bool>> predicate)
+        {
+            return await _dbSet.AnyAsync(predicate);
+        }
+
+        public virtual async Task<int> CountAsync(Expression<Func<T, bool>>? predicate = null)
+        {
+            return predicate == null
+                ? await _dbSet.CountAsync()
+                : await _dbSet.CountAsync(predicate);
         }
 
         public virtual async Task AddAsync(T entity)

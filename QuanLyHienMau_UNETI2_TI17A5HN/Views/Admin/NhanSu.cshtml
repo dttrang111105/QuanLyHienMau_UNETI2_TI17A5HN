@@ -2,12 +2,15 @@
 @{
     ViewData["Title"] = "Quản lý tài khoản & Phân quyền hệ thống";
     Layout = "_AdminLayout";
-    var totalAccounts = ViewBag.TotalAccounts ?? (Model?.Count() ?? 0);
-    var adminCount = ViewBag.AdminCount ?? 0;
-    var medicalStaffCount = ViewBag.MedicalStaffCount ?? 0;
-    var donorCount = ViewBag.DonorCount ?? 0;
-    var lockedCount = Model?.Count(a => a.TrangThai == "Bị khóa") ?? 0;
-    var activeCount = (Model?.Count() ?? 0) - lockedCount;
+    var filteredCount = Model?.Count() ?? 0;
+    var totalAccounts = (int?)ViewBag.TotalAccounts ?? filteredCount;
+    var adminCount = (int?)ViewBag.AdminCount ?? 0;
+    var medicalStaffCount = (int?)ViewBag.MedicalStaffCount ?? 0;
+    var donorCount = (int?)ViewBag.DonorCount ?? 0;
+    var lockedCount = (int?)ViewBag.LockedCount ?? (Model?.Count(a => a.TrangThai == "Bị khóa") ?? 0);
+    var activeCount = (int?)ViewBag.ActiveCount ?? (totalAccounts - lockedCount);
+    var currentUserIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+    int.TryParse(currentUserIdStr, out int currentUserId);
 }
 
 <!-- Subtle Ambient Glow -->
@@ -433,7 +436,7 @@
                     <span class="material-symbols-outlined text-[18px]">search</span>
                     <span>Tìm Kiếm</span>
                 </button>
-                <a asp-action="NhanSu" class="p-2.5 rounded-xl bg-surface-container-low hover:bg-surface-container text-on-surface transition-colors" title="Làm mới danh sách">
+                <a asp-controller="Admin" asp-action="NhanSu" class="p-2.5 rounded-xl bg-surface-container-low hover:bg-surface-container text-on-surface transition-colors" title="Làm mới danh sách">
                     <span class="material-symbols-outlined text-[20px]">refresh</span>
                 </a>
             </div>
@@ -550,19 +553,30 @@
                                 </td>
                                 <td class="py-3.5 px-space-md text-right">
                                     <div class="inline-flex items-center gap-2">
-                                        <button type="button" onclick="openResetPasswordModal(@acc.MaTaiKhoan, '@acc.TenDangNhap', '@acc.HoTen')" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer bg-surface-container hover:bg-surface-container-high text-on-surface" title="Đặt lại mật khẩu">
+                                        <button type="button" onclick='openResetPasswordModal(@acc.MaTaiKhoan, @Html.Raw(System.Text.Json.JsonSerializer.Serialize(acc.TenDangNhap)), @Html.Raw(System.Text.Json.JsonSerializer.Serialize(acc.HoTen)))' class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer bg-surface-container hover:bg-surface-container-high text-on-surface" title="Đặt lại mật khẩu">
                                             <span class="material-symbols-outlined text-[16px]">lock_reset</span>
                                             <span>Đổi MK</span>
                                         </button>
-                                        <form method="post" asp-controller="Admin" asp-action="KhoaMoKhoaTaiKhoan" class="inline">
-                                            @Html.AntiForgeryToken()
-                                            <input type="hidden" name="id" value="@acc.MaTaiKhoan" />
-                                            <input type="hidden" name="returnUrl" value="@Context.Request.Path@Context.Request.QueryString" />
-                                            <button type="submit" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer @(isLocked ? "bg-emerald-600 hover:bg-emerald-700 text-white" : "bg-red-50 hover:bg-red-100 text-red-700 border border-red-200")" title="@(isLocked ? "Mở khóa tài khoản" : "Khóa tài khoản này")" onclick="return confirm('Bạn có chắc chắn muốn @(isLocked ? "MỞ KHÓA" : "KHÓA") tài khoản \'@acc.TenDangNhap\' (@acc.HoTen) không?');">
-                                                <span class="material-symbols-outlined text-[16px]">@(isLocked ? "lock_open" : "lock")</span>
-                                                <span>@(isLocked ? "Mở Khóa" : "Khóa TK")</span>
-                                            </button>
-                                        </form>
+                                        @if (acc.MaTaiKhoan == currentUserId && !isLocked)
+                                        {
+                                            <span class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold bg-surface-container-low text-on-surface-variant border border-surface-container" title="Tài khoản đang đăng nhập">
+                                                <span class="material-symbols-outlined text-[16px] text-emerald-600">verified_user</span>
+                                                <span>Tài khoản của bạn</span>
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            var confirmText = $"Bạn có chắc chắn muốn {(isLocked ? "MỞ KHÓA" : "KHÓA")} tài khoản '{acc.TenDangNhap}' ({acc.HoTen}) không?";
+                                            <form method="post" asp-controller="Admin" asp-action="KhoaMoKhoaTaiKhoan" class="inline">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="id" value="@acc.MaTaiKhoan" />
+                                                <input type="hidden" name="returnUrl" value="@Context.Request.Path@Context.Request.QueryString" />
+                                                <button type="submit" class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer @(isLocked ? "bg-emerald-600 hover:bg-emerald-700 text-white" : "bg-red-50 hover:bg-red-100 text-red-700 border border-red-200")" title="@(isLocked ? "Mở khóa tài khoản" : "Khóa tài khoản này")" onclick='return confirm(@Html.Raw(System.Text.Json.JsonSerializer.Serialize(confirmText)));'>
+                                                    <span class="material-symbols-outlined text-[16px]">@(isLocked ? "lock_open" : "lock")</span>
+                                                    <span>@(isLocked ? "Mở Khóa" : "Khóa TK")</span>
+                                                </button>
+                                            </form>
+                                        }
                                     </div>
                                 </td>
                             </tr>
@@ -583,7 +597,9 @@
             <div class="px-space-md py-3 bg-surface-container-low flex flex-col sm:flex-row items-center justify-between gap-3 text-body-sm text-on-surface-variant">
                 <div class="flex items-center gap-2">
                     <span>Hiển thị</span>
-                    <span class="font-semibold text-on-surface">@(Model?.Count() ?? 0)</span>
+                    <span class="font-semibold text-on-surface">@filteredCount</span>
+                    <span>/</span>
+                    <span class="font-semibold text-on-surface">@totalAccounts</span>
                     <span>tài khoản trên hệ thống</span>
                 </div>
             </div>

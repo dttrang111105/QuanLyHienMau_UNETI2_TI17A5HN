@@ -6,14 +6,24 @@ using QuanLyHienMau_UNETI2_TI17A5HN.Models;
 
 namespace QuanLyHienMau_UNETI2_TI17A5HN.Repositories
 {
+    public record AccountStats(
+        int TotalCount,
+        int AdminCount,
+        int MedicalStaffCount,
+        int DonorCount,
+        int ActiveCount,
+        int LockedCount);
+
     public interface ITaiKhoanRepository : IRepository<TaiKhoan>
     {
         Task<TaiKhoan?> GetByTenDangNhapAsync(string tenDangNhap);
         Task<TaiKhoan?> FindForLoginAsync(string usernameOrEmailOrPhone);
         Task<bool> IsTenDangNhapExistsAsync(string tenDangNhap, int? excludeId = null);
         Task<bool> IsEmailExistsAsync(string email, int? excludeId = null);
+        Task<bool> IsSoDienThoaiExistsAsync(string soDienThoai, int? excludeMaTaiKhoan = null);
         Task<IEnumerable<TaiKhoan>> GetAllWithProfileAsync(string? search = null, string? vaiTro = null, string? trangThai = null);
         Task<TaiKhoan?> GetByIdWithProfileAsync(int id);
+        Task<AccountStats> GetAccountStatsAsync();
         Task<bool> RegisterDonorAccountAsync(TaiKhoan account, NguoiHienMau? donorProfile);
         Task<bool> UpdateAccountStatusAsync(int id, string newStatus);
         Task<bool> ChangePasswordAsync(int id, string hashedPassword);

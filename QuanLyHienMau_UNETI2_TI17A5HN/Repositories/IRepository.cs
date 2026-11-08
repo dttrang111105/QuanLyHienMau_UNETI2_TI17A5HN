@@ -11,6 +11,8 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Repositories
         Task<IEnumerable<T>> GetAllAsync();
         Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate);
         Task<T?> GetByIdAsync(object id);
+        Task<bool> AnyAsync(Expression<Func<T, bool>> predicate);
+        Task<int> CountAsync(Expression<Func<T, bool>>? predicate = null);
         Task AddAsync(T entity);
         void Update(T entity);
         void Delete(T entity);

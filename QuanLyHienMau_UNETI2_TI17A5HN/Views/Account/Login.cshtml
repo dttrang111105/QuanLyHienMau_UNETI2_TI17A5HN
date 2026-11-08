@@ -289,7 +289,7 @@ giao diện trang đăng nhập. -->
                                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-secondary">
                                         <span class="material-symbols-outlined text-[18px]">fitness_center</span>
                                     </div>
-                                    <input class="w-full h-10 pl-10 pr-3 rounded-xl border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20 font-body-md text-on-surface text-sm transition-all bg-surface-container-lowest" id="reg-weight" name="canNang" value="@(ViewBag.RegCanNang != null ? ViewBag.RegCanNang.ToString() : "")" placeholder="Ví dụ: 55" type="number" step="0.5" min="30" max="150" />
+                                    <input class="w-full h-10 pl-10 pr-3 rounded-xl border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20 font-body-md text-on-surface text-sm transition-all bg-surface-container-lowest" id="reg-weight" name="canNang" value="@(ViewBag.RegCanNang != null ? ViewBag.RegCanNang.ToString() : "")" placeholder="Ví dụ: 55" type="number" step="0.5" min="30" max="200" />
                                 </div>
                             </div>
                         </div>
@@ -304,7 +304,7 @@ giao diện trang đăng nhập. -->
                                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-secondary">
                                         <span class="material-symbols-outlined text-[18px]">lock</span>
                                     </div>
-                                    <input class="w-full h-10 pl-10 pr-9 rounded-xl border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20 font-body-md text-on-surface text-sm transition-all bg-surface-container-lowest" id="reg-password" name="matKhau" value="@(ViewBag.RegMatKhau ?? "")" minlength="6" placeholder="Tối thiểu 6 ký tự" required type="password" />
+                                    <input class="w-full h-10 pl-10 pr-9 rounded-xl border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20 font-body-md text-on-surface text-sm transition-all bg-surface-container-lowest" id="reg-password" name="matKhau" minlength="6" placeholder="Tối thiểu 6 ký tự" required type="password" />
                                     <button class="absolute inset-y-0 right-0 pr-2.5 flex items-center text-secondary hover:text-on-surface cursor-pointer" onclick="togglePasswordVisibility('reg-password', 'eye-reg-pwd')" type="button">
                                         <span class="material-symbols-outlined text-[16px]" id="eye-reg-pwd">visibility</span>
                                     </button>
@@ -318,7 +318,7 @@ giao diện trang đăng nhập. -->
                                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-secondary">
                                         <span class="material-symbols-outlined text-[18px]">lock_reset</span>
                                     </div>
-                                    <input class="w-full h-10 pl-10 pr-9 rounded-xl border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20 font-body-md text-on-surface text-sm transition-all bg-surface-container-lowest" id="reg-confirm-password" name="xacNhanMatKhau" value="@(ViewBag.RegXacNhanMatKhau ?? "")" minlength="6" placeholder="Nhập lại mật khẩu" required type="password" />
+                                    <input class="w-full h-10 pl-10 pr-9 rounded-xl border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20 font-body-md text-on-surface text-sm transition-all bg-surface-container-lowest" id="reg-confirm-password" name="xacNhanMatKhau" minlength="6" placeholder="Nhập lại mật khẩu" required type="password" />
                                     <button class="absolute inset-y-0 right-0 pr-2.5 flex items-center text-secondary hover:text-on-surface cursor-pointer" onclick="togglePasswordVisibility('reg-confirm-password', 'eye-reg-cpwd')" type="button">
                                         <span class="material-symbols-outlined text-[16px]" id="eye-reg-cpwd">visibility</span>
                                     </button>

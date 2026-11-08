@@ -16,6 +16,7 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
     {
         private readonly IDonViToChucRepository _donViRepository;
         private static readonly Regex EmailRegex = new(@"^[^@\s]+@[^@\s]+\.[^@\s]+$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static readonly HashSet<string> AllowedStatuses = new(StringComparer.Ordinal) { "Hoạt động", "Tạm dừng" };
 
         public DonViToChucController(IDonViToChucRepository donViRepository)
         {
@@ -26,8 +27,15 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
         public async Task<IActionResult> Index(string? search, string? status)
         {
             var donViList = await _donViRepository.GetAllWithDotHienMauAsync(search, status);
+            var stats = await _donViRepository.GetDonViStatsAsync();
+
             ViewBag.CurrentSearch = search;
             ViewBag.CurrentStatus = status;
+            ViewBag.TotalDonViCount = stats.TotalCount;
+            ViewBag.ActiveDonViCount = stats.ActiveCount;
+            ViewBag.InactiveDonViCount = stats.InactiveCount;
+            ViewBag.TotalDotCount = stats.TotalDotCount;
+
             return View("~/Views/Admin/DonViToChuc.cshtml", donViList);
         }
 
@@ -39,7 +47,21 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
             {
                 return NotFound("Không tìm thấy đơn vị tổ chức.");
             }
-            return View(donVi);
+
+            if (Request.Headers.XRequestedWith == "XMLHttpRequest")
+            {
+                return Json(new
+                {
+                    donVi.MaDonViToChuc,
+                    donVi.TenDonViToChuc,
+                    donVi.MoTa,
+                    donVi.EmailLienHe,
+                    donVi.TrangThai,
+                    SoDotHienMau = donVi.DotHienMaus?.Count ?? 0
+                });
+            }
+
+            return RedirectToAction("Index", "DotHienMau", new { donViId = id });
         }
 
         // POST: /DonViToChuc/Create
@@ -48,33 +70,49 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create([Bind("TenDonViToChuc,MoTa,EmailLienHe,TrangThai")] DonViToChuc donVi)
         {
-            // 1. Kiểm tra tên bắt buộc
             if (string.IsNullOrWhiteSpace(donVi.TenDonViToChuc))
             {
                 TempData["ErrorMessage"] = "Tên đơn vị tổ chức không được để trống.";
                 return RedirectToAction(nameof(Index));
             }
 
-            // 2. Kiểm tra định dạng email nếu có
+            var tenTrimmed = donVi.TenDonViToChuc.Trim();
+            if (tenTrimmed.Length > 200)
+            {
+                TempData["ErrorMessage"] = "Tên đơn vị tổ chức không được vượt quá 200 ký tự.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            string? cleanEmail = null;
             if (!string.IsNullOrWhiteSpace(donVi.EmailLienHe))
             {
-                if (!EmailRegex.IsMatch(donVi.EmailLienHe.Trim()))
+                cleanEmail = donVi.EmailLienHe.Trim();
+                if (cleanEmail.Length > 100 || !EmailRegex.IsMatch(cleanEmail))
                 {
                     TempData["ErrorMessage"] = "Địa chỉ email liên hệ không đúng định dạng.";
                     return RedirectToAction(nameof(Index));
                 }
             }
 
-            // 3. Kiểm tra trùng tên đơn vị thông qua Repository
-            var tenTrimmed = donVi.TenDonViToChuc.Trim();
-            var isDuplicate = await _donViRepository.IsTenDonViExistsAsync(tenTrimmed);
-            if (isDuplicate)
+            if (!string.IsNullOrWhiteSpace(donVi.MoTa) && donVi.MoTa.Trim().Length > 500)
+            {
+                TempData["ErrorMessage"] = "Mô tả đơn vị tổ chức không được vượt quá 500 ký tự.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            if (await _donViRepository.IsTenDonViExistsAsync(tenTrimmed))
             {
                 TempData["ErrorMessage"] = $"Tên đơn vị \"{tenTrimmed}\" đã tồn tại. Vui lòng chọn tên khác.";
                 return RedirectToAction(nameof(Index));
             }
 
             donVi.TenDonViToChuc = tenTrimmed;
+            donVi.EmailLienHe = cleanEmail;
+            donVi.MoTa = donVi.MoTa?.Trim();
+            donVi.TrangThai = (!string.IsNullOrWhiteSpace(donVi.TrangThai) && AllowedStatuses.Contains(donVi.TrangThai.Trim()))
+                ? donVi.TrangThai.Trim()
+                : "Hoạt động";
+
             await _donViRepository.AddAsync(donVi);
             await _donViRepository.SaveChangesAsync();
             TempData["SuccessMessage"] = "Thêm mới đơn vị tổ chức thành công!";
@@ -98,18 +136,31 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
+            var tenTrimmed = donVi.TenDonViToChuc.Trim();
+            if (tenTrimmed.Length > 200)
+            {
+                TempData["ErrorMessage"] = "Tên đơn vị tổ chức không được vượt quá 200 ký tự.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            string? cleanEmail = null;
             if (!string.IsNullOrWhiteSpace(donVi.EmailLienHe))
             {
-                if (!EmailRegex.IsMatch(donVi.EmailLienHe.Trim()))
+                cleanEmail = donVi.EmailLienHe.Trim();
+                if (cleanEmail.Length > 100 || !EmailRegex.IsMatch(cleanEmail))
                 {
                     TempData["ErrorMessage"] = "Địa chỉ email liên hệ không đúng định dạng.";
                     return RedirectToAction(nameof(Index));
                 }
             }
 
-            var tenTrimmed = donVi.TenDonViToChuc.Trim();
-            var isDuplicate = await _donViRepository.IsTenDonViExistsAsync(tenTrimmed, donVi.MaDonViToChuc);
-            if (isDuplicate)
+            if (!string.IsNullOrWhiteSpace(donVi.MoTa) && donVi.MoTa.Trim().Length > 500)
+            {
+                TempData["ErrorMessage"] = "Mô tả đơn vị tổ chức không được vượt quá 500 ký tự.";
+                return RedirectToAction(nameof(Index));
+            }
+
+            if (await _donViRepository.IsTenDonViExistsAsync(tenTrimmed, donVi.MaDonViToChuc))
             {
                 TempData["ErrorMessage"] = $"Tên đơn vị \"{tenTrimmed}\" đã tồn tại. Vui lòng chọn tên khác.";
                 return RedirectToAction(nameof(Index));
@@ -122,9 +173,11 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
             }
 
             existing.TenDonViToChuc = tenTrimmed;
-            existing.MoTa = donVi.MoTa;
-            existing.EmailLienHe = donVi.EmailLienHe?.Trim();
-            existing.TrangThai = donVi.TrangThai;
+            existing.MoTa = donVi.MoTa?.Trim();
+            existing.EmailLienHe = cleanEmail;
+            existing.TrangThai = (!string.IsNullOrWhiteSpace(donVi.TrangThai) && AllowedStatuses.Contains(donVi.TrangThai.Trim()))
+                ? donVi.TrangThai.Trim()
+                : "Hoạt động";
 
             _donViRepository.Update(existing);
             await _donViRepository.SaveChangesAsync();
@@ -138,22 +191,24 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int id)
         {
-            var hasDot = await _donViRepository.HasDotHienMauAsync(id);
             var donVi = await _donViRepository.GetByIdAsync(id);
-
-            if (donVi != null)
+            if (donVi == null)
             {
-                if (hasDot)
-                {
-                    TempData["ErrorMessage"] = $"Không thể xóa đơn vị \"{donVi.TenDonViToChuc}\" vì đang có đợt hiến máu liên kết. Không được xóa đơn vị nếu làm các đợt hiến máu không còn hợp lệ.";
-                }
-                else
-                {
-                    _donViRepository.Delete(donVi);
-                    await _donViRepository.SaveChangesAsync();
-                    TempData["SuccessMessage"] = "Đã xóa đơn vị tổ chức thành công!";
-                }
+                TempData["ErrorMessage"] = "Không tìm thấy đơn vị tổ chức cần xóa.";
+                return RedirectToAction(nameof(Index));
             }
+
+            if (await _donViRepository.HasDotHienMauAsync(id))
+            {
+                TempData["ErrorMessage"] = $"Không thể xóa đơn vị \"{donVi.TenDonViToChuc}\" vì đang có đợt hiến máu liên kết. Việc xóa sẽ làm các đợt hiến máu này không còn hợp lệ.";
+            }
+            else
+            {
+                _donViRepository.Delete(donVi);
+                await _donViRepository.SaveChangesAsync();
+                TempData["SuccessMessage"] = "Đã xóa đơn vị tổ chức thành công!";
+            }
+
             return RedirectToAction(nameof(Index));
         }
 

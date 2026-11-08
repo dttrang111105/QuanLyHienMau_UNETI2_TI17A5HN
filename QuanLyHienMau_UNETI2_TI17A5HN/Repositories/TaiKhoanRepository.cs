@@ -17,62 +17,76 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Repositories
         public async Task<TaiKhoan?> GetByTenDangNhapAsync(string tenDangNhap)
         {
             if (string.IsNullOrWhiteSpace(tenDangNhap)) return null;
-            var clean = tenDangNhap.Trim().ToLower();
+            var clean = tenDangNhap.Trim();
             return await _dbSet
+                .AsNoTracking()
                 .Include(t => t.NguoiHienMau)
-                .FirstOrDefaultAsync(t => t.TenDangNhap.ToLower() == clean);
+                .FirstOrDefaultAsync(t => t.TenDangNhap == clean);
         }
 
         public async Task<TaiKhoan?> FindForLoginAsync(string usernameOrEmailOrPhone)
         {
             if (string.IsNullOrWhiteSpace(usernameOrEmailOrPhone)) return null;
             var trimmed = usernameOrEmailOrPhone.Trim();
-            var trimmedLower = trimmed.ToLower();
 
             return await _dbSet
+                .AsNoTracking()
                 .Include(t => t.NguoiHienMau)
-                .FirstOrDefaultAsync(t => t.TenDangNhap.ToLower() == trimmedLower ||
-                                         (t.Email != null && t.Email.ToLower() == trimmedLower) ||
-                                         (t.NguoiHienMau != null && t.NguoiHienMau.SoDienThoai == trimmed));
+                .FirstOrDefaultAsync(t => t.TenDangNhap == trimmed ||
+                                          (t.Email != null && t.Email == trimmed) ||
+                                          (t.NguoiHienMau != null && t.NguoiHienMau.SoDienThoai == trimmed));
         }
 
         public async Task<bool> IsTenDangNhapExistsAsync(string tenDangNhap, int? excludeId = null)
         {
             if (string.IsNullOrWhiteSpace(tenDangNhap)) return false;
-            var clean = tenDangNhap.Trim().ToLower();
-            var query = _dbSet.AsQueryable();
+            var clean = tenDangNhap.Trim();
+            var query = _dbSet.AsNoTracking();
             if (excludeId.HasValue)
             {
                 query = query.Where(t => t.MaTaiKhoan != excludeId.Value);
             }
-            return await query.AnyAsync(t => t.TenDangNhap.ToLower() == clean);
+            return await query.AnyAsync(t => t.TenDangNhap == clean);
         }
 
         public async Task<bool> IsEmailExistsAsync(string email, int? excludeId = null)
         {
             if (string.IsNullOrWhiteSpace(email)) return false;
-            var clean = email.Trim().ToLower();
-            var query = _dbSet.AsQueryable();
+            var clean = email.Trim();
+            var query = _dbSet.AsNoTracking();
             if (excludeId.HasValue)
             {
                 query = query.Where(t => t.MaTaiKhoan != excludeId.Value);
             }
-            return await query.AnyAsync(t => t.Email != null && t.Email.ToLower() == clean);
+            return await query.AnyAsync(t => t.Email != null && t.Email == clean);
+        }
+
+        public async Task<bool> IsSoDienThoaiExistsAsync(string soDienThoai, int? excludeMaTaiKhoan = null)
+        {
+            if (string.IsNullOrWhiteSpace(soDienThoai)) return false;
+            var clean = soDienThoai.Trim();
+            var query = _context.NguoiHienMaus.AsNoTracking();
+            if (excludeMaTaiKhoan.HasValue)
+            {
+                query = query.Where(n => n.MaTaiKhoan != excludeMaTaiKhoan.Value);
+            }
+            return await query.AnyAsync(n => n.SoDienThoai != null && n.SoDienThoai == clean);
         }
 
         public async Task<IEnumerable<TaiKhoan>> GetAllWithProfileAsync(string? search = null, string? vaiTro = null, string? trangThai = null)
         {
             var query = _dbSet
+                .AsNoTracking()
                 .Include(t => t.NguoiHienMau)
                 .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(search))
             {
-                var searchLower = search.Trim().ToLower();
-                query = query.Where(t => t.TenDangNhap.ToLower().Contains(searchLower) ||
-                                         t.HoTen.ToLower().Contains(searchLower) ||
-                                         (t.Email != null && t.Email.ToLower().Contains(searchLower)) ||
-                                         (t.NguoiHienMau != null && t.NguoiHienMau.SoDienThoai != null && t.NguoiHienMau.SoDienThoai.Contains(searchLower)));
+                var keyword = search.Trim();
+                query = query.Where(t => t.TenDangNhap.Contains(keyword) ||
+                                         t.HoTen.Contains(keyword) ||
+                                         (t.Email != null && t.Email.Contains(keyword)) ||
+                                         (t.NguoiHienMau != null && t.NguoiHienMau.SoDienThoai != null && t.NguoiHienMau.SoDienThoai.Contains(keyword)));
             }
 
             if (!string.IsNullOrWhiteSpace(vaiTro) && vaiTro != "all")
@@ -95,6 +109,24 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Repositories
                 .FirstOrDefaultAsync(t => t.MaTaiKhoan == id);
         }
 
+        public async Task<AccountStats> GetAccountStatsAsync()
+        {
+            var grouped = await _dbSet
+                .AsNoTracking()
+                .GroupBy(t => new { t.VaiTro, t.TrangThai })
+                .Select(g => new { g.Key.VaiTro, g.Key.TrangThai, Count = g.Count() })
+                .ToListAsync();
+
+            int total = grouped.Sum(x => x.Count);
+            int admin = grouped.Where(x => x.VaiTro == "Admin").Sum(x => x.Count);
+            int staff = grouped.Where(x => x.VaiTro == "Medical Staff").Sum(x => x.Count);
+            int donor = grouped.Where(x => x.VaiTro == "Donor").Sum(x => x.Count);
+            int locked = grouped.Where(x => x.TrangThai == "Bị khóa").Sum(x => x.Count);
+            int active = total - locked;
+
+            return new AccountStats(total, admin, staff, donor, active, locked);
+        }
+
         public async Task<bool> RegisterDonorAccountAsync(TaiKhoan account, NguoiHienMau? donorProfile)
         {
             using var transaction = await _context.Database.BeginTransactionAsync();
@@ -114,6 +146,7 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Repositories
                     {
                         donorProfile.Email = account.Email;
                     }
+                    donorProfile.TrangThai = account.TrangThai ?? "Hoạt động";
                     await _context.NguoiHienMaus.AddAsync(donorProfile);
                     await _context.SaveChangesAsync();
                 }
@@ -130,9 +163,18 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Repositories
 
         public async Task<bool> UpdateAccountStatusAsync(int id, string newStatus)
         {
-            var account = await _dbSet.FindAsync(id);
+            var account = await _dbSet
+                .Include(t => t.NguoiHienMau)
+                .FirstOrDefaultAsync(t => t.MaTaiKhoan == id);
+
             if (account == null) return false;
+
             account.TrangThai = newStatus;
+            if (account.NguoiHienMau != null)
+            {
+                account.NguoiHienMau.TrangThai = newStatus;
+            }
+
             return await _context.SaveChangesAsync() > 0;
         }
 

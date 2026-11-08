@@ -6,10 +6,17 @@ using QuanLyHienMau_UNETI2_TI17A5HN.Models;
 
 namespace QuanLyHienMau_UNETI2_TI17A5HN.Repositories
 {
+    public record DonViStats(
+        int TotalCount,
+        int ActiveCount,
+        int InactiveCount,
+        int TotalDotCount);
+
     public interface IDonViToChucRepository : IRepository<DonViToChuc>
     {
         Task<IEnumerable<DonViToChuc>> GetAllWithDotHienMauAsync(string? search = null, string? trangThai = null);
         Task<DonViToChuc?> GetByIdWithDotHienMauAsync(int id);
+        Task<DonViStats> GetDonViStatsAsync();
         Task<bool> IsTenDonViExistsAsync(string tenDonVi, int? excludeId = null);
         Task<bool> HasDotHienMauAsync(int maDonViToChuc);
     }

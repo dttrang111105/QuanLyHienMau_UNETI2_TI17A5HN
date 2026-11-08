@@ -10,9 +10,12 @@
     Layout = "_AdminLayout";
     var currentSearch = ViewBag.CurrentSearch as string;
     var currentStatus = ViewBag.CurrentStatus as string;
-    var totalCount = Model?.Count() ?? 0;
-    var activeCount = Model?.Count(d => d.TrangThai == "Hoạt động") ?? 0;
-    var inactiveCount = totalCount - activeCount;
+    var filteredCount = Model?.Count() ?? 0;
+    var totalCount = (int?)ViewBag.TotalDonViCount ?? filteredCount;
+    var activeCount = (int?)ViewBag.ActiveDonViCount ?? (Model?.Count(d => d.TrangThai == "Hoạt động") ?? 0);
+    var inactiveCount = (int?)ViewBag.InactiveDonViCount ?? (totalCount - activeCount);
+    var totalDotCount = (int?)ViewBag.TotalDotCount ?? (Model?.Sum(d => d.DotHienMaus?.Count ?? 0) ?? 0);
+    var isAdmin = User.IsInRole("Admin");
 }
 
 <div class="p-space-lg space-y-space-lg max-w-[1600px] mx-auto w-full">
@@ -60,10 +63,20 @@
             </p>
         </div>
         <div class="flex flex-wrap items-center gap-3">
-            <button class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-on-primary font-label-md text-label-md shadow-md shadow-primary/20 hover:bg-primary-container transition-all cursor-pointer" type="button" onclick="openCreateModal()">
-                <span class="material-symbols-outlined text-[18px]">add_business</span>
-                <span>+ Thêm Đơn Vị Đối Tác Mới</span>
-            </button>
+            @if (isAdmin)
+            {
+                <button class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-on-primary font-label-md text-label-md shadow-md shadow-primary/20 hover:bg-primary-container transition-all cursor-pointer" type="button" onclick="openCreateModal()">
+                    <span class="material-symbols-outlined text-[18px]">add_business</span>
+                    <span>+ Thêm Đơn Vị Đối Tác Mới</span>
+                </button>
+            }
+            else
+            {
+                <span class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-surface-container text-on-surface-variant font-label-md text-label-md font-semibold">
+                    <span class="material-symbols-outlined text-[18px] text-primary">visibility</span>
+                    <span>Chế độ tra cứu (Nhân viên y tế)</span>
+                </span>
+            }
         </div>
     </div>
 
@@ -117,7 +130,7 @@
             <div class="flex items-start justify-between">
                 <div>
                     <p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Tổng đợt hiến máu</p>
-                    <h3 class="font-display-hero text-display-hero text-on-surface mt-1 leading-none font-bold">@(Model?.Sum(d => d.DotHienMaus?.Count ?? 0) ?? 0) <span class="font-title-md text-title-md font-medium text-on-surface-variant">Đợt</span></h3>
+                    <h3 class="font-display-hero text-display-hero text-on-surface mt-1 leading-none font-bold">@totalDotCount <span class="font-title-md text-title-md font-medium text-on-surface-variant">Đợt</span></h3>
                 </div>
                 <div class="w-12 h-12 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center">
                     <span class="material-symbols-outlined text-[24px]">event_note</span>
@@ -155,15 +168,15 @@
             <div>
                 <div class="flex items-center gap-3">
                     <h2 class="font-headline-sm text-headline-sm text-on-surface">Danh Mục Đơn Vị Tổ Chức</h2>
-                    <span class="px-2.5 py-0.5 rounded-full bg-primary/10 text-primary font-label-sm text-label-sm font-bold">@totalCount Đơn Vị</span>
+                    <span class="px-2.5 py-0.5 rounded-full bg-primary/10 text-primary font-label-sm text-label-sm font-bold">@filteredCount Đơn Vị</span>
                 </div>
                 <p class="font-body-sm text-body-sm text-on-surface-variant">Danh sách các đơn vị phối hợp tổ chức và điểm tiếp nhận hiến máu tình nguyện</p>
             </div>
             <!-- Filter buttons -->
             <div class="flex flex-wrap items-center gap-2">
-                <a asp-action="DonViToChuc" asp-route-status="all" class="px-3.5 py-2 rounded-xl @(string.IsNullOrEmpty(currentStatus) || currentStatus == "all" ? "bg-primary text-on-primary font-semibold" : "bg-surface-container text-on-surface hover:bg-surface-container-high") font-label-md text-label-md transition-all">Tất cả (@totalCount)</a>
-                <a asp-action="DonViToChuc" asp-route-status="Hoạt động" class="px-3.5 py-2 rounded-xl @(currentStatus == "Hoạt động" ? "bg-primary text-on-primary font-semibold" : "bg-surface-container text-on-surface hover:bg-surface-container-high") font-label-md text-label-md transition-all">Hoạt động (@activeCount)</a>
-                <a asp-action="DonViToChuc" asp-route-status="Tạm dừng" class="px-3.5 py-2 rounded-xl @(currentStatus == "Tạm dừng" ? "bg-primary text-on-primary font-semibold" : "bg-surface-container text-on-surface hover:bg-surface-container-high") font-label-md text-label-md transition-all">Tạm dừng (@inactiveCount)</a>
+                <a asp-controller="Admin" asp-action="DonViToChuc" asp-route-status="all" asp-route-search="@currentSearch" class="px-3.5 py-2 rounded-xl @(string.IsNullOrEmpty(currentStatus) || currentStatus == "all" ? "bg-primary text-on-primary font-semibold" : "bg-surface-container text-on-surface hover:bg-surface-container-high") font-label-md text-label-md transition-all">Tất cả (@totalCount)</a>
+                <a asp-controller="Admin" asp-action="DonViToChuc" asp-route-status="Hoạt động" asp-route-search="@currentSearch" class="px-3.5 py-2 rounded-xl @(currentStatus == "Hoạt động" ? "bg-primary text-on-primary font-semibold" : "bg-surface-container text-on-surface hover:bg-surface-container-high") font-label-md text-label-md transition-all">Hoạt động (@activeCount)</a>
+                <a asp-controller="Admin" asp-action="DonViToChuc" asp-route-status="Tạm dừng" asp-route-search="@currentSearch" class="px-3.5 py-2 rounded-xl @(currentStatus == "Tạm dừng" ? "bg-primary text-on-primary font-semibold" : "bg-surface-container text-on-surface hover:bg-surface-container-high") font-label-md text-label-md transition-all">Tạm dừng (@inactiveCount)</a>
             </div>
         </div>
 
@@ -251,14 +264,24 @@
                                     }
                                 </td>
                                 <td class="py-4 px-4 text-right">
-                                    <div class="flex items-center justify-end gap-1">
-                                        <button class="p-2 text-on-surface-variant hover:text-primary hover:bg-surface-container rounded-lg transition-colors cursor-pointer" title="Chỉnh sửa đơn vị" type="button" onclick='openEditModal(@item.MaDonViToChuc, @Html.Raw(System.Text.Json.JsonSerializer.Serialize(item.TenDonViToChuc)), @Html.Raw(System.Text.Json.JsonSerializer.Serialize(item.MoTa ?? "")), @Html.Raw(System.Text.Json.JsonSerializer.Serialize(item.EmailLienHe ?? "")), @Html.Raw(System.Text.Json.JsonSerializer.Serialize(item.TrangThai ?? "Hoạt động")))'>
-                                            <span class="material-symbols-outlined text-[18px]">edit</span>
-                                        </button>
-                                        <button class="p-2 text-on-surface-variant hover:text-error hover:bg-surface-container rounded-lg transition-colors cursor-pointer" title="Xóa đơn vị" type="button" onclick='openDeleteModal(@item.MaDonViToChuc, @Html.Raw(System.Text.Json.JsonSerializer.Serialize(item.TenDonViToChuc)))'>
-                                            <span class="material-symbols-outlined text-[18px]">delete</span>
-                                        </button>
-                                    </div>
+                                    @if (isAdmin)
+                                    {
+                                        <div class="flex items-center justify-end gap-1">
+                                            <button class="p-2 text-on-surface-variant hover:text-primary hover:bg-surface-container rounded-lg transition-colors cursor-pointer" title="Chỉnh sửa đơn vị" type="button" onclick='openEditModal(@item.MaDonViToChuc, @Html.Raw(System.Text.Json.JsonSerializer.Serialize(item.TenDonViToChuc)), @Html.Raw(System.Text.Json.JsonSerializer.Serialize(item.MoTa ?? "")), @Html.Raw(System.Text.Json.JsonSerializer.Serialize(item.EmailLienHe ?? "")), @Html.Raw(System.Text.Json.JsonSerializer.Serialize(item.TrangThai ?? "Hoạt động")))'>
+                                                <span class="material-symbols-outlined text-[18px]">edit</span>
+                                            </button>
+                                            <button class="p-2 text-on-surface-variant hover:text-error hover:bg-surface-container rounded-lg transition-colors cursor-pointer" title="Xóa đơn vị" type="button" onclick='openDeleteModal(@item.MaDonViToChuc, @Html.Raw(System.Text.Json.JsonSerializer.Serialize(item.TenDonViToChuc)))'>
+                                                <span class="material-symbols-outlined text-[18px]">delete</span>
+                                            </button>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <a asp-controller="DotHienMau" asp-action="Index" asp-route-donViId="@item.MaDonViToChuc" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-surface-container text-on-surface-variant hover:text-primary font-label-sm text-xs transition-colors" title="Xem các đợt hiến máu của đơn vị">
+                                            <span class="material-symbols-outlined text-[15px]">event_note</span>
+                                            <span>Xem đợt</span>
+                                        </a>
+                                    }
                                 </td>
                             </tr>
                         }
@@ -279,7 +302,7 @@
         <!-- Pagination & Table Footer -->
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm pt-space-sm border-t border-surface-container">
             <p class="font-body-sm text-body-sm text-on-surface-variant">
-                Hiển thị <strong class="text-on-surface font-semibold">@totalCount</strong> đơn vị tổ chức
+                Hiển thị <strong class="text-on-surface font-semibold">@filteredCount</strong> / <strong class="text-on-surface font-semibold">@totalCount</strong> đơn vị tổ chức
             </p>
         </div>
     </div>
@@ -299,7 +322,7 @@
             @Html.AntiForgeryToken()
             <div>
                 <label class="font-label-md text-label-md text-on-surface block mb-1">Tên Đơn Vị Tổ Chức <span class="text-error">*</span></label>
-                <input id="create_ten" name="TenDonViToChuc" required class="w-full h-11 px-3.5 bg-surface-container-low text-on-surface rounded-xl border border-surface-container focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors" placeholder="VD: Đoàn Thanh Niên UNETI" oninput="validateCreateName()" onblur="checkDuplicateCreateName()" />
+                <input id="create_ten" name="TenDonViToChuc" required maxlength="200" class="w-full h-11 px-3.5 bg-surface-container-low text-on-surface rounded-xl border border-surface-container focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors" placeholder="VD: Đoàn Thanh Niên UNETI" oninput="validateCreateName()" onblur="checkDuplicateCreateName()" />
                 <p id="create_ten_error" class="hidden mt-1.5 text-error text-xs font-medium flex items-center gap-1">
                     <span class="material-symbols-outlined text-[14px]">error</span>
                     <span id="create_ten_error_text"></span>
@@ -307,7 +330,7 @@
             </div>
             <div>
                 <label class="font-label-md text-label-md text-on-surface block mb-1">Email Liên Hệ</label>
-                <input id="create_email" name="EmailLienHe" type="email" class="w-full h-11 px-3.5 bg-surface-container-low text-on-surface rounded-xl border border-surface-container focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors" placeholder="VD: doanthanhnien@uneti.edu.vn" oninput="validateCreateEmail()" onblur="validateCreateEmail()" />
+                <input id="create_email" name="EmailLienHe" type="email" maxlength="100" class="w-full h-11 px-3.5 bg-surface-container-low text-on-surface rounded-xl border border-surface-container focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors" placeholder="VD: doanthanhnien@uneti.edu.vn" oninput="validateCreateEmail()" onblur="validateCreateEmail()" />
                 <p id="create_email_error" class="hidden mt-1.5 text-error text-xs font-medium flex items-center gap-1">
                     <span class="material-symbols-outlined text-[14px]">error</span>
                     <span id="create_email_error_text"></span>
@@ -322,7 +345,7 @@
             </div>
             <div>
                 <label class="font-label-md text-label-md text-on-surface block mb-1">Mô Tả / Địa Chỉ</label>
-                <textarea name="MoTa" rows="3" class="w-full p-3 bg-surface-container-low text-on-surface rounded-xl border border-surface-container focus:outline-none focus:ring-2 focus:ring-primary/20" placeholder="Thông tin chi tiết về đơn vị, địa chỉ tổ chức..."></textarea>
+                <textarea name="MoTa" rows="3" maxlength="500" class="w-full p-3 bg-surface-container-low text-on-surface rounded-xl border border-surface-container focus:outline-none focus:ring-2 focus:ring-primary/20" placeholder="Thông tin chi tiết về đơn vị, địa chỉ tổ chức..."></textarea>
             </div>
             <div class="flex items-center justify-end gap-3 pt-3 border-t border-surface-container">
                 <button type="button" onclick="closeCreateModal()" class="px-4 py-2.5 rounded-xl bg-surface-container text-on-surface font-label-md text-label-md hover:bg-surface-container-high transition-all cursor-pointer">Hủy</button>
@@ -348,7 +371,7 @@
             <input type="hidden" id="edit_id_param" name="id" />
             <div>
                 <label class="font-label-md text-label-md text-on-surface block mb-1">Tên Đơn Vị Tổ Chức <span class="text-error">*</span></label>
-                <input id="edit_ten" name="TenDonViToChuc" required class="w-full h-11 px-3.5 bg-surface-container-low text-on-surface rounded-xl border border-surface-container focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors" oninput="validateEditName()" onblur="checkDuplicateEditName()" />
+                <input id="edit_ten" name="TenDonViToChuc" required maxlength="200" class="w-full h-11 px-3.5 bg-surface-container-low text-on-surface rounded-xl border border-surface-container focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors" oninput="validateEditName()" onblur="checkDuplicateEditName()" />
                 <p id="edit_ten_error" class="hidden mt-1.5 text-error text-xs font-medium flex items-center gap-1">
                     <span class="material-symbols-outlined text-[14px]">error</span>
                     <span id="edit_ten_error_text"></span>
@@ -356,7 +379,7 @@
             </div>
             <div>
                 <label class="font-label-md text-label-md text-on-surface block mb-1">Email Liên Hệ</label>
-                <input id="edit_email" name="EmailLienHe" type="email" class="w-full h-11 px-3.5 bg-surface-container-low text-on-surface rounded-xl border border-surface-container focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors" oninput="validateEditEmail()" onblur="validateEditEmail()" />
+                <input id="edit_email" name="EmailLienHe" type="email" maxlength="100" class="w-full h-11 px-3.5 bg-surface-container-low text-on-surface rounded-xl border border-surface-container focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors" oninput="validateEditEmail()" onblur="validateEditEmail()" />
                 <p id="edit_email_error" class="hidden mt-1.5 text-error text-xs font-medium flex items-center gap-1">
                     <span class="material-symbols-outlined text-[14px]">error</span>
                     <span id="edit_email_error_text"></span>
@@ -371,7 +394,7 @@
             </div>
             <div>
                 <label class="font-label-md text-label-md text-on-surface block mb-1">Mô Tả / Địa Chỉ</label>
-                <textarea id="edit_mota" name="MoTa" rows="3" class="w-full p-3 bg-surface-container-low text-on-surface rounded-xl border border-surface-container focus:outline-none focus:ring-2 focus:ring-primary/20"></textarea>
+                <textarea id="edit_mota" name="MoTa" rows="3" maxlength="500" class="w-full p-3 bg-surface-container-low text-on-surface rounded-xl border border-surface-container focus:outline-none focus:ring-2 focus:ring-primary/20"></textarea>
             </div>
             <div class="flex items-center justify-end gap-3 pt-3 border-t border-surface-container">
                 <button type="button" onclick="closeEditModal()" class="px-4 py-2.5 rounded-xl bg-surface-container text-on-surface font-label-md text-label-md hover:bg-surface-container-high transition-all cursor-pointer">Hủy</button>
@@ -583,7 +606,6 @@
 
     // ========== MODAL FUNCTIONS ==========
     function openCreateModal() {
-        // Reset form và trạng thái validation
         const form = document.querySelector('#createModal form');
         if (form) form.reset();
         createNameValid = false;
@@ -604,7 +626,6 @@
         document.getElementById('edit_mota').value = mota || '';
         document.getElementById('edit_email').value = email || '';
         document.getElementById('edit_trangthai').value = trangthai || 'Hoạt động';
-        // Reset trạng thái validation
         editNameValid = true;
         editNameDuplicate = false;
         editEmailValid = true;

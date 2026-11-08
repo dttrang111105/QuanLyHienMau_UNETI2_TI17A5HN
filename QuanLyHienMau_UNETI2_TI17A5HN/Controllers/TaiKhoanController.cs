@@ -3,6 +3,7 @@
 // Nội dung thực hiện: Module 1 - Controller Quản lý Tài khoản & Phân quyền
 // Triển khai Repository Pattern: Controller xử lý Request/Response, Repository làm việc với dữ liệu
 
+using System.Security.Claims;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -18,7 +19,11 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
     {
         private readonly ITaiKhoanRepository _taiKhoanRepository;
         private readonly PasswordHasher<TaiKhoan> _passwordHasher;
+
+        private static readonly Regex UsernameRegex = new(@"^[a-zA-Z0-9_.-]+$", RegexOptions.Compiled);
         private static readonly Regex EmailRegex = new(@"^[^@\s]+@[^@\s]+\.[^@\s]+$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static readonly HashSet<string> AllowedRoles = new(StringComparer.Ordinal) { "Admin", "Medical Staff", "Donor" };
+        private static readonly HashSet<string> AllowedStatuses = new(StringComparer.Ordinal) { "Hoạt động", "Bị khóa" };
 
         public TaiKhoanController(ITaiKhoanRepository taiKhoanRepository)
         {
@@ -30,13 +35,17 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
         public async Task<IActionResult> Index(string? search, string? vaiTro, string? trangThai)
         {
             var accounts = await _taiKhoanRepository.GetAllWithProfileAsync(search, vaiTro, trangThai);
+            var stats = await _taiKhoanRepository.GetAccountStatsAsync();
+
             ViewBag.CurrentSearch = search;
             ViewBag.CurrentVaiTro = vaiTro;
             ViewBag.CurrentTrangThai = trangThai;
-            ViewBag.TotalAccounts = accounts.Count();
-            ViewBag.AdminCount = await _taiKhoanRepository.CountByRoleAsync("Admin");
-            ViewBag.MedicalStaffCount = await _taiKhoanRepository.CountByRoleAsync("Medical Staff");
-            ViewBag.DonorCount = await _taiKhoanRepository.CountByRoleAsync("Donor");
+            ViewBag.TotalAccounts = stats.TotalCount;
+            ViewBag.AdminCount = stats.AdminCount;
+            ViewBag.MedicalStaffCount = stats.MedicalStaffCount;
+            ViewBag.DonorCount = stats.DonorCount;
+            ViewBag.ActiveCount = stats.ActiveCount;
+            ViewBag.LockedCount = stats.LockedCount;
 
             return View("~/Views/Admin/NhanSu.cshtml", accounts);
         }
@@ -65,15 +74,9 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
-            if (cleanUsername.Contains(' '))
+            if (!UsernameRegex.IsMatch(cleanUsername))
             {
-                SetModalError("Tên đăng nhập không được chứa dấu cách (khoảng trắng).", model);
-                return RedirectToAction(nameof(Index));
-            }
-
-            if (!Regex.IsMatch(cleanUsername, @"^[a-zA-Z0-9_.-]+$"))
-            {
-                SetModalError("Tên đăng nhập chỉ được chứa chữ cái, chữ số, dấu gạch dưới (_), gạch ngang (-) và dấu chấm (.).", model);
+                SetModalError("Tên đăng nhập chỉ được chứa chữ cái, chữ số, dấu gạch dưới (_), gạch ngang (-) và dấu chấm (.), không chứa khoảng trắng.", model);
                 return RedirectToAction(nameof(Index));
             }
 
@@ -96,7 +99,7 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
             if (!string.IsNullOrWhiteSpace(model.Email))
             {
                 cleanEmail = model.Email.Trim();
-                if (!EmailRegex.IsMatch(cleanEmail))
+                if (cleanEmail.Length > 100 || !EmailRegex.IsMatch(cleanEmail))
                 {
                     SetModalError("Địa chỉ email không đúng định dạng (Ví dụ: nguoidung@domain.com).", model);
                     return RedirectToAction(nameof(Index));
@@ -104,44 +107,45 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
             }
 
             // 6. Kiểm tra trùng tên đăng nhập qua Repository
-            var isDuplicateUsername = await _taiKhoanRepository.IsTenDangNhapExistsAsync(cleanUsername);
-            if (isDuplicateUsername)
+            if (await _taiKhoanRepository.IsTenDangNhapExistsAsync(cleanUsername))
             {
                 SetModalError($"Tên đăng nhập '{cleanUsername}' đã được sử dụng. Vui lòng chọn tên khác.", model);
                 return RedirectToAction(nameof(Index));
             }
 
             // 7. Kiểm tra trùng email qua Repository nếu có nhập email
-            if (!string.IsNullOrWhiteSpace(cleanEmail))
+            if (!string.IsNullOrWhiteSpace(cleanEmail) && await _taiKhoanRepository.IsEmailExistsAsync(cleanEmail))
             {
-                var isDuplicateEmail = await _taiKhoanRepository.IsEmailExistsAsync(cleanEmail);
-                if (isDuplicateEmail)
-                {
-                    SetModalError("Địa chỉ email này đã được sử dụng cho tài khoản khác.", model);
-                    return RedirectToAction(nameof(Index));
-                }
+                SetModalError("Địa chỉ email này đã được sử dụng cho tài khoản khác.", model);
+                return RedirectToAction(nameof(Index));
             }
 
-            // 8. Tạo đối tượng TaiKhoan
+            // 8. Chuẩn hóa Vai trò & Trạng thái hợp lệ
+            var role = (!string.IsNullOrWhiteSpace(model.VaiTro) && AllowedRoles.Contains(model.VaiTro.Trim()))
+                ? model.VaiTro.Trim()
+                : "Medical Staff";
+            var status = (!string.IsNullOrWhiteSpace(model.TrangThai) && AllowedStatuses.Contains(model.TrangThai.Trim()))
+                ? model.TrangThai.Trim()
+                : "Hoạt động";
+
             var account = new TaiKhoan
             {
                 TenDangNhap = cleanUsername,
                 HoTen = cleanHoTen,
                 Email = cleanEmail,
-                VaiTro = string.IsNullOrWhiteSpace(model.VaiTro) ? "Medical Staff" : model.VaiTro,
-                TrangThai = string.IsNullOrWhiteSpace(model.TrangThai) ? "Hoạt động" : model.TrangThai
+                VaiTro = role,
+                TrangThai = status
             };
 
             account.MatKhau = _passwordHasher.HashPassword(account, model.MatKhau);
 
-            // Nếu tạo tài khoản người hiến máu, tạo kèm hồ sơ liên kết
             if (account.VaiTro == "Donor")
             {
                 var donorProfile = new NguoiHienMau
                 {
                     HoTen = account.HoTen,
                     Email = account.Email,
-                    TrangThai = "Hoạt động"
+                    TrangThai = account.TrangThai
                 };
                 await _taiKhoanRepository.RegisterDonorAccountAsync(account, donorProfile);
             }
@@ -161,18 +165,6 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        private void SetModalError(string errorMsg, CreateAccountAdminViewModel model)
-        {
-            TempData["CreateAccountError"] = errorMsg;
-            TempData["ErrorMessage"] = errorMsg;
-            TempData["CreateTenDangNhap"] = model.TenDangNhap;
-            TempData["CreateHoTen"] = model.HoTen;
-            TempData["CreateEmail"] = model.Email;
-            TempData["CreateVaiTro"] = model.VaiTro;
-            TempData["CreateTrangThai"] = model.TrangThai;
-            TempData["OpenCreateModal"] = true;
-        }
-
         // POST: /TaiKhoan/ToggleLock/5
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -182,7 +174,15 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
             if (account == null)
             {
                 TempData["ErrorMessage"] = "Không tìm thấy tài khoản.";
-                return RedirectToAction(nameof(Index));
+                return RedirectToLocalOrDefault(returnUrl);
+            }
+
+            // Ngăn chặn Quản trị viên tự khóa tài khoản đang đăng nhập của chính mình
+            var currentUserIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (int.TryParse(currentUserIdStr, out int currentUserId) && currentUserId == id && account.TrangThai == "Hoạt động")
+            {
+                TempData["ErrorMessage"] = "Không thể tự khóa tài khoản Quản trị viên đang đăng nhập của chính bạn.";
+                return RedirectToLocalOrDefault(returnUrl);
             }
 
             var newStatus = account.TrangThai == "Hoạt động" ? "Bị khóa" : "Hoạt động";
@@ -191,11 +191,7 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
             var actionName = newStatus == "Bị khóa" ? "Khóa" : "Mở khóa";
             TempData["SuccessMessage"] = $"Đã {actionName} thành công tài khoản '{account.TenDangNhap}'.";
 
-            if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
-            {
-                return Redirect(returnUrl);
-            }
-            return RedirectToAction(nameof(Index));
+            return RedirectToLocalOrDefault(returnUrl);
         }
 
         // POST: /TaiKhoan/ResetPassword
@@ -220,6 +216,27 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
             await _taiKhoanRepository.ChangePasswordAsync(id, hashed);
 
             TempData["SuccessMessage"] = $"Đã đặt lại mật khẩu cho tài khoản '{account.TenDangNhap}' thành công.";
+            return RedirectToAction(nameof(Index));
+        }
+
+        private void SetModalError(string errorMsg, CreateAccountAdminViewModel model)
+        {
+            TempData["CreateAccountError"] = errorMsg;
+            TempData["ErrorMessage"] = errorMsg;
+            TempData["CreateTenDangNhap"] = model.TenDangNhap;
+            TempData["CreateHoTen"] = model.HoTen;
+            TempData["CreateEmail"] = model.Email;
+            TempData["CreateVaiTro"] = model.VaiTro;
+            TempData["CreateTrangThai"] = model.TrangThai;
+            TempData["OpenCreateModal"] = true;
+        }
+
+        private IActionResult RedirectToLocalOrDefault(string? returnUrl)
+        {
+            if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+            {
+                return Redirect(returnUrl);
+            }
             return RedirectToAction(nameof(Index));
         }
     }
