@@ -16,7 +16,7 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Repositories
     /// <summary>
     /// Triển khai Specific Repository cho thực thể PhieuDangKyHienMau thuộc Module 3.
     /// </summary>
-    public class PhieuDangKyRepository : Repository<PhieuDangKyHienMau>, IPhieuDangKyRepository
+    public class PhieuDangKyRepository : Repository<PhieuDangKyHienMau>, QuanLyHienMau_UNETI2_TI17A5HN.Repositories.Interfaces.IPhieuDangKyRepository
     {
         public PhieuDangKyRepository(ApplicationDbContext context) : base(context)
         {

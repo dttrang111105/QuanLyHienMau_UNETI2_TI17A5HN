@@ -16,12 +16,15 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 // Register Module 3 Repositories (Scoped - sharing the same ApplicationDbContext per HTTP request)
 builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 builder.Services.AddScoped<INguoiHienMauRepository, NguoiHienMauRepository>();
-builder.Services.AddScoped<IPhieuDangKyRepository, PhieuDangKyRepository>();
+builder.Services.AddScoped<QuanLyHienMau_UNETI2_TI17A5HN.Repositories.Interfaces.IPhieuDangKyRepository, PhieuDangKyRepository>();
 
 // ─── Module 2: Đăng ký Repository Pattern cho Đợt Hiến Máu ─────────────────
 // Controller sẽ nhận IDotHienMauRepository qua Dependency Injection,
 // không phụ thuộc trực tiếp vào ApplicationDbContext.
 builder.Services.AddScoped<IDotHienMauRepository, DotHienMauRepository>();
+
+// Register Module 4 Repositories
+builder.Services.AddScoped<QuanLyHienMau_UNETI2_TI17A5HN.Repositories.IPhieuDangKyRepository, EfPhieuDangKyRepository>();
 
 // Configure Cookie Authentication
 builder.Services.AddAuthentication("QuanLyHienMau.Auth")
@@ -44,6 +47,10 @@ using (var scope = app.Services.CreateScope())
     {
         var context = services.GetRequiredService<ApplicationDbContext>();
         DbInitializer.Initialize(context);
+        if (app.Environment.IsDevelopment())
+        {
+            DbInitializer.SeedTestData(context);
+        }
     }
     catch (Exception ex)
     {
