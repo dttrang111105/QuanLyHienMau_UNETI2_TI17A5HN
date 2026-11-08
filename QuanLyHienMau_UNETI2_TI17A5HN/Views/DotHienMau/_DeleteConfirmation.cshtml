@@ -1,0 +1,45 @@
+<style>
+    #module2-delete-dialog { border: 0; border-radius: 20px; padding: 24px; width: min(440px, calc(100% - 32px)); color: #263238; }
+    #module2-delete-dialog::backdrop { background: rgb(0 0 0 / 45%); }
+    #module2-delete-dialog h2 { font-size: 22px; font-weight: 700; margin-bottom: 16px; }
+    #module2-delete-dialog p { margin-bottom: 16px; overflow-wrap: anywhere; }
+    #module2-delete-dialog .actions { display: flex; justify-content: flex-end; gap: 12px; }
+    #module2-delete-dialog button { padding: 10px 18px; border-radius: 10px; cursor: pointer; }
+    #module2-delete-confirm { background: #b00032; color: white; }
+</style>
+<dialog id="module2-delete-dialog" aria-labelledby="module2-delete-title" aria-describedby="module2-delete-description">
+    <h2 id="module2-delete-title">Xác nhận xóa đợt hiến máu</h2>
+    <p id="module2-delete-description">Bạn có chắc muốn xóa đợt “<strong id="module2-delete-name"></strong>”? Thao tác này không thể hoàn tác. Đợt đã có phiếu đăng ký sẽ không được xóa.</p>
+    <div class="actions">
+        <button type="button" id="module2-delete-cancel" autofocus>Hủy</button>
+        <button type="button" id="module2-delete-confirm">Xác nhận xóa</button>
+    </div>
+</dialog>
+<script>
+    (() => {
+        const dialog = document.getElementById('module2-delete-dialog');
+        const confirmButton = document.getElementById('module2-delete-confirm');
+        let pendingForm = null;
+        let trigger = null;
+        document.querySelectorAll('form[data-module2-delete]').forEach(form => {
+            form.addEventListener('submit', event => {
+                event.preventDefault();
+                pendingForm = form;
+                trigger = event.submitter;
+                document.getElementById('module2-delete-name').textContent = form.dataset.name;
+                confirmButton.disabled = false;
+                dialog.showModal();
+            });
+        });
+        document.getElementById('module2-delete-cancel').addEventListener('click', () => dialog.close());
+        dialog.addEventListener('close', () => {
+            pendingForm = null;
+            trigger?.focus();
+        });
+        confirmButton.addEventListener('click', () => {
+            if (!pendingForm || confirmButton.disabled) return;
+            confirmButton.disabled = true;
+            HTMLFormElement.prototype.submit.call(pendingForm);
+        });
+    })();
+</script>

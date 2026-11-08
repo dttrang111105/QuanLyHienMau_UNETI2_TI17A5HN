@@ -2,7 +2,7 @@
 
 @{
     ViewData["Title"] = $"Chi Tiết Đợt Hiến Máu – {Model.TenDot}";
-    var isDangMo = Model.TrangThai == "Đang mở đăng ký";
+    var coTheDangKy = Model.CoTheDangKy;
     var isChuaMo = Model.TrangThai == "Chưa mở";
     var isTamDung = Model.TrangThai == "Tạm dừng";
     var isDaDong = Model.TrangThai == "Đã đóng";
@@ -31,7 +31,7 @@
             <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                 <div class="flex-1 space-y-3">
                     <div class="flex flex-wrap items-center gap-3">
-                        @if (isDangMo)
+                        @if (Model.TrangThai == "Đang mở đăng ký")
                         {
                             <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 font-label-sm text-label-sm">
                                 <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -62,7 +62,7 @@
 
                         <span class="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-surface-container-low text-on-surface-variant font-label-sm text-label-sm">
                             <span class="material-symbols-outlined text-[15px] text-primary">timer</span>
-                            Hạn đăng ký: @Model.HanDangKy.ToString("dd/MM/yyyy")
+                            @Model.ThoiHanHienThi · Hạn đăng ký: @Model.HanDangKy.ToString("dd/MM/yyyy")
                         </span>
                         <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm">
                             Mã đợt: #DOT-@Model.MaDot.ToString("D4")
@@ -151,9 +151,9 @@
                         <div>
                             <h2 class="font-headline-sm text-headline-sm text-on-surface flex items-center gap-2">
                                 <span class="material-symbols-outlined text-primary text-[22px]">vital_signs</span>
-                                Tiến Độ Tiếp Nhận Đợt Hiến Máu
+                                Chỉ Tiêu Và Trạng Thái Đợt
                             </h2>
-                            <p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Cập nhật trực tiếp theo thời gian thực từ cơ sở tiếp nhận</p>
+                            <p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">Chỉ tiêu dự kiến và trạng thái do đơn vị tổ chức công bố.</p>
                         </div>
                         <span class="inline-flex items-center gap-1 font-label-sm text-label-sm font-bold text-primary bg-primary/10 px-3 py-1.5 rounded-full">
                             CHỈ TIÊU: @Model.ChiTieuDonViMau ĐƠN VỊ
@@ -161,12 +161,9 @@
                     </div>
                     <!-- Big Progress Meter -->
                     <div class="space-y-2">
-                        <div class="flex justify-between items-end font-label-md text-label-md">
+                        <div class="flex flex-wrap gap-3 justify-between items-end font-label-md text-label-md">
                             <span class="text-on-surface font-bold text-headline-sm"><span class="text-primary text-headline-md font-bold">@Model.ChiTieuDonViMau</span> đơn vị máu</span>
                             <span class="text-secondary font-medium">Trạng thái: @Model.TrangThai</span>
-                        </div>
-                        <div class="w-full h-4 bg-surface-container-highest rounded-full overflow-hidden p-0.5">
-                            <div class="h-full bg-gradient-to-r from-primary to-primary-container rounded-full transition-all duration-700 ease-out" style="width: 70%;"></div>
                         </div>
                     </div>
                 </div>
@@ -270,7 +267,7 @@
                             </div>
                         </div>
                         <div class="space-y-3">
-                            @if (isDangMo)
+                            @if (coTheDangKy)
                             {
                                 <a asp-controller="DangKy" asp-action="Create" asp-route-maDot="@Model.MaDot" class="w-full inline-flex items-center justify-center gap-3 bg-gradient-to-r from-primary to-primary-container text-on-primary font-label-lg text-label-lg py-4 px-6 rounded-2xl shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 hover:-translate-y-0.5 active:translate-y-0 transition-all font-bold text-center">
                                     <span class="material-symbols-outlined text-[20px]">volunteer_activism</span>
@@ -282,7 +279,7 @@
                             {
                                 <button disabled class="w-full inline-flex items-center justify-center gap-3 bg-surface-container-high text-on-surface-variant font-label-lg text-label-lg py-4 px-6 rounded-2xl font-bold text-center cursor-not-allowed opacity-60">
                                     <span class="material-symbols-outlined text-[20px]">block</span>
-                                    <span>ĐỢT HIẾN MÁU @Model.TrangThai.ToUpper()</span>
+                                    <span>@Model.ThoiHanHienThi · @Model.TrangThai</span>
                                 </button>
                             }
                         </div>

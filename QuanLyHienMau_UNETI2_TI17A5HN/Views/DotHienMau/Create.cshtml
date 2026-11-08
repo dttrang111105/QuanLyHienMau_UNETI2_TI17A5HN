@@ -1,0 +1,15 @@
+@* Nguyễn Thị Phương Thảo - 23103100272 - Module 2: Thêm đợt hiến máu *@
+@model QuanLyHienMau_UNETI2_TI17A5HN.Models.DotHienMau
+@{ ViewData["Title"] = "Thêm đợt hiến máu"; }
+<div class="max-w-4xl mx-auto px-6 py-8">
+    <a asp-action="Index" class="inline-flex items-center gap-2 text-primary mb-6"><span class="material-symbols-outlined">arrow_back</span>Danh sách đợt hiến máu</a>
+    <div class="mb-6"><h1 class="font-headline-lg text-headline-lg text-on-surface">Thêm đợt hiến máu</h1><p class="mt-2 text-on-surface-variant">Đợt mới được lưu ở trạng thái Chưa mở.</p></div>
+    <form asp-action="Create"  method="post" class="bg-surface-container-lowest rounded-2xl shadow-sm p-6 sm:p-8 space-y-6">
+        <partial name="_DotForm" model="Model" />
+        <div class="flex flex-wrap gap-3 border-t border-outline-variant pt-6">
+            <button type="submit" class="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-on-primary font-semibold"><span class="material-symbols-outlined">save</span>Tạo đợt hiến máu</button>
+            <a asp-action="Index" class="px-6 py-3 rounded-xl bg-surface-container text-on-surface">Hủy</a>
+        </div>
+    </form>
+</div>
+@section Scripts { <partial name="_ValidationScriptsPartial" /> }

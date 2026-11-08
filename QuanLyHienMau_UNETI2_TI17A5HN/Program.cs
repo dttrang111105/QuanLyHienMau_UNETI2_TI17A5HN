@@ -18,6 +18,11 @@ builder.Services.AddScoped(typeof(IRepository<>), typeof(Repository<>));
 builder.Services.AddScoped<INguoiHienMauRepository, NguoiHienMauRepository>();
 builder.Services.AddScoped<IPhieuDangKyRepository, PhieuDangKyRepository>();
 
+// ─── Module 2: Đăng ký Repository Pattern cho Đợt Hiến Máu ─────────────────
+// Controller sẽ nhận IDotHienMauRepository qua Dependency Injection,
+// không phụ thuộc trực tiếp vào ApplicationDbContext.
+builder.Services.AddScoped<IDotHienMauRepository, DotHienMauRepository>();
+
 // Configure Cookie Authentication
 builder.Services.AddAuthentication("QuanLyHienMau.Auth")
     .AddCookie("QuanLyHienMau.Auth", options =>

@@ -1,0 +1,160 @@
+PASS No pre-existing reserved test fixtures
+PASS Login test role admin
+PASS Login test role bacsi
+PASS Login test role donor
+PASS Admin GET /DotHienMau
+PASS Admin GET /Admin/DotHienMau
+PASS Admin GET /DotHienMau/Create
+PASS Anonymous denied /DotHienMau/Create
+PASS Donor denied /DotHienMau/Create
+PASS Medical staff allowed /DotHienMau/Create
+PASS Anonymous denied /DotHienMau/Edit/1
+PASS Donor denied /DotHienMau/Edit/1
+PASS Medical staff allowed /DotHienMau/Edit/1
+PASS Anonymous denied /Admin/DotHienMau
+PASS Donor denied /Admin/DotHienMau
+PASS Medical staff allowed /Admin/DotHienMau
+PASS Donor cannot POST /DotHienMau/Create
+PASS Donor cannot POST /DotHienMau/Edit/1
+PASS Donor cannot POST /DotHienMau/Delete/1
+PASS Donor cannot POST /DotHienMau/ChangeStatus
+PASS Donor cannot POST /Admin/AdminCreateDot
+PASS Donor cannot POST /Admin/AdminEditDot
+PASS Donor cannot POST /Admin/AdminDeleteDot
+PASS Donor cannot POST /Admin/AdminChangeStatusDot
+PASS Missing CSRF rejected
+PASS Invalid TenDot blocked at /DotHienMau/Create
+PASS Invalid MaDonViToChuc blocked at /DotHienMau/Create
+PASS Invalid MaDonViToChuc blocked at /DotHienMau/Create
+PASS Invalid ChiTieuDonViMau blocked at /DotHienMau/Create
+PASS Invalid CanNangToiThieu blocked at /DotHienMau/Create
+PASS Invalid NgayBatDauDangKy blocked at /DotHienMau/Create
+PASS Invalid HanDangKy blocked at /DotHienMau/Create
+PASS Invalid HanDangKy blocked at /DotHienMau/Create
+PASS Invalid MoTaDot blocked at /DotHienMau/Create
+PASS Invalid TenDot blocked at /Admin/AdminCreateDot
+PASS Invalid MaDonViToChuc blocked at /Admin/AdminCreateDot
+PASS Invalid MaDonViToChuc blocked at /Admin/AdminCreateDot
+PASS Invalid ChiTieuDonViMau blocked at /Admin/AdminCreateDot
+PASS Invalid CanNangToiThieu blocked at /Admin/AdminCreateDot
+PASS Invalid NgayBatDauDangKy blocked at /Admin/AdminCreateDot
+PASS Invalid HanDangKy blocked at /Admin/AdminCreateDot
+PASS Invalid HanDangKy blocked at /Admin/AdminCreateDot
+PASS Invalid MoTaDot blocked at /Admin/AdminCreateDot
+PASS Create persisted 0 via /DotHienMau/Create
+PASS Create persisted 1 via /Admin/AdminCreateDot
+PASS Create persisted 2 via /DotHienMau/Create
+PASS Create persisted 3 via /Admin/AdminCreateDot
+PASS Create persisted 4 via /DotHienMau/Create
+PASS Create persisted 5 via /Admin/AdminCreateDot
+PASS Create persisted 6 via /DotHienMau/Create
+PASS Create persisted 7 via /Admin/AdminCreateDot
+PASS Create persisted 8 via /DotHienMau/Create
+PASS Create persisted 9 via /Admin/AdminCreateDot
+PASS Create persisted 10 via /DotHienMau/Create
+PASS Create persisted 11 via /Admin/AdminCreateDot
+PASS Create persisted 12 via /DotHienMau/Create
+PASS Create persisted 13 via /Admin/AdminCreateDot
+PASS Create persisted 14 via /DotHienMau/Create
+PASS Create persisted 15 via /Admin/AdminCreateDot
+PASS Create persisted 16 via /DotHienMau/Create
+PASS Create persisted 17 via /Admin/AdminCreateDot
+PASS Create persisted 18 via /DotHienMau/Create
+PASS Create persisted 19 via /Admin/AdminCreateDot
+PASS Create persisted 20 via /DotHienMau/Create
+PASS Create persisted 21 via /Admin/AdminCreateDot
+PASS Create persisted 22 via /DotHienMau/Create
+PASS Staff edit accepted /DotHienMau/Edit/58
+PASS Edit persisted and status preserved
+PASS Edit rejects reversed dates /DotHienMau/Edit/58
+PASS Staff edit accepted /Admin/AdminEditDot?id=58
+PASS Edit persisted and status preserved
+PASS Edit rejects reversed dates /Admin/AdminEditDot?id=58
+PASS Staff changes status Đang mở đăng ký via /DotHienMau/ChangeStatus
+PASS Staff changes status Tạm dừng via /DotHienMau/ChangeStatus
+PASS Staff changes status Đã đóng via /DotHienMau/ChangeStatus
+PASS Staff changes status Chưa mở via /DotHienMau/ChangeStatus
+PASS Invalid status rejected /DotHienMau/ChangeStatus
+PASS Staff changes status Đang mở đăng ký via /Admin/AdminChangeStatusDot
+PASS Staff changes status Tạm dừng via /Admin/AdminChangeStatusDot
+PASS Staff changes status Đã đóng via /Admin/AdminChangeStatusDot
+PASS Staff changes status Chưa mở via /Admin/AdminChangeStatusDot
+PASS Invalid status rejected /Admin/AdminChangeStatusDot
+PASS Invalid campaign cannot open /DotHienMau/ChangeStatus
+PASS Invalid campaign cannot open /Admin/AdminChangeStatusDot
+PASS Delete preserves history /DotHienMau/Delete
+PASS Delete preserves history /Admin/AdminDeleteDot
+PASS Staff deletes empty campaign /DotHienMau/Delete
+PASS Staff deletes empty campaign /Admin/AdminDeleteDot
+PASS Exact page contents /DotHienMau page 1
+PASS Paging preserves conditions /DotHienMau page 1
+PASS Exact page contents /DotHienMau page 2
+PASS Paging preserves conditions /DotHienMau page 2
+PASS Exact page contents /DotHienMau page 3
+PASS Paging preserves conditions /DotHienMau page 3
+PASS Exact page contents /DotHienMau page 4
+PASS Paging preserves conditions /DotHienMau page 4
+PASS Page bounds /DotHienMau -1
+PASS Page bounds /DotHienMau 0
+PASS Page bounds /DotHienMau 99999
+PASS Sort /DotHienMau name_asc
+PASS Sort /DotHienMau name_desc
+PASS Sort /DotHienMau deadline_asc
+PASS Sort /DotHienMau deadline_desc
+PASS Sort /DotHienMau quota_asc
+PASS Sort /DotHienMau quota_desc
+PASS Filter /DotHienMau donViId=1
+PASS Filter /DotHienMau nhomMau=A
+PASS Filter excludes AB or heavier campaign
+PASS Filter /DotHienMau status=Ch%C6%B0a%20m%E1%BB%9F
+PASS Filter /DotHienMau canNang=45
+PASS Filter excludes AB or heavier campaign
+PASS Filter /DotHienMau thoiHan=conhan
+PASS Filter /DotHienMau thoiHan=7ngay
+PASS Filter /DotHienMau thoiHan=hethan
+PASS All filters + search + sort + page /DotHienMau
+PASS Empty search result /DotHienMau
+PASS Exact page contents /Admin/DotHienMau page 1
+PASS Paging preserves conditions /Admin/DotHienMau page 1
+PASS Exact page contents /Admin/DotHienMau page 2
+PASS Paging preserves conditions /Admin/DotHienMau page 2
+PASS Exact page contents /Admin/DotHienMau page 3
+PASS Paging preserves conditions /Admin/DotHienMau page 3
+PASS Page bounds /Admin/DotHienMau -1
+PASS Page bounds /Admin/DotHienMau 0
+PASS Page bounds /Admin/DotHienMau 99999
+PASS Sort /Admin/DotHienMau name_asc
+PASS Sort /Admin/DotHienMau name_desc
+PASS Sort /Admin/DotHienMau deadline_asc
+PASS Sort /Admin/DotHienMau deadline_desc
+PASS Sort /Admin/DotHienMau quota_asc
+PASS Sort /Admin/DotHienMau quota_desc
+PASS Filter /Admin/DotHienMau donViId=1
+PASS Filter /Admin/DotHienMau nhomMau=A
+PASS Filter excludes AB or heavier campaign
+PASS Filter /Admin/DotHienMau status=Ch%C6%B0a%20m%E1%BB%9F
+PASS Filter /Admin/DotHienMau canNang=45
+PASS Filter excludes AB or heavier campaign
+PASS Filter /Admin/DotHienMau thoiHan=conhan
+PASS Filter /Admin/DotHienMau thoiHan=7ngay
+PASS Filter /Admin/DotHienMau thoiHan=hethan
+PASS All filters + search + sort + page /Admin/DotHienMau
+PASS Empty search result /Admin/DotHienMau
+PASS Missing record returns 404 /DotHienMau/Details/2147483647
+PASS Missing record returns 404 /DotHienMau/Edit/2147483647
+PASS Donor registration link open
+PASS Public open filter open
+PASS Actual receiving count open
+PASS Donor registration link future
+PASS Public open filter future
+PASS Actual receiving count future
+PASS Donor registration link expired
+PASS Public open filter expired
+PASS Actual receiving count expired
+PASS Donor registration link paused
+PASS Public open filter paused
+PASS Actual receiving count paused
+PASS Donor registration link closed
+PASS Public open filter closed
+PASS Actual receiving count closed
+PASS All pre-existing campaigns unchanged
