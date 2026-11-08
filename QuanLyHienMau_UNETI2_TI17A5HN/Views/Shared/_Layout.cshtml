@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Vitalis Blood Community | Quản Lý Hiến Máu UNETI</title>
+    <title>@ViewData["Title"] - Hệ Thống Quản Lý Hiến Máu UNETI</title>
     
     <!-- Google Fonts & Material Symbols -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
     
-    <!-- Tailwind CSS with Stitch Theme Config -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script id="tailwind-config">
         tailwind.config = {
@@ -120,7 +120,13 @@
             <div class="flex items-center gap-3">
                 @if (User.Identity?.IsAuthenticated == true)
                 {
-                    var role = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? "Donor";
+                    var rawRole = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? "Donor";
+                    var roleDisplay = rawRole switch
+                    {
+                        "Admin" => "Quản trị viên",
+                        "Medical Staff" => "Nhân viên y tế",
+                        _ => "Người hiến máu"
+                    };
                     var displayName = User.Identity.Name ?? "Tài khoản";
 
                     <div class="flex items-center gap-2">
@@ -130,7 +136,7 @@
                             </div>
                             <div class="hidden md:flex flex-col text-left">
                                 <span class="font-label-md text-label-md font-semibold text-on-surface line-clamp-1 leading-tight">@displayName</span>
-                                <span class="font-label-sm text-[10px] text-primary font-bold uppercase leading-tight">@role</span>
+                                <span class="font-label-sm text-[10px] text-primary font-bold uppercase leading-tight">@roleDisplay</span>
                             </div>
                         </a>
 
@@ -173,13 +179,13 @@
                 <div class="flex flex-col">
                     <div class="flex items-center gap-2 mb-4">
                         <span class="material-symbols-outlined text-primary text-[24px]" style="font-variation-settings: 'FILL' 1;">water_drop</span>
-                        <span class="font-headline-sm text-headline-sm text-primary">Vitalis Community</span>
+                        <span class="font-headline-sm text-headline-sm text-primary">Hiến Máu UNETI</span>
                     </div>
                     <p class="font-body-sm text-body-sm text-on-surface-variant mb-4">
-                        Nền tảng gắn kết nghĩa cử cao đẹp, số hóa quy trình đăng ký hiến máu nhân đạo và hỗ trợ điều phối nguồn máu cứu người kịp thời.
+                        Nền tảng gắn kết nghĩa cử cao đẹp, hỗ trợ đăng ký hiến máu nhân đạo và điều phối nguồn máu cứu người kịp thời.
                     </p>
                     <div class="font-label-sm text-label-sm text-secondary bg-surface-container px-3 py-2 rounded-lg inline-block">
-                        Đồ án chuyên ngành ASP.NET Core MVC - UNETI
+                        Hệ thống Quản lý Hiến máu Tình nguyện - UNETI
                     </div>
                 </div>
 
@@ -190,7 +196,7 @@
                         <li><a asp-controller="DotHienMau" asp-action="Index" class="hover:text-primary transition-colors">Các đợt hiến máu</a></li>
                         <li><a asp-controller="DangKy" asp-action="Create" class="hover:text-primary transition-colors">Đăng ký hiến máu</a></li>
                         <li><a asp-controller="DangKy" asp-action="TheoDoi" class="hover:text-primary transition-colors">Tra cứu phiếu đăng ký</a></li>
-                        <li><a asp-controller="NguoiHienMau" asp-action="HoSoCaNhan" class="hover:text-primary transition-colors">Chứng nhận điện tử</a></li>
+                        <li><a asp-controller="NguoiHienMau" asp-action="HoSoCaNhan" class="hover:text-primary transition-colors">Hồ sơ cá nhân</a></li>
                     </ul>
                 </div>
 
@@ -212,7 +218,7 @@
                         <div class="flex items-start gap-2">
                             <span class="material-symbols-outlined text-primary text-[18px] mt-0.5">call</span>
                             <div>
-                                <span class="block font-semibold text-on-surface">Hotline Hỗ Trợ:</span>
+                                <span class="block font-semibold text-on-surface">Tổng đài Hỗ trợ:</span>
                                 <span class="text-primary font-bold">1900 6868</span> (24/7)
                             </div>
                         </div>
@@ -220,14 +226,14 @@
                             <span class="material-symbols-outlined text-primary text-[18px] mt-0.5">mail</span>
                             <div>
                                 <span class="block font-semibold text-on-surface">Email:</span>
-                                <span>hienmau@vitalis.community</span>
+                                <span>hienmau@uneti.edu.vn</span>
                             </div>
                         </div>
                         <div class="flex items-start gap-2">
                             <span class="material-symbols-outlined text-primary text-[18px] mt-0.5">location_on</span>
                             <div>
                                 <span class="block font-semibold text-on-surface">Địa chỉ phối hợp:</span>
-                                <span>Viện Huyết học - Truyền máu Trung ương & UNETI</span>
+                                <span>Viện Huyết học - Truyền máu Trung ương &amp; UNETI</span>
                             </div>
                         </div>
                     </div>
@@ -238,7 +244,7 @@
         <div class="bg-surface-container py-4">
             <div class="max-w-[1240px] mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
                 <p class="font-body-sm text-body-sm text-on-surface-variant">
-                    Bản quyền © 2026 Vitalis Blood Community - Quản Lý Hiến Máu UNETI.
+                    Bản quyền © 2026 Hệ thống Quản lý Hiến máu Tình nguyện - UNETI.
                 </p>
                 <div class="flex items-center gap-2">
                     <span class="inline-block w-2 h-2 rounded-full bg-primary"></span>

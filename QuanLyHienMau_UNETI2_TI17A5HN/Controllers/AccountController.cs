@@ -1,29 +1,37 @@
+// Họ và tên: Nguyễn Tiến Nam
+// Mã sinh viên: 23103100275
+// Nội dung thực hiện: Module 1 - Tài khoản, Đăng nhập, Phân quyền và Đơn vị tổ chức
+// Triển khai Repository Pattern: Controller xử lý Request/Response, Repository làm việc với dữ liệu
+
 using System.Security.Claims;
+using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using QuanLyHienMau_UNETI2_TI17A5HN.Data;
 using QuanLyHienMau_UNETI2_TI17A5HN.Models;
+using QuanLyHienMau_UNETI2_TI17A5HN.Models.ViewModels;
+using QuanLyHienMau_UNETI2_TI17A5HN.Repositories;
 
 namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
 {
     public class AccountController : Controller
     {
-        private readonly ApplicationDbContext _context;
+        private const string AuthScheme = "QuanLyHienMau.Auth";
+        private readonly ITaiKhoanRepository _taiKhoanRepository;
         private readonly PasswordHasher<TaiKhoan> _passwordHasher;
 
-        public AccountController(ApplicationDbContext context)
+        private static readonly Regex UsernameRegex = new(@"^[a-zA-Z0-9_.-]+$", RegexOptions.Compiled);
+        private static readonly Regex EmailRegex = new(@"^[^@\s]+@[^@\s]+\.[^@\s]+$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static readonly Regex PhoneRegex = new(@"^(0[3|5|7|8|9])+([0-9]{8})$", RegexOptions.Compiled);
+
+        public AccountController(ITaiKhoanRepository taiKhoanRepository)
         {
-            _context = context;
+            _taiKhoanRepository = taiKhoanRepository;
             _passwordHasher = new PasswordHasher<TaiKhoan>();
         }
 
         // GET: /Account
-        public IActionResult Index()
-        {
-            return RedirectToAction(nameof(Login));
-        }
+        public IActionResult Index() => RedirectToAction(nameof(Login));
 
         // GET: /Account/Login
         [HttpGet]
@@ -31,7 +39,7 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
         {
             if (User.Identity?.IsAuthenticated == true)
             {
-                return RedirectToRoleHome(User.FindFirst(ClaimTypes.Role)?.Value);
+                return RedirectToRoleHome(User.FindFirstValue(ClaimTypes.Role));
             }
 
             ViewData["Title"] = "Đăng Nhập & Đăng Ký Cổng Hiến Máu";
@@ -42,74 +50,52 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
         // POST: /Account/Login
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(string tenDangNhap, string matKhau, bool rememberMe, string? returnUrl = null)
+        public async Task<IActionResult> Login(LoginViewModel model)
         {
-            ViewData["ReturnUrl"] = returnUrl;
+            ViewData["Title"] = "Đăng Nhập & Đăng Ký Cổng Hiến Máu";
+            ViewData["ReturnUrl"] = model.ReturnUrl;
+            ViewBag.LoginTenDangNhap = model.TenDangNhap;
 
-            if (string.IsNullOrWhiteSpace(tenDangNhap) || string.IsNullOrWhiteSpace(matKhau))
+            // 1. Kiểm tra dữ liệu đầu vào bắt buộc
+            if (string.IsNullOrWhiteSpace(model.TenDangNhap) || string.IsNullOrWhiteSpace(model.MatKhau))
             {
                 ViewBag.LoginError = "Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu.";
                 return View();
             }
 
-            var trimmedInput = tenDangNhap.Trim();
-            var trimmedInputLower = trimmedInput.ToLower();
+            var trimmedInput = model.TenDangNhap.Trim();
 
-            // Tìm kiếm tài khoản theo TenDangNhap, Email hoặc SoDienThoai của hồ sơ
-            var taiKhoan = await _context.TaiKhoans
-                .Include(t => t.NguoiHienMau)
-                .FirstOrDefaultAsync(t => t.TenDangNhap.ToLower() == trimmedInputLower ||
-                                         (t.Email != null && t.Email.ToLower() == trimmedInputLower) ||
-                                         (t.NguoiHienMau != null && t.NguoiHienMau.SoDienThoai == trimmedInput));
-
+            // 2. Truy vấn tài khoản qua Repository
+            var taiKhoan = await _taiKhoanRepository.FindForLoginAsync(trimmedInput);
             if (taiKhoan == null)
             {
                 ViewBag.LoginError = "Tài khoản hoặc mật khẩu không chính xác.";
                 return View();
             }
 
+            // 3. Nghiệp vụ: Tài khoản bị khóa KHÔNG được phép đăng nhập
             if (taiKhoan.TrangThai != "Hoạt động")
             {
-                ViewBag.LoginError = "Tài khoản hiện đang bị khóa hoặc tạm dừng. Vui lòng liên hệ ban quản trị.";
+                ViewBag.LoginError = "Tài khoản của bạn hiện đang bị khóa hoặc tạm dừng. Vui lòng liên hệ ban quản trị để được hỗ trợ.";
                 return View();
             }
 
-            // Xác thực mật khẩu
-            var verifyResult = _passwordHasher.VerifyHashedPassword(taiKhoan, taiKhoan.MatKhau, matKhau);
+            // 4. Xác thực mật khẩu băm (PasswordHasher)
+            var verifyResult = _passwordHasher.VerifyHashedPassword(taiKhoan, taiKhoan.MatKhau, model.MatKhau);
             if (verifyResult == PasswordVerificationResult.Failed)
             {
                 ViewBag.LoginError = "Tài khoản hoặc mật khẩu không chính xác.";
                 return View();
             }
 
-            // Tạo Claims
-            var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.NameIdentifier, taiKhoan.MaTaiKhoan.ToString()),
-                new Claim(ClaimTypes.Name, taiKhoan.HoTen),
-                new Claim(ClaimTypes.Role, taiKhoan.VaiTro),
-                new Claim("TenDangNhap", taiKhoan.TenDangNhap)
-            };
-
-            if (!string.IsNullOrEmpty(taiKhoan.Email))
-            {
-                claims.Add(new Claim(ClaimTypes.Email, taiKhoan.Email));
-            }
-
-            var claimsIdentity = new ClaimsIdentity(claims, "QuanLyHienMau.Auth");
-            var authProperties = new AuthenticationProperties
-            {
-                IsPersistent = rememberMe,
-                ExpiresUtc = rememberMe ? DateTimeOffset.UtcNow.AddDays(7) : DateTimeOffset.UtcNow.AddHours(12)
-            };
-
-            await HttpContext.SignInAsync("QuanLyHienMau.Auth", new ClaimsPrincipal(claimsIdentity), authProperties);
+            // 5. Thiết lập Session & Cookie Authentication
+            await SignInUserAsync(taiKhoan, model.RememberMe);
 
             TempData["SuccessMessage"] = $"Chào mừng {taiKhoan.HoTen} đã đăng nhập thành công!";
 
-            if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+            if (!string.IsNullOrEmpty(model.ReturnUrl) && Url.IsLocalUrl(model.ReturnUrl))
             {
-                return Redirect(returnUrl);
+                return Redirect(model.ReturnUrl);
             }
 
             return RedirectToRoleHome(taiKhoan.VaiTro);
@@ -121,7 +107,7 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
         {
             if (User.Identity?.IsAuthenticated == true)
             {
-                return RedirectToRoleHome(User.FindFirst(ClaimTypes.Role)?.Value);
+                return RedirectToRoleHome(User.FindFirstValue(ClaimTypes.Role));
             }
 
             ViewData["Title"] = "Đăng Ký Tài Khoản Tình Nguyện Viên";
@@ -132,116 +118,141 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
         // POST: /Account/Register
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Register(
-            string tenDangNhap,
-            string matKhau,
-            string xacNhanMatKhau,
-            string hoTen,
-            string? email,
-            string? soDienThoai,
-            string? nhomMau,
-            double? canNang)
+        public async Task<IActionResult> Register(RegisterViewModel model)
         {
+            ViewData["Title"] = "Đăng Ký Tài Khoản Tình Nguyện Viên";
             ViewBag.ActiveTab = "register";
+            ViewBag.RegTenDangNhap = model.TenDangNhap;
+            ViewBag.RegHoTen = model.HoTen;
+            ViewBag.RegEmail = model.Email;
+            ViewBag.RegSoDienThoai = model.SoDienThoai;
+            ViewBag.RegNhomMau = model.NhomMau;
+            ViewBag.RegCanNang = model.CanNang;
+            ViewBag.RegDongYDieuKhoan = true;
 
-            if (string.IsNullOrWhiteSpace(tenDangNhap) ||
-                string.IsNullOrWhiteSpace(matKhau) ||
-                string.IsNullOrWhiteSpace(hoTen))
+            // 1. Kiểm tra các trường thông tin bắt buộc
+            if (string.IsNullOrWhiteSpace(model.TenDangNhap) ||
+                string.IsNullOrWhiteSpace(model.MatKhau) ||
+                string.IsNullOrWhiteSpace(model.HoTen))
             {
-                ViewBag.RegisterError = "Vui lòng điền đầy đủ các thông tin bắt buộc (*).";
+                ViewBag.RegisterError = "Vui lòng điền đầy đủ các trường thông tin bắt buộc (*).";
                 return View("Login");
             }
 
-            if (matKhau != xacNhanMatKhau)
+            var cleanTenDangNhap = model.TenDangNhap.Trim();
+            var cleanHoTen = model.HoTen.Trim();
+
+            // 2. Kiểm tra định dạng và độ dài tên đăng nhập & họ tên
+            if (cleanTenDangNhap.Length < 3 || cleanTenDangNhap.Length > 50)
             {
-                ViewBag.RegisterError = "Mật khẩu xác nhận không khớp.";
+                ViewBag.RegisterError = "Tên đăng nhập phải có độ dài từ 3 đến 50 ký tự.";
                 return View("Login");
             }
 
-            if (matKhau.Length < 6)
+            if (!UsernameRegex.IsMatch(cleanTenDangNhap))
+            {
+                ViewBag.RegisterError = "Tên đăng nhập chỉ được chứa chữ cái, chữ số, dấu gạch dưới (_), gạch ngang (-) và dấu chấm (.), không chứa khoảng trắng.";
+                return View("Login");
+            }
+
+            if (cleanHoTen.Length > 100)
+            {
+                ViewBag.RegisterError = "Họ và tên không được vượt quá 100 ký tự.";
+                return View("Login");
+            }
+
+            // 3. Kiểm tra độ dài mật khẩu và khớp xác nhận
+            if (model.MatKhau.Length < 6)
             {
                 ViewBag.RegisterError = "Mật khẩu phải có tối thiểu 6 ký tự.";
                 return View("Login");
             }
 
-            var cleanTenDangNhap = tenDangNhap.Trim();
-            var cleanTenDangNhapLower = cleanTenDangNhap.ToLower();
+            if (model.MatKhau != model.XacNhanMatKhau)
+            {
+                ViewBag.RegisterError = "Mật khẩu xác nhận không khớp.";
+                return View("Login");
+            }
 
-            // Kiểm tra trùng tên đăng nhập
-            var isDuplicate = await _context.TaiKhoans.AnyAsync(t => t.TenDangNhap.ToLower() == cleanTenDangNhapLower);
-            if (isDuplicate)
+            // 4. Kiểm tra định dạng email nếu có nhập
+            string? cleanEmail = null;
+            if (!string.IsNullOrWhiteSpace(model.Email))
+            {
+                cleanEmail = model.Email.Trim();
+                if (cleanEmail.Length > 100 || !EmailRegex.IsMatch(cleanEmail))
+                {
+                    ViewBag.RegisterError = "Địa chỉ email không đúng định dạng (Ví dụ: nguoidung@domain.com).";
+                    return View("Login");
+                }
+            }
+
+            // 5. Kiểm tra định dạng số điện thoại nếu có nhập
+            string? cleanPhone = null;
+            if (!string.IsNullOrWhiteSpace(model.SoDienThoai))
+            {
+                cleanPhone = model.SoDienThoai.Trim();
+                if (!PhoneRegex.IsMatch(cleanPhone))
+                {
+                    ViewBag.RegisterError = "Số điện thoại không hợp lệ (Phải là số điện thoại 10 chữ số tại Việt Nam).";
+                    return View("Login");
+                }
+            }
+
+            // 6. Kiểm tra cân nặng hợp lý nếu có nhập
+            if (model.CanNang.HasValue && (model.CanNang.Value < 30 || model.CanNang.Value > 200))
+            {
+                ViewBag.RegisterError = "Cân nặng nhập vào không hợp lệ (khoảng hợp lệ: 30kg - 200kg).";
+                return View("Login");
+            }
+
+            // 7. Kiểm tra trùng tên đăng nhập qua Repository
+            if (await _taiKhoanRepository.IsTenDangNhapExistsAsync(cleanTenDangNhap))
             {
                 ViewBag.RegisterError = $"Tên đăng nhập '{cleanTenDangNhap}' đã được sử dụng. Vui lòng chọn tên khác.";
                 return View("Login");
             }
 
-            // Kiểm tra trùng email nếu có nhập
-            if (!string.IsNullOrWhiteSpace(email))
+            // 8. Kiểm tra trùng email qua Repository
+            if (!string.IsNullOrWhiteSpace(cleanEmail) && await _taiKhoanRepository.IsEmailExistsAsync(cleanEmail))
             {
-                var cleanEmailLower = email.Trim().ToLower();
-                var isEmailDuplicate = await _context.TaiKhoans.AnyAsync(t => t.Email != null && t.Email.ToLower() == cleanEmailLower);
-                if (isEmailDuplicate)
-                {
-                    ViewBag.RegisterError = "Email này đã được sử dụng cho tài khoản khác.";
-                    return View("Login");
-                }
+                ViewBag.RegisterError = "Email này đã được sử dụng cho tài khoản khác.";
+                return View("Login");
             }
 
-            // 1. Tạo Tài Khoản (Server quyết định VaiTro = Donor và TrangThai = Hoạt động)
+            // 9. Kiểm tra trùng số điện thoại qua Repository
+            if (!string.IsNullOrWhiteSpace(cleanPhone) && await _taiKhoanRepository.IsSoDienThoaiExistsAsync(cleanPhone))
+            {
+                ViewBag.RegisterError = "Số điện thoại này đã được liên kết với một tài khoản khác.";
+                return View("Login");
+            }
+
+            // 10. Khởi tạo Entity TaiKhoan & NguoiHienMau, lưu nguyên tử qua Repository
             var newAccount = new TaiKhoan
             {
                 TenDangNhap = cleanTenDangNhap,
-                HoTen = hoTen.Trim(),
-                Email = string.IsNullOrWhiteSpace(email) ? null : email.Trim(),
+                HoTen = cleanHoTen,
+                Email = cleanEmail,
                 VaiTro = "Donor",
                 TrangThai = "Hoạt động"
             };
+            newAccount.MatKhau = _passwordHasher.HashPassword(newAccount, model.MatKhau);
 
-            // Hash mật khẩu
-            newAccount.MatKhau = _passwordHasher.HashPassword(newAccount, matKhau);
-
-            _context.TaiKhoans.Add(newAccount);
-            await _context.SaveChangesAsync();
-
-            // 2. Tạo Hồ sơ Người Hiến Máu liên kết
             var newDonorProfile = new NguoiHienMau
             {
-                MaTaiKhoan = newAccount.MaTaiKhoan,
                 HoTen = newAccount.HoTen,
                 Email = newAccount.Email,
-                SoDienThoai = string.IsNullOrWhiteSpace(soDienThoai) ? null : soDienThoai.Trim(),
-                NhomMau = (nhomMau == "unknown" || string.IsNullOrWhiteSpace(nhomMau)) ? null : nhomMau,
-                CanNang = canNang,
+                SoDienThoai = cleanPhone,
+                NhomMau = (model.NhomMau == "unknown" || string.IsNullOrWhiteSpace(model.NhomMau)) ? null : model.NhomMau.Trim(),
+                CanNang = model.CanNang,
                 TrangThai = "Hoạt động"
             };
 
-            _context.NguoiHienMaus.Add(newDonorProfile);
-            await _context.SaveChangesAsync();
+            await _taiKhoanRepository.RegisterDonorAccountAsync(newAccount, newDonorProfile);
 
-            // Tự động đăng nhập sau khi đăng ký
-            var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.NameIdentifier, newAccount.MaTaiKhoan.ToString()),
-                new Claim(ClaimTypes.Name, newAccount.HoTen),
-                new Claim(ClaimTypes.Role, newAccount.VaiTro),
-                new Claim("TenDangNhap", newAccount.TenDangNhap)
-            };
+            // 11. Tự động đăng nhập Session & Claims
+            await SignInUserAsync(newAccount, isPersistent: true);
 
-            if (!string.IsNullOrEmpty(newAccount.Email))
-            {
-                claims.Add(new Claim(ClaimTypes.Email, newAccount.Email));
-            }
-
-            var claimsIdentity = new ClaimsIdentity(claims, "QuanLyHienMau.Auth");
-            var authProperties = new AuthenticationProperties
-            {
-                IsPersistent = true,
-                ExpiresUtc = DateTimeOffset.UtcNow.AddDays(7)
-            };
-
-            await HttpContext.SignInAsync("QuanLyHienMau.Auth", new ClaimsPrincipal(claimsIdentity), authProperties);
-
-            TempData["SuccessMessage"] = "Đăng ký tài khoản tình nguyện viên thành công! Chào mừng bạn tham gia cộng đồng.";
+            TempData["SuccessMessage"] = "Đăng ký tài khoản tình nguyện viên thành công! Chào mừng bạn tham gia cộng đồng hiến máu.";
             return RedirectToAction("HoSoCaNhan", "NguoiHienMau");
         }
 
@@ -250,17 +261,15 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
         {
-            await HttpContext.SignOutAsync("QuanLyHienMau.Auth");
-            TempData["SuccessMessage"] = "Đã đăng xuất khỏi hệ thống.";
+            await SignOutCurrentUserAsync();
             return RedirectToAction(nameof(Login));
         }
 
         // GET: /Account/Logout
-        [HttpGet]
+        [HttpGet, ActionName("Logout")]
         public async Task<IActionResult> LogoutGet()
         {
-            await HttpContext.SignOutAsync("QuanLyHienMau.Auth");
-            TempData["SuccessMessage"] = "Đã đăng xuất khỏi hệ thống.";
+            await SignOutCurrentUserAsync();
             return RedirectToAction(nameof(Login));
         }
 
@@ -268,24 +277,54 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
         [HttpGet]
         public IActionResult AccessDenied()
         {
-            ViewData["Title"] = "Không Có Quyền Truy Cập (403)";
+            ViewData["Title"] = "Từ Chối Quyền Truy Cập";
             return View();
         }
 
-        // GET: /Account/VNeIDAuth
-        [HttpGet]
-        public IActionResult VNeIDAuth()
+        private async Task SignInUserAsync(TaiKhoan taiKhoan, bool isPersistent)
         {
-            ViewData["Title"] = "Xác Thực CCCD / VNeID Cổng Định Danh Y Tế Số";
-            return View();
+            // Lưu thông tin vào Session theo đặc tả Đề bài (Mục 5.2)
+            HttpContext.Session.SetInt32("MaTaiKhoan", taiKhoan.MaTaiKhoan);
+            HttpContext.Session.SetString("HoTen", taiKhoan.HoTen);
+            HttpContext.Session.SetString("VaiTro", taiKhoan.VaiTro);
+            HttpContext.Session.SetString("TenDangNhap", taiKhoan.TenDangNhap);
+
+            // Thiết lập Claims cho Cookie Authentication
+            var claims = new List<Claim>
+            {
+                new(ClaimTypes.NameIdentifier, taiKhoan.MaTaiKhoan.ToString()),
+                new(ClaimTypes.Name, taiKhoan.HoTen),
+                new(ClaimTypes.Role, taiKhoan.VaiTro),
+                new("TenDangNhap", taiKhoan.TenDangNhap)
+            };
+
+            if (!string.IsNullOrEmpty(taiKhoan.Email))
+            {
+                claims.Add(new Claim(ClaimTypes.Email, taiKhoan.Email));
+            }
+
+            var claimsIdentity = new ClaimsIdentity(claims, AuthScheme);
+            var authProperties = new AuthenticationProperties
+            {
+                IsPersistent = isPersistent,
+                ExpiresUtc = isPersistent ? DateTimeOffset.UtcNow.AddDays(7) : DateTimeOffset.UtcNow.AddHours(12)
+            };
+
+            await HttpContext.SignInAsync(AuthScheme, new ClaimsPrincipal(claimsIdentity), authProperties);
+        }
+
+        private async Task SignOutCurrentUserAsync()
+        {
+            HttpContext.Session.Clear();
+            await HttpContext.SignOutAsync(AuthScheme);
+            TempData["SuccessMessage"] = "Đã đăng xuất khỏi hệ thống thành công.";
         }
 
         private IActionResult RedirectToRoleHome(string? role)
         {
             return role switch
             {
-                "Admin" => RedirectToAction("Dashboard", "Admin"),
-                "Medical Staff" => RedirectToAction("Dashboard", "Admin"),
+                "Admin" or "Medical Staff" => RedirectToAction("Dashboard", "Admin"),
                 _ => RedirectToAction("HoSoCaNhan", "NguoiHienMau")
             };
         }

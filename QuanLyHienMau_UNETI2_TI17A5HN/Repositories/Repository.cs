@@ -15,7 +15,7 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Repositories
     /// Lớp triển khai Generic Repository sử dụng ApplicationDbContext của Entity Framework Core.
     /// </summary>
     /// <typeparam name="T">Kiểu thực thể (Entity Model)</typeparam>
-    public class Repository<T> : IRepository<T> where T : class
+    public class Repository<T> : QuanLyHienMau_UNETI2_TI17A5HN.Repositories.Interfaces.IRepository<T> where T : class
     {
         protected readonly ApplicationDbContext _context;
         protected readonly DbSet<T> _dbSet;
