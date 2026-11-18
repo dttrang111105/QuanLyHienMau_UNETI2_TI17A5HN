@@ -187,6 +187,7 @@
                         <span class="material-symbols-outlined text-[20px]">biotech</span>
                         <span class="font-label-md text-label-md">Kết quả hiến máu</span>
                     </a>
+                    @* Ẩn các màn hình ngoài phạm vi 5 Module chính của Đề tài 29:
                     <a asp-controller="Admin" asp-action="HoSoBenhSu" class="flex items-center gap-space-sm px-space-md py-2.5 transition-all duration-150 @(currentController == "Admin" && currentAction == "HoSoBenhSu" ? "bg-primary text-on-primary font-bold shadow-md rounded-xl" : "rounded-xl text-inverse-on-surface hover:bg-surface-container-highest hover:text-on-surface")">
                         <span class="material-symbols-outlined text-[20px]">clinical_notes</span>
                         <span class="font-label-md text-label-md">Hồ sơ bệnh sử lâm sàng</span>
@@ -199,6 +200,7 @@
                         <span class="material-symbols-outlined text-[20px]">route</span>
                         <span class="font-label-md text-label-md">Chuỗi hành trình &amp; Giám sát túi máu</span>
                     </a>
+                    *@
                 </nav>
 
                 <!-- Group 3: Đối tác & Dữ liệu -->
@@ -208,14 +210,19 @@
                         <span class="material-symbols-outlined text-[20px]">apartment</span>
                         <span class="font-label-md text-label-md">Đơn vị tổ chức</span>
                     </a>
-                    <a asp-controller="Admin" asp-action="NguoiHienMau" class="flex items-center gap-space-sm px-space-md py-2.5 transition-all duration-150 @(currentController == "Admin" && currentAction == "NguoiHienMau" ? "bg-primary text-on-primary font-bold shadow-md rounded-xl" : "rounded-xl text-inverse-on-surface hover:bg-surface-container-highest hover:text-on-surface")">
-                        <span class="material-symbols-outlined text-[20px]">groups</span>
-                        <span class="font-label-md text-label-md">Người hiến máu</span>
-                    </a>
+                    @if (rawRole == "Admin")
+                    {
+                        <a asp-controller="Admin" asp-action="NguoiHienMau" class="flex items-center gap-space-sm px-space-md py-2.5 transition-all duration-150 @(currentController == "Admin" && currentAction == "NguoiHienMau" ? "bg-primary text-on-primary font-bold shadow-md rounded-xl" : "rounded-xl text-inverse-on-surface hover:bg-surface-container-highest hover:text-on-surface")">
+                            <span class="material-symbols-outlined text-[20px]">groups</span>
+                            <span class="font-label-md text-label-md">Người hiến máu</span>
+                        </a>
+                    }
+                    @* Ẩn màn hình ngoài phạm vi:
                     <a asp-controller="Admin" asp-action="KhoLuuTruMau" class="flex items-center gap-space-sm px-space-md py-2.5 transition-all duration-150 @(currentController == "Admin" && currentAction == "KhoLuuTruMau" ? "bg-primary text-on-primary font-bold shadow-md rounded-xl" : "rounded-xl text-inverse-on-surface hover:bg-surface-container-highest hover:text-on-surface")">
                         <span class="material-symbols-outlined text-[20px]">bloodtype</span>
                         <span class="font-label-md text-label-md">Kho lưu trữ máu</span>
                     </a>
+                    *@
                 </nav>
 
                 <!-- Group 4: Hệ thống -->
@@ -225,10 +232,14 @@
                         <span class="material-symbols-outlined text-[20px]">public</span>
                         <span class="font-label-md text-label-md">Cổng thông tin cộng đồng</span>
                     </a>
-                    <a asp-controller="Admin" asp-action="NhanSu" class="flex items-center gap-space-sm px-space-md py-2.5 transition-all duration-150 @((currentController == "Admin" && currentAction == "NhanSu") || currentController == "TaiKhoan" ? "bg-primary text-on-primary font-bold shadow-md rounded-xl" : "rounded-xl text-inverse-on-surface hover:bg-surface-container-highest hover:text-on-surface")">
-                        <span class="material-symbols-outlined text-[20px]">shield_person</span>
-                        <span class="font-label-md text-label-md">Quản lý tài khoản &amp; Phân quyền</span>
-                    </a>
+                    @if (rawRole == "Admin")
+                    {
+                        <a asp-controller="Admin" asp-action="NhanSu" class="flex items-center gap-space-sm px-space-md py-2.5 transition-all duration-150 @((currentController == "Admin" && currentAction == "NhanSu") || currentController == "TaiKhoan" ? "bg-primary text-on-primary font-bold shadow-md rounded-xl" : "rounded-xl text-inverse-on-surface hover:bg-surface-container-highest hover:text-on-surface")">
+                            <span class="material-symbols-outlined text-[20px]">shield_person</span>
+                            <span class="font-label-md text-label-md">Quản lý tài khoản &amp; Phân quyền</span>
+                        </a>
+                    }
+                    @* Ẩn các màn hình ngoài phạm vi:
                     <a asp-controller="Admin" asp-action="RBAC" class="flex items-center gap-space-sm px-space-md py-2.5 transition-all duration-150 @(currentController == "Admin" && currentAction == "RBAC" ? "bg-primary text-on-primary font-bold shadow-md rounded-xl" : "rounded-xl text-inverse-on-surface hover:bg-surface-container-highest hover:text-on-surface")">
                         <span class="material-symbols-outlined text-[20px]">admin_panel_settings</span>
                         <span class="font-label-md text-label-md">Cấu hình phân quyền</span>
@@ -237,6 +248,7 @@
                         <span class="material-symbols-outlined text-[20px]">sensors</span>
                         <span class="font-label-md text-label-md">Theo dõi nhiệt độ kho máu</span>
                     </a>
+                    *@
                 </nav>
             </div>
         </div>
@@ -261,10 +273,10 @@
         <!-- FIXED TOPBAR -->
         <header class="fixed top-0 left-72 right-0 h-16 bg-surface-container-lowest/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-40 flex items-center justify-between px-space-lg">
             <div class="flex items-center gap-space-lg flex-1 max-w-2xl">
-                <div class="relative w-full max-w-md">
-                    <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">search</span>
-                    <input class="w-full h-10 pl-10 pr-space-md bg-surface-container-low rounded-xl font-body-sm text-body-sm text-on-surface placeholder:text-on-surface-variant/70 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:bg-surface-container-lowest transition-all" placeholder="Tìm mã phiếu, số CCCD, họ tên người hiến, tên đợt..." type="search" />
-                </div>
+                <form method="get" asp-controller="Admin" asp-action="PhieuDangKyHienMau" class="relative w-full max-w-md">
+                    <button type="submit" class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant hover:text-primary text-[20px] cursor-pointer" title="Tìm kiếm">search</button>
+                    <input name="tenNguoiHien" value="@(ViewBag.CurrentTenNguoiHien ?? "")" class="w-full h-10 pl-10 pr-space-md bg-surface-container-low rounded-xl font-body-sm text-body-sm text-on-surface placeholder:text-on-surface-variant/70 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:bg-surface-container-lowest transition-all" placeholder="Tìm họ tên người hiến, mã phiếu, số điện thoại..." type="search" />
+                </form>
                 <div class="hidden xl:flex items-center gap-2 px-3 py-1.5 rounded-full bg-surface-container font-label-sm text-label-sm text-on-surface-variant">
                     <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                     <span>Trạng thái hệ thống: <strong class="text-on-surface font-semibold">Hoạt động ổn định</strong></span>

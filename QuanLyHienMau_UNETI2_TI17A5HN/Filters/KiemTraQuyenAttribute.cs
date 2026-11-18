@@ -1,3 +1,7 @@
+// Họ và tên: Trần Đỗ Quang Minh
+// Mã sinh viên: DHTI17A5HN - Module 5
+// Nội dung thực hiện: Module 5 - Bộ lọc kiểm tra đăng nhập và phân quyền (Session + Cookie Claims)
+
 using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;

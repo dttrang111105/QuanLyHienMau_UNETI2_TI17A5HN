@@ -1,4 +1,9 @@
 @*
+    Họ và tên: Đàm Thu Trang
+    Mã sinh viên: 23103100243
+    Nội dung thực hiện: Module 3 - Quản lý hồ sơ cá nhân người hiến máu
+*@
+@*
     ============================================================================
     DỰ ÁN QUẢN LÝ HIẾN MÁU NHÂN ĐẠO VITALIS - UNETI (TI17A5HN)
     MODULE 3: QUẢN LÝ NGƯỜI HIẾN MÁU & PHIẾU ĐĂNG KÝ HIẾN MÁU
@@ -92,6 +97,18 @@
                     <span class="material-symbols-outlined text-[20px] text-primary">edit</span>
                     <span>Cập nhật hồ sơ</span>
                 </button>
+                @{
+                    var aboGroup = !string.IsNullOrEmpty(Model?.NhomMau)
+                        ? (Model.NhomMau.ToUpper().Contains("AB") ? "AB"
+                           : Model.NhomMau.ToUpper().Contains("A") ? "A"
+                           : Model.NhomMau.ToUpper().Contains("B") ? "B"
+                           : Model.NhomMau.ToUpper().Contains("O") ? "O" : "")
+                        : "";
+                }
+                <a asp-controller="DotHienMau" asp-action="Index" asp-route-status="Đang mở đăng ký" asp-route-nhomMau="@aboGroup" asp-route-canNang="@(Model?.CanNang)" class="bg-emerald-600 hover:bg-emerald-700 text-white font-label-lg text-sm px-4 py-2.5 rounded-xl shadow-md flex items-center gap-2 transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 cursor-pointer" title="Lọc các đợt đang mở phù hợp với nhóm máu và cân nặng của bạn">
+                    <span class="material-symbols-outlined text-[20px]">recommend</span>
+                    <span>Gợi ý đợt phù hợp</span>
+                </a>
                 <a asp-controller="DotHienMau" asp-action="Index" class="bg-primary hover:bg-primary-container text-on-primary font-label-lg text-sm px-4 py-2.5 rounded-xl shadow-md flex items-center gap-2 transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 cursor-pointer">
                     <span class="material-symbols-outlined text-[20px]">bloodtype</span>
                     <span>Đăng ký đợt hiến mới</span>

@@ -1,3 +1,7 @@
+// Họ và tên: Nguyễn Tiến Nam
+// Mã sinh viên: 23103100275
+// Nội dung thực hiện: Module 1 - Model Tài khoản & Phân quyền
+
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 

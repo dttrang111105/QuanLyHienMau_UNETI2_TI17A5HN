@@ -1,3 +1,7 @@
+// Họ và tên: Trần Đỗ Quang Minh
+// Mã sinh viên: DHTI17A5HN - Module 5
+// Nội dung thực hiện: Module 5 - Repository Thống kê báo cáo và Dashboard
+
 using Microsoft.EntityFrameworkCore;
 using QuanLyHienMau_UNETI2_TI17A5HN.Data;
 using QuanLyHienMau_UNETI2_TI17A5HN.Models;

@@ -1,3 +1,7 @@
+// Họ và tên: Nguyễn Tiến Nam
+// Mã sinh viên: 23103100275
+// Nội dung thực hiện: Module 1 - Cấu hình DbContext và Fluent API cho 7 bảng
+
 using Microsoft.EntityFrameworkCore;
 using QuanLyHienMau_UNETI2_TI17A5HN.Models;
 
@@ -80,6 +84,9 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Data
                       .HasForeignKey<KetQuaHienMau>(k => k.MaPhieu)
                       .OnDelete(DeleteBehavior.Cascade);
             });
+
+            // 8. Cấu hình ConcurrencyToken cho Khám sàng lọc & Kết quả hiến máu
+            modelBuilder.ConfigureKhamSangLoc();
         }
     }
 }

@@ -1,3 +1,7 @@
+// Họ và tên: Trần Đỗ Quang Minh
+// Mã sinh viên: DHTI17A5HN - Module 5
+// Nội dung thực hiện: Module 5 - Repository Quản lý lịch khám sàng lọc
+
 using System.Data;
 using Microsoft.EntityFrameworkCore.Storage;
 using QuanLyHienMau_UNETI2_TI17A5HN.Services;

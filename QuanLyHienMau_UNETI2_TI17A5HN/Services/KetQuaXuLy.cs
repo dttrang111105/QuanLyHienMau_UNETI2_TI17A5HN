@@ -1,3 +1,7 @@
+// Họ và tên: Trần Đỗ Quang Minh
+// Mã sinh viên: DHTI17A5HN - Module 5
+// Nội dung thực hiện: Module 5 - Kết quả xử lý nghiệp vụ
+
 namespace QuanLyHienMau_UNETI2_TI17A5HN.Services;
 
 public sealed record KetQuaXuLy(bool Success, string Message, int? Id = null)

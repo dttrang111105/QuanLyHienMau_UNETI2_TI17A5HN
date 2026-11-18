@@ -1,3 +1,7 @@
+// Họ và tên: Trần Đỗ Quang Minh
+// Mã sinh viên: DHTI17A5HN - Module 5
+// Nội dung thực hiện: Module 5 - Service kiểm tra nghiệp vụ lịch khám sàng lọc và kết quả hiến máu
+
 using System.ComponentModel.DataAnnotations;
 using System.Data.Common;
 using Microsoft.EntityFrameworkCore;
@@ -81,6 +85,7 @@ public sealed class KhamSangLocService(
             lich.BacSiSangLoc = bacSi;
             lich.GhiChu = model.GhiChu?.Trim();
             phieu.TrangThai = TrangThaiHienMau.Phieu.ChoKhamSangLoc;
+            phieu.NgayXuLy = clock.Now;
             await lichRepository.LuuThayDoiAsync();
             return KetQuaXuLy.Ok(id.HasValue ? "Đã cập nhật lịch khám." : "Đã lập lịch khám sàng lọc.", lich.MaLichKhamSangLoc);
         });
@@ -105,6 +110,7 @@ public sealed class KhamSangLocService(
         }
         lich.TrangThai = TrangThaiHienMau.LichKham.DaHuy;
         lich.PhieuDangKyHienMau.TrangThai = TrangThaiHienMau.Phieu.DaXacNhan;
+        lich.PhieuDangKyHienMau.NgayXuLy = clock.Now;
         await lichRepository.LuuThayDoiAsync();
         return KetQuaXuLy.Ok("Đã hủy lịch khám. Phiếu trở về Đã xác nhận để có thể lập lịch mới.", id);
     });
@@ -122,6 +128,7 @@ public sealed class KhamSangLocService(
             return KetQuaXuLy.Fail("Phiếu đã có kết quả cuối cùng.");
         lich.TrangThai = TrangThaiHienMau.LichKham.DaHoanThanh;
         lich.PhieuDangKyHienMau.TrangThai = TrangThaiHienMau.Phieu.DaKhamSangLoc;
+        lich.PhieuDangKyHienMau.NgayXuLy = clock.Now;
         await lichRepository.LuuThayDoiAsync();
         return KetQuaXuLy.Ok("Đã hoàn thành khám sàng lọc. Phiếu có thể được ghi nhận kết quả.", id);
     });
@@ -161,6 +168,7 @@ public sealed class KhamSangLocService(
         ketQua.KetQua = model.KetQua;
         ketQua.NgayCapNhat = clock.Now;
         phieu.TrangThai = model.KetQua;
+        phieu.NgayXuLy = clock.Now;
         await lichRepository.LuuThayDoiAsync();
         var soThanhCong = await ketQuaRepository.DemPhieuThanhCongAsync(phieu.MaDot);
         var canhBao = phieu.DotHienMau is not null && phieu.DotHienMau.ChiTieuDonViMau > 0 && soThanhCong >= phieu.DotHienMau.ChiTieuDonViMau

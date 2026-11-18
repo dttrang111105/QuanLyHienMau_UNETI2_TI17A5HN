@@ -1,3 +1,7 @@
+// Họ và tên: Vương Văn Thái (Phụ trách Module 4)
+// Mã sinh viên: DHTI17A5HN - Module 4
+// Nội dung thực hiện: Module 4 - Repository xử lý tiếp nhận, lọc, duyệt phiếu đăng ký
+
 using System.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -23,7 +27,11 @@ public sealed class EfPhieuDangKyRepository(ApplicationDbContext context) : IPhi
         if (!string.IsNullOrWhiteSpace(filter.TenNguoiHien))
         {
             var name = filter.TenNguoiHien.Trim();
-            query = query.Where(p => p.NguoiHienMau != null && p.NguoiHienMau.HoTen.Contains(name));
+            query = query.Where(p =>
+                (p.NguoiHienMau != null && (p.NguoiHienMau.HoTen.Contains(name) ||
+                    (p.NguoiHienMau.SoDienThoai != null && p.NguoiHienMau.SoDienThoai.Contains(name)) ||
+                    (p.NguoiHienMau.Email != null && p.NguoiHienMau.Email.Contains(name)))) ||
+                p.MaPhieu.ToString().Contains(name));
         }
         if (!string.IsNullOrWhiteSpace(filter.TenDot))
         {
@@ -122,6 +130,110 @@ public sealed class EfPhieuDangKyRepository(ApplicationDbContext context) : IPhi
         var transaction = await context.Database.BeginTransactionAsync(isolationLevel, cancellationToken);
         return new EfPhieuRepositoryTransaction(transaction);
     }
+
+    public async Task<List<DotQuotaAlert>> GetDotDatChiTieuAsync(CancellationToken cancellationToken = default)
+    {
+        var raw = await context.DotHienMaus.AsNoTracking()
+            .Where(d => d.ChiTieuDonViMau > 0)
+            .Select(d => new
+            {
+                d.MaDot,
+                d.TenDot,
+                ChiTieu = d.ChiTieuDonViMau,
+                DaHien = d.PhieuDangKyHienMaus.Count(p => p.TrangThai == "Hiến máu thành công")
+            })
+            .Where(d => d.DaHien >= d.ChiTieu)
+            .OrderBy(d => d.TenDot)
+            .ToListAsync(cancellationToken);
+
+        return raw.Select(d => new DotQuotaAlert(d.MaDot, d.TenDot, d.ChiTieu, d.DaHien)).ToList();
+    }
+
+    public Task<List<DotHienMau>> GetAllDotHienMausOrderedAsync(CancellationToken cancellationToken = default) =>
+        context.DotHienMaus.OrderByDescending(d => d.NgayBatDauDangKy).ToListAsync(cancellationToken);
+
+    public Task<List<PhieuDangKyHienMau>> GetPhieuSanSangTaoLichAsync(CancellationToken cancellationToken = default) =>
+        context.PhieuDangKyHienMaus
+            .Include(p => p.NguoiHienMau)
+            .Include(p => p.DotHienMau)
+            .Include(p => p.LichKhamSangLocs)
+            .Where(p => (p.TrangThai == "Đã xác nhận" || p.TrangThai == "Chờ khám sàng lọc") &&
+                        !p.LichKhamSangLocs.Any(l => l.TrangThai == "Đã lên lịch"))
+            .OrderByDescending(p => p.NgayNop)
+            .Take(50)
+            .ToListAsync(cancellationToken);
+
+    public Task<List<PhieuDangKyHienMau>> GetPendingResultsAsync(int take = 10, CancellationToken cancellationToken = default) =>
+        context.PhieuDangKyHienMaus
+            .Include(p => p.NguoiHienMau)
+            .Include(p => p.DotHienMau)
+            .Where(p => p.TrangThai == "Đã khám sàng lọc" && p.KetQuaHienMau == null)
+            .OrderByDescending(p => p.NgayXuLy ?? p.NgayNop)
+            .Take(take)
+            .ToListAsync(cancellationToken);
+
+    public Task<List<PhieuDangKyHienMau>> GetRecentPhieusAsync(int take = 6, CancellationToken cancellationToken = default) =>
+        context.PhieuDangKyHienMaus
+            .Include(p => p.NguoiHienMau)
+            .Include(p => p.DotHienMau)
+            .OrderByDescending(p => p.NgayNop)
+            .Take(take)
+            .ToListAsync(cancellationToken);
+
+    public Task<List<DotHienMau>> GetRecentDotWithStatsAsync(int take = 8, CancellationToken cancellationToken = default) =>
+        context.DotHienMaus
+            .Include(d => d.DonViToChuc)
+            .Include(d => d.PhieuDangKyHienMaus)
+            .OrderByDescending(d => d.NgayBatDauDangKy)
+            .Take(take)
+            .ToListAsync(cancellationToken);
+
+    public IQueryable<LichKhamSangLoc> GetLichKhamQueryableWithDetails() =>
+        context.LichKhamSangLocs
+            .Include(l => l.PhieuDangKyHienMau!)
+                .ThenInclude(p => p.NguoiHienMau)
+            .Include(l => l.PhieuDangKyHienMau!)
+                .ThenInclude(p => p.DotHienMau!)
+                    .ThenInclude(d => d.DonViToChuc)
+            .AsQueryable();
+
+    public Task<int> CountLichKhamAsync(string? trangThai = null, CancellationToken cancellationToken = default) =>
+        string.IsNullOrEmpty(trangThai)
+            ? context.LichKhamSangLocs.CountAsync(cancellationToken)
+            : context.LichKhamSangLocs.CountAsync(l => l.TrangThai == trangThai, cancellationToken);
+
+    public IQueryable<KetQuaHienMau> GetKetQuaQueryableWithDetails() =>
+        context.KetQuaHienMaus
+            .Include(k => k.PhieuDangKyHienMau!)
+                .ThenInclude(p => p.NguoiHienMau)
+            .Include(k => k.PhieuDangKyHienMau!)
+                .ThenInclude(p => p.DotHienMau!)
+                    .ThenInclude(d => d.DonViToChuc)
+            .Include(k => k.PhieuDangKyHienMau!)
+                .ThenInclude(p => p.LichKhamSangLocs)
+            .AsQueryable();
+
+    public Task<int> CountKetQuaAsync(string? ketQua = null, CancellationToken cancellationToken = default) =>
+        string.IsNullOrEmpty(ketQua)
+            ? context.KetQuaHienMaus.CountAsync(cancellationToken)
+            : context.KetQuaHienMaus.CountAsync(k => k.KetQua == ketQua, cancellationToken);
+
+    public Task<KetQuaHienMau?> GetKetQuaDetailsByIdAsync(int id, CancellationToken cancellationToken = default) =>
+        context.KetQuaHienMaus
+            .Include(k => k.PhieuDangKyHienMau!)
+                .ThenInclude(p => p.NguoiHienMau!)
+                    .ThenInclude(n => n.TaiKhoan)
+            .Include(k => k.PhieuDangKyHienMau!)
+                .ThenInclude(p => p.DotHienMau!)
+                    .ThenInclude(d => d.DonViToChuc)
+            .Include(k => k.PhieuDangKyHienMau!)
+                .ThenInclude(p => p.LichKhamSangLocs)
+            .FirstOrDefaultAsync(k => k.MaKetQuaHienMau == id, cancellationToken);
+
+    public Task<int> CountPhieuAsync(string? trangThai = null, CancellationToken cancellationToken = default) =>
+        string.IsNullOrEmpty(trangThai)
+            ? context.PhieuDangKyHienMaus.CountAsync(cancellationToken)
+            : context.PhieuDangKyHienMaus.CountAsync(p => p.TrangThai == trangThai, cancellationToken);
 }
 
 internal sealed class EfPhieuRepositoryTransaction(IDbContextTransaction transaction) : IPhieuRepositoryTransaction

@@ -1,3 +1,8 @@
+@*
+    Họ và tên: Đàm Thu Trang
+    Mã sinh viên: 23103100243
+    Nội dung thực hiện: Module 3 - Quản lý danh sách người hiến máu (Admin)
+*@
 @model IEnumerable<QuanLyHienMau_UNETI2_TI17A5HN.Models.NguoiHienMau>
 @{
     // Module 3: Quản lý người hiến máu & phân loại nhóm máu hiếm
@@ -51,10 +56,10 @@
             </div>
             <!-- Action Buttons -->
             <div class="flex items-center flex-wrap gap-space-sm shrink-0">
-                <button class="h-10 px-4 rounded-xl bg-surface-container-lowest text-on-surface shadow-sm hover:bg-surface-container transition-all flex items-center gap-2 font-label-md text-label-md" type="button" onclick="alert('Đang trích xuất danh sách người hiến máu (CSV / Excel)...')">
+                <a asp-controller="Admin" asp-action="XuatDanhSachNguoiHienCsv" class="h-10 px-4 rounded-xl bg-surface-container-lowest text-on-surface shadow-sm hover:bg-surface-container transition-all flex items-center gap-2 font-label-md text-label-md">
                     <span class="material-symbols-outlined text-[18px]">download</span>
-                    <span>Xuất Danh Sách</span>
-                </button>
+                    <span>Xuất Danh Sách (CSV)</span>
+                </a>
                 <button class="h-10 px-4 rounded-xl bg-tertiary text-on-tertiary shadow-sm hover:opacity-95 transition-all flex items-center gap-2 font-label-md text-label-md font-bold" onclick="openEmergencyModal()" type="button">
                     <span class="material-symbols-outlined text-[18px] animate-pulse">crisis_alert</span>
                     <span>Kêu Gọi Khẩn Cấp</span>
@@ -65,6 +70,21 @@
                 </a>
             </div>
         </div>
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center gap-2 font-label-md text-label-md">
+                <span class="material-symbols-outlined text-emerald-600">check_circle</span>
+                <span>@TempData["SuccessMessage"]</span>
+            </div>
+        }
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="p-4 rounded-xl bg-error-container/40 border border-error/20 text-on-error-container flex items-center gap-2 font-label-md text-label-md">
+                <span class="material-symbols-outlined text-error">error</span>
+                <span>@TempData["ErrorMessage"]</span>
+            </div>
+        }
 
         <!-- 2. 4 Metric Cards (KPI Band) -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-md">
@@ -550,6 +570,14 @@
                                             <button class="p-1.5 rounded-lg text-secondary hover:text-primary hover:bg-surface-container transition-colors" title="Gửi SMS thông báo" type="button" onclick="alert('Mở cổng gửi tin nhắn điều phối tới: @donor.HoTen (@donor.SoDienThoai)')">
                                                 <span class="material-symbols-outlined text-[20px]">sms</span>
                                             </button>
+                                            <form asp-controller="Admin" asp-action="KhoaMoKhoaNguoiHien" method="post" class="inline">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="id" value="@donor.MaNguoiHien" />
+                                                <input type="hidden" name="returnUrl" value="@(Context.Request.Path + Context.Request.QueryString)" />
+                                                <button type="submit" class="p-1.5 rounded-lg @(donor.TrangThai == "Hoạt động" || string.IsNullOrEmpty(donor.TrangThai) ? "text-secondary hover:text-error hover:bg-error-container/30" : "text-emerald-600 hover:bg-emerald-50") transition-colors" title="@(donor.TrangThai == "Hoạt động" || string.IsNullOrEmpty(donor.TrangThai) ? "Khóa hồ sơ người hiến máu" : "Mở khóa hồ sơ người hiến máu")" onclick="return confirm('Bạn có chắc chắn muốn @(donor.TrangThai == "Hoạt động" || string.IsNullOrEmpty(donor.TrangThai) ? "khóa" : "mở khóa") hồ sơ của @donor.HoTen?');">
+                                                    <span class="material-symbols-outlined text-[20px]">@(donor.TrangThai == "Hoạt động" || string.IsNullOrEmpty(donor.TrangThai) ? "lock" : "lock_open")</span>
+                                                </button>
+                                            </form>
                                         </div>
                                     </td>
                                 </tr>

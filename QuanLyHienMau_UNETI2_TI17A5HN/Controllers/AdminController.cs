@@ -10,24 +10,27 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using QuanLyHienMau_UNETI2_TI17A5HN.Data;
 using QuanLyHienMau_UNETI2_TI17A5HN.Models;
 using QuanLyHienMau_UNETI2_TI17A5HN.Models.ViewModels;
 using QuanLyHienMau_UNETI2_TI17A5HN.Repositories;
+using QuanLyHienMau_UNETI2_TI17A5HN.Repositories.Interfaces;
+using QuanLyHienMau_UNETI2_TI17A5HN.Services;
+using QuanLyHienMau_UNETI2_TI17A5HN.ViewModels;
 
 namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
 {
     [Authorize(Roles = "Admin,Medical Staff")]
     public class AdminController : Controller
     {
-        private readonly ApplicationDbContext _context;
         // Ho va ten: NGUYEN THI PHUONG THAO
         // Ma sinh vien: 23103100272
         // Noi dung: Quan ly dot hien mau (Admin panel)
         private readonly IDotHienMauRepository _dotRepo;
-        private readonly IPhieuDangKyRepository _phieuRepository;
+        private readonly QuanLyHienMau_UNETI2_TI17A5HN.Repositories.IPhieuDangKyRepository _phieuRepository;
         private readonly IDonViToChucRepository _donViToChucRepository;
         private readonly ITaiKhoanRepository _taiKhoanRepository;
+        private readonly INguoiHienMauRepository _nguoiHienMauRepo;
+        private readonly KhamSangLocService _khamSangLocService;
         private readonly PasswordHasher<TaiKhoan> _passwordHasher;
 
         private static readonly Regex UsernameRegex = new(@"^[a-zA-Z0-9_.-]+$", RegexOptions.Compiled);
@@ -37,17 +40,19 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
         private static readonly HashSet<string> AllowedDonViStatuses = new(StringComparer.Ordinal) { "Hoạt động", "Tạm dừng" };
 
         public AdminController(
-            ApplicationDbContext context,
             IDotHienMauRepository dotRepo,
-            IPhieuDangKyRepository phieuRepository,
+            QuanLyHienMau_UNETI2_TI17A5HN.Repositories.IPhieuDangKyRepository phieuRepository,
             IDonViToChucRepository donViToChucRepository,
-            ITaiKhoanRepository taiKhoanRepository)
+            ITaiKhoanRepository taiKhoanRepository,
+            INguoiHienMauRepository nguoiHienMauRepo,
+            KhamSangLocService khamSangLocService)
         {
-            _context = context;
             _dotRepo = dotRepo;
             _phieuRepository = phieuRepository;
             _donViToChucRepository = donViToChucRepository;
             _taiKhoanRepository = taiKhoanRepository;
+            _nguoiHienMauRepo = nguoiHienMauRepo;
+            _khamSangLocService = khamSangLocService;
             _passwordHasher = new PasswordHasher<TaiKhoan>();
         }
 
@@ -70,17 +75,18 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
 
         public async Task<IActionResult> Dashboard()
         {
-            // 8+ KPI Macro từ database SQL Server
-            var tongNguoiHien = await _context.NguoiHienMaus.CountAsync();
-            var tongPhieu = await _context.PhieuDangKyHienMaus.CountAsync();
-            var phieuChoXacNhan = await _context.PhieuDangKyHienMaus.CountAsync(p => p.TrangThai == "Chờ xác nhận");
-            var phieuDaXacNhan = await _context.PhieuDangKyHienMaus.CountAsync(p => p.TrangThai == "Đã xác nhận");
-            var phieuDaKham = await _context.PhieuDangKyHienMaus.CountAsync(p => p.TrangThai == "Đã khám sàng lọc");
-            var hienMauThanhCong = await _context.PhieuDangKyHienMaus.CountAsync(p => p.TrangThai == "Hiến máu thành công");
-            var khongDuDieuKien = await _context.PhieuDangKyHienMaus.CountAsync(p => p.TrangThai == "Không đủ điều kiện hiến");
-            var dotDangMo = await _context.DotHienMaus.CountAsync(d => d.TrangThai == "Đang mở đăng ký");
-            var tongDonVi = await _context.DonViToChucs.CountAsync();
-            var tongLichKham = await _context.LichKhamSangLocs.CountAsync();
+            // 8+ KPI Macro từ database SQL Server qua Repository
+            var tongNguoiHien = await _nguoiHienMauRepo.GetQueryableWithDetails().CountAsync();
+            var tongPhieu = await _phieuRepository.CountPhieuAsync();
+            var phieuChoXacNhan = await _phieuRepository.CountPhieuAsync("Chờ xác nhận");
+            var phieuDaXacNhan = await _phieuRepository.CountPhieuAsync("Đã xác nhận");
+            var phieuDaKham = await _phieuRepository.CountPhieuAsync("Đã khám sàng lọc");
+            var hienMauThanhCong = await _phieuRepository.CountPhieuAsync("Hiến máu thành công");
+            var khongDuDieuKien = await _phieuRepository.CountPhieuAsync("Không đủ điều kiện hiến");
+            var dotDangMo = await _dotRepo.CountAsync(_dotRepo.ApplyFilterTrangThai(_dotRepo.GetQueryable(), "Đang mở đăng ký"));
+            var donViStats = await _donViToChucRepository.GetDonViStatsAsync();
+            var tongDonVi = donViStats.TotalCount;
+            var tongLichKham = await _phieuRepository.CountLichKhamAsync();
 
             ViewBag.TongNguoiHien = tongNguoiHien;
             ViewBag.TongPhieu = tongPhieu;
@@ -93,32 +99,20 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
             ViewBag.TongDonVi = tongDonVi;
             ViewBag.TongLichKham = tongLichKham;
 
-            // Thống kê theo nhóm máu (LINQ thực tế từ NguoiHienMau)
-            var bloodGroupStats = await _context.NguoiHienMaus
+            // Thống kê theo nhóm máu (LINQ thực tế từ NguoiHienMauRepository)
+            var bloodGroupStats = await _nguoiHienMauRepo.GetQueryableWithDetails()
                 .GroupBy(n => n.NhomMau ?? "Chưa xác định")
                 .Select(g => new { NhomMau = g.Key, SoLuong = g.Count() })
                 .ToListAsync();
 
             ViewBag.BloodGroupStats = bloodGroupStats;
 
-            // Thống kê theo từng Đợt hiến máu (Bảng dữ liệu thật)
-            var dotList = await _context.DotHienMaus
-                .Include(d => d.DonViToChuc)
-                .Include(d => d.PhieuDangKyHienMaus)
-                .OrderByDescending(d => d.NgayBatDauDangKy)
-                .Take(8)
-                .ToListAsync();
-
+            // Thống kê theo từng Đợt hiến máu
+            var dotList = await _phieuRepository.GetRecentDotWithStatsAsync(8);
             ViewBag.DotList = dotList;
 
             // Danh sách các phiếu mới nhất cần xử lý
-            var recentTickets = await _context.PhieuDangKyHienMaus
-                .Include(p => p.NguoiHienMau)
-                .Include(p => p.DotHienMau)
-                .OrderByDescending(p => p.NgayNop)
-                .Take(6)
-                .ToListAsync();
-
+            var recentTickets = await _phieuRepository.GetRecentPhieusAsync(6);
             ViewBag.RecentTickets = recentTickets;
 
             return View();
@@ -163,20 +157,7 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
             ViewBag.TotalPages = result.TotalPages;
             ViewBag.TotalItems = result.TotalItems;
             ViewBag.DonViToChucs = result.DonViToChucs;
-            ViewBag.DotDatChiTieu = (await _context.DotHienMaus.AsNoTracking()
-                .Where(d => d.ChiTieuDonViMau > 0)
-                .Select(d => new
-                {
-                    d.MaDot,
-                    d.TenDot,
-                    ChiTieu = d.ChiTieuDonViMau,
-                    DaHien = d.PhieuDangKyHienMaus.Count(p => p.TrangThai == "Hiến máu thành công")
-                })
-                .Where(d => d.DaHien >= d.ChiTieu)
-                .OrderBy(d => d.TenDot)
-                .ToListAsync())
-                .Select(d => new DotQuotaAlert(d.MaDot, d.TenDot, d.ChiTieu, d.DaHien))
-                .ToList();
+            ViewBag.DotDatChiTieu = await _phieuRepository.GetDotDatChiTieuAsync();
             return View(result.Items);
         }
 
@@ -328,6 +309,8 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
                 TempData["ErrorMessage"] = $"Chỉ phiếu Đã xác nhận mới được chuyển sang Chờ khám sàng lọc. Trạng thái hiện tại: '{phieu.TrangThai}'.";
             else if (phieu.KetQuaHienMau is not null)
                 TempData["ErrorMessage"] = "Phiếu đã có kết quả cuối cùng, không thể chuyển sang Chờ khám sàng lọc.";
+            else if (!phieu.LichKhamSangLocs.Any(l => l.TrangThai == "Đã lên lịch"))
+                TempData["ErrorMessage"] = "Không thể chuyển sang 'Chờ khám sàng lọc' khi phiếu chưa có lịch khám sàng lọc đang hiệu lực. Vui lòng tạo lịch khám trước.";
             else
             {
                 phieu.TrangThai = "Chờ khám sàng lọc";
@@ -349,19 +332,13 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
             int pageSize = 12;
             if (page < 1) page = 1;
 
-            var query = _context.LichKhamSangLocs
-                .Include(l => l.PhieuDangKyHienMau!)
-                    .ThenInclude(p => p.NguoiHienMau)
-                .Include(l => l.PhieuDangKyHienMau!)
-                    .ThenInclude(p => p.DotHienMau!)
-                        .ThenInclude(d => d.DonViToChuc)
-                .AsQueryable();
+            var query = _phieuRepository.GetLichKhamQueryableWithDetails();
 
             // Thống kê nhanh
-            ViewBag.TotalLich = await _context.LichKhamSangLocs.CountAsync();
-            ViewBag.DaLenLichCount = await _context.LichKhamSangLocs.CountAsync(l => l.TrangThai == "Đã lên lịch");
-            ViewBag.DaHoanThanhCount = await _context.LichKhamSangLocs.CountAsync(l => l.TrangThai == "Đã hoàn thành");
-            ViewBag.DaHuyCount = await _context.LichKhamSangLocs.CountAsync(l => l.TrangThai == "Đã hủy");
+            ViewBag.TotalLich = await _phieuRepository.CountLichKhamAsync();
+            ViewBag.DaLenLichCount = await _phieuRepository.CountLichKhamAsync("Đã lên lịch");
+            ViewBag.DaHoanThanhCount = await _phieuRepository.CountLichKhamAsync("Đã hoàn thành");
+            ViewBag.DaHuyCount = await _phieuRepository.CountLichKhamAsync("Đã hủy");
 
             // Bộ lọc từ khóa
             if (!string.IsNullOrWhiteSpace(search))
@@ -414,16 +391,10 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
             ViewBag.CurrentPage = page;
             ViewBag.TotalPages = totalPages;
             ViewBag.TotalItems = totalItems;
-            ViewBag.DotHienMaus = await _context.DotHienMaus.OrderByDescending(d => d.NgayBatDauDangKy).ToListAsync();
+            ViewBag.DotHienMaus = await _phieuRepository.GetAllDotHienMausOrderedAsync();
 
-            // Danh sách phiếu đang ở trạng thái hợp lệ để tạo lịch khám mới nếu cần
-            ViewBag.PhieuSanSangTaoLich = await _context.PhieuDangKyHienMaus
-                .Include(p => p.NguoiHienMau)
-                .Include(p => p.DotHienMau)
-                .Where(p => p.TrangThai == "Đã xác nhận" || p.TrangThai == "Chờ khám sàng lọc")
-                .OrderByDescending(p => p.NgayNop)
-                .Take(50)
-                .ToListAsync();
+            // Danh sách phiếu đang ở trạng thái hợp lệ để tạo lịch khám mới nếu cần (chưa có lịch đang hiệu lực)
+            ViewBag.PhieuSanSangTaoLich = await _phieuRepository.GetPhieuSanSangTaoLichAsync();
 
             return View(items);
         }
@@ -453,17 +424,15 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
             {
                 TempData["ErrorMessage"] = "Định dạng thời gian khám không hợp lệ.";
             }
-            else if (phieu.TrangThai != "Đã xác nhận" && phieu.TrangThai != "Chờ khám sàng lọc")
-            {
-                TempData["ErrorMessage"] = $"Không thể thiết lập lịch khám cho phiếu đang ở trạng thái '{phieu.TrangThai}'. Phiếu phải ở trạng thái 'Đã xác nhận' hoặc 'Chờ khám sàng lọc'.";
-            }
-            else if (dtBatDau >= dtKetThuc)
-            {
-                TempData["ErrorMessage"] = "Thời gian bắt đầu ca khám phải trước thời gian kết thúc.";
-            }
             else
             {
-                var lichMoi = new LichKhamSangLoc
+                // Nếu phiếu đang ở Chờ khám sàng lọc mà chưa có lịch hiệu lực (dữ liệu cũ), khôi phục về Đã xác nhận trước khi lập lịch
+                if (phieu.TrangThai == "Chờ khám sàng lọc" && !phieu.LichKhamSangLocs.Any(l => l.TrangThai == "Đã lên lịch"))
+                {
+                    await _khamSangLocService.KhoiPhucPhieuChoKhamAsync(maPhieu);
+                }
+
+                var model = new LichKhamFormViewModel
                 {
                     MaPhieu = maPhieu,
                     ThoiGianBatDau = dtBatDau,
@@ -471,20 +440,18 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
                     HinhThucTiepNhan = !string.IsNullOrWhiteSpace(hinhThucTiepNhan) ? hinhThucTiepNhan.Trim() : "Trực tiếp tại điểm hiến",
                     DiaDiemHoacLienKet = !string.IsNullOrWhiteSpace(diaDiem) ? diaDiem.Trim() : (phieu.DotHienMau?.DonViToChuc?.TenDonViToChuc ?? "Điểm hiến máu UNETI"),
                     BacSiSangLoc = !string.IsNullOrWhiteSpace(bacSi) ? bacSi.Trim() : "BS. CKI Trần Mai Linh",
-                    GhiChu = ghiChu,
-                    TrangThai = "Đã lên lịch"
+                    GhiChu = ghiChu
                 };
 
-                _phieuRepository.AddLichKham(lichMoi);
-
-                if (phieu.TrangThai == "Đã xác nhận")
+                var result = await _khamSangLocService.LuuLichAsync(model);
+                if (result.Success)
                 {
-                    phieu.TrangThai = "Chờ khám sàng lọc";
-                    phieu.NgayXuLy = DateTime.Now;
+                    TempData["SuccessMessage"] = $"Đã tạo lịch khám sàng lọc mới cho phiếu #DKHM-{phieu.MaPhieu:D5} thành công!";
                 }
-
-                await _phieuRepository.SaveChangesAsync();
-                TempData["SuccessMessage"] = $"Đã tạo lịch khám sàng lọc mới cho phiếu #DKHM-{phieu.MaPhieu:D5} thành công!";
+                else
+                {
+                    TempData["ErrorMessage"] = result.Message;
+                }
             }
 
             if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
@@ -519,25 +486,29 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
             {
                 TempData["ErrorMessage"] = "Định dạng thời gian khám không hợp lệ.";
             }
-            else if (lich.TrangThai != "Đã lên lịch")
-            {
-                TempData["ErrorMessage"] = $"Không thể chỉnh sửa lịch khám đang ở trạng thái '{lich.TrangThai}'.";
-            }
-            else if (dtBatDau >= dtKetThuc)
-            {
-                TempData["ErrorMessage"] = "Thời gian bắt đầu ca khám phải trước thời gian kết thúc.";
-            }
             else
             {
-                lich.ThoiGianBatDau = dtBatDau;
-                lich.ThoiGianKetThuc = dtKetThuc;
-                if (!string.IsNullOrWhiteSpace(hinhThucTiepNhan)) lich.HinhThucTiepNhan = hinhThucTiepNhan.Trim();
-                if (!string.IsNullOrWhiteSpace(diaDiem)) lich.DiaDiemHoacLienKet = diaDiem.Trim();
-                if (!string.IsNullOrWhiteSpace(bacSi)) lich.BacSiSangLoc = bacSi.Trim();
-                lich.GhiChu = ghiChu;
+                var model = new LichKhamFormViewModel
+                {
+                    MaLichKhamSangLoc = maLich,
+                    MaPhieu = lich.MaPhieu,
+                    ThoiGianBatDau = dtBatDau,
+                    ThoiGianKetThuc = dtKetThuc,
+                    HinhThucTiepNhan = !string.IsNullOrWhiteSpace(hinhThucTiepNhan) ? hinhThucTiepNhan.Trim() : (lich.HinhThucTiepNhan ?? "Trực tiếp tại điểm hiến"),
+                    DiaDiemHoacLienKet = !string.IsNullOrWhiteSpace(diaDiem) ? diaDiem.Trim() : (lich.DiaDiemHoacLienKet ?? "Điểm hiến máu UNETI"),
+                    BacSiSangLoc = !string.IsNullOrWhiteSpace(bacSi) ? bacSi.Trim() : (lich.BacSiSangLoc ?? "BS. CKI Trần Mai Linh"),
+                    GhiChu = ghiChu
+                };
 
-                await _phieuRepository.SaveChangesAsync();
-                TempData["SuccessMessage"] = $"Đã cập nhật thông tin lịch khám #{lich.MaLichKhamSangLoc} thành công.";
+                var result = await _khamSangLocService.LuuLichAsync(model, maLich);
+                if (result.Success)
+                {
+                    TempData["SuccessMessage"] = $"Đã cập nhật thông tin lịch khám #{lich.MaLichKhamSangLoc} thành công.";
+                }
+                else
+                {
+                    TempData["ErrorMessage"] = result.Message;
+                }
             }
 
             if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
@@ -552,28 +523,14 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> HuyLichKham(int maLich, string? ghiChu, string? returnUrl)
         {
-            var lich = await _phieuRepository.GetLichKhamForUpdateAsync(maLich);
-
-            if (lich == null)
+            var result = await _khamSangLocService.HuyLichAsync(maLich, ghiChu);
+            if (result.Success)
             {
-                TempData["ErrorMessage"] = "Không tìm thấy lịch khám sàng lọc.";
-                return RedirectToAction(nameof(LichKhamSangLoc));
-            }
-
-            if (lich.TrangThai != "Đã lên lịch")
-            {
-                TempData["ErrorMessage"] = $"Không thể hủy lịch khám đang ở trạng thái '{lich.TrangThai}'.";
+                TempData["SuccessMessage"] = result.Message;
             }
             else
             {
-                lich.TrangThai = "Đã hủy";
-                if (!string.IsNullOrWhiteSpace(ghiChu))
-                {
-                    lich.GhiChu = string.IsNullOrEmpty(lich.GhiChu) ? $"[Đã hủy: {ghiChu.Trim()}]" : $"{lich.GhiChu} [Đã hủy: {ghiChu.Trim()}]";
-                }
-
-                await _context.SaveChangesAsync();
-                TempData["SuccessMessage"] = $"Đã hủy lịch khám #{lich.MaLichKhamSangLoc} thành công.";
+                TempData["ErrorMessage"] = result.Message;
             }
 
             if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
@@ -588,33 +545,14 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> HoanThanhKham(int maLich, string? returnUrl)
         {
-            var lich = await _phieuRepository.GetLichKhamForUpdateAsync(maLich);
-
-            if (lich == null)
+            var result = await _khamSangLocService.HoanThanhLichAsync(maLich);
+            if (result.Success)
             {
-                TempData["ErrorMessage"] = "Không tìm thấy lịch khám sàng lọc.";
-                return RedirectToAction(nameof(LichKhamSangLoc));
-            }
-
-            if (lich.TrangThai != "Đã lên lịch")
-            {
-                TempData["ErrorMessage"] = $"Chỉ có thể xác nhận hoàn thành cho lịch khám đang ở trạng thái 'Đã lên lịch'.";
-            }
-            else if (lich.PhieuDangKyHienMau is null || lich.PhieuDangKyHienMau.TrangThai != "Chờ khám sàng lọc" || lich.PhieuDangKyHienMau.KetQuaHienMau is not null)
-            {
-                TempData["ErrorMessage"] = "Không thể hoàn tất lịch: phiếu phải đang ở trạng thái 'Chờ khám sàng lọc' và chưa có kết quả cuối cùng.";
+                TempData["SuccessMessage"] = result.Message;
             }
             else
             {
-                lich.TrangThai = "Đã hoàn thành";
-                if (lich.PhieuDangKyHienMau != null)
-                {
-                    lich.PhieuDangKyHienMau.TrangThai = "Đã khám sàng lọc";
-                    lich.PhieuDangKyHienMau.NgayXuLy = DateTime.Now;
-                }
-
-                await _phieuRepository.SaveChangesAsync();
-                TempData["SuccessMessage"] = $"Đã hoàn thành ca khám #{lich.MaLichKhamSangLoc}. Trạng thái phiếu đăng ký đã chuyển sang 'Đã khám sàng lọc'.";
+                TempData["ErrorMessage"] = result.Message;
             }
 
             if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
@@ -647,6 +585,7 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
 
         // GET: /Admin/NguoiHienMau
         // Module 3: Quản lý người hiến máu & phân loại nhóm máu hiếm (Admin)
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> NguoiHienMau(
             string? search, 
             string? nhomMau, 
@@ -656,20 +595,14 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
             int page = 1, 
             int pageSize = 10)
         {
-            // 1. Tính toán các KPI Macro tổng quan từ database (bao quát mọi định dạng lưu trữ thực tế)
-            var tongNguoiHien = await _context.NguoiHienMaus.CountAsync();
-            var tongMauHiem = await _context.NguoiHienMaus.CountAsync(n => n.NhomMau != null && (n.NhomMau.Contains("-") || n.NhomMau.Contains("Rh(-)") || n.NhomMau.Contains("Rh-") || n.NhomMau.ToLower().Contains("âm")));
-            var oAm = await _context.NguoiHienMaus.CountAsync(n => n.NhomMau != null && n.NhomMau.ToUpper().Contains("O") && (n.NhomMau.Contains("-") || n.NhomMau.Contains("Rh(-)") || n.NhomMau.Contains("Rh-") || n.NhomMau.ToLower().Contains("âm")));
-            var aAm = await _context.NguoiHienMaus.CountAsync(n => n.NhomMau != null && n.NhomMau.ToUpper().Contains("A") && !n.NhomMau.ToUpper().Contains("AB") && (n.NhomMau.Contains("-") || n.NhomMau.Contains("Rh(-)") || n.NhomMau.Contains("Rh-") || n.NhomMau.ToLower().Contains("âm")));
-            var bAm = await _context.NguoiHienMaus.CountAsync(n => n.NhomMau != null && n.NhomMau.ToUpper().Contains("B") && !n.NhomMau.ToUpper().Contains("AB") && (n.NhomMau.Contains("-") || n.NhomMau.Contains("Rh(-)") || n.NhomMau.Contains("Rh-") || n.NhomMau.ToLower().Contains("âm")));
-            var abAm = await _context.NguoiHienMaus.CountAsync(n => n.NhomMau != null && n.NhomMau.ToUpper().Contains("AB") && (n.NhomMau.Contains("-") || n.NhomMau.Contains("Rh(-)") || n.NhomMau.Contains("Rh-") || n.NhomMau.ToLower().Contains("âm")));
-
-            // 2. Query cơ sở với đầy đủ Navigation Properties
-            var allDonorsQuery = _context.NguoiHienMaus
-                .Include(n => n.TaiKhoan)
-                .Include(n => n.PhieuDangKyHienMaus)
-                    .ThenInclude(p => p.KetQuaHienMau)
-                .AsQueryable();
+            // 1. Tính toán các KPI Macro tổng quan từ database qua INguoiHienMauRepository
+            var allDonorsQuery = _nguoiHienMauRepo.GetQueryableWithDetails();
+            var tongNguoiHien = await allDonorsQuery.CountAsync();
+            var tongMauHiem = await allDonorsQuery.CountAsync(n => n.NhomMau != null && (n.NhomMau.Contains("-") || n.NhomMau.Contains("Rh(-)") || n.NhomMau.Contains("Rh-") || n.NhomMau.ToLower().Contains("âm")));
+            var oAm = await allDonorsQuery.CountAsync(n => n.NhomMau != null && n.NhomMau.ToUpper().Contains("O") && (n.NhomMau.Contains("-") || n.NhomMau.Contains("Rh(-)") || n.NhomMau.Contains("Rh-") || n.NhomMau.ToLower().Contains("âm")));
+            var aAm = await allDonorsQuery.CountAsync(n => n.NhomMau != null && n.NhomMau.ToUpper().Contains("A") && !n.NhomMau.ToUpper().Contains("AB") && (n.NhomMau.Contains("-") || n.NhomMau.Contains("Rh(-)") || n.NhomMau.Contains("Rh-") || n.NhomMau.ToLower().Contains("âm")));
+            var bAm = await allDonorsQuery.CountAsync(n => n.NhomMau != null && n.NhomMau.ToUpper().Contains("B") && !n.NhomMau.ToUpper().Contains("AB") && (n.NhomMau.Contains("-") || n.NhomMau.Contains("Rh(-)") || n.NhomMau.Contains("Rh-") || n.NhomMau.ToLower().Contains("âm")));
+            var abAm = await allDonorsQuery.CountAsync(n => n.NhomMau != null && n.NhomMau.ToUpper().Contains("AB") && (n.NhomMau.Contains("-") || n.NhomMau.Contains("Rh(-)") || n.NhomMau.Contains("Rh-") || n.NhomMau.ToLower().Contains("âm")));
 
             // Tính toán KPI người đủ điều kiện và tích cực từ dữ liệu đã nạp
             // Người đủ điều kiện: Hoạt động và (chưa từng hiến hoặc lần hiến thành công gần nhất >= 84 ngày)
@@ -829,6 +762,61 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
             ViewBag.CurrentTier = tier;
 
             return View(pagedDonors);
+        }
+
+        // POST: /Admin/KhoaMoKhoaNguoiHien
+        [HttpPost]
+        [Authorize(Roles = "Admin")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> KhoaMoKhoaNguoiHien(int id, string? returnUrl)
+        {
+            var donor = await _nguoiHienMauRepo.GetByIdWithTaiKhoanAsync(id);
+
+            if (donor == null)
+            {
+                TempData["ErrorMessage"] = "Không tìm thấy hồ sơ người hiến máu để thao tác.";
+            }
+            else
+            {
+                var isCurrentlyActive = donor.TrangThai == "Hoạt động" || string.IsNullOrEmpty(donor.TrangThai);
+                var newStatus = isCurrentlyActive ? "Bị khóa" : "Hoạt động";
+                donor.TrangThai = newStatus;
+                if (donor.TaiKhoan != null)
+                {
+                    donor.TaiKhoan.TrangThai = newStatus;
+                }
+
+                await _nguoiHienMauRepo.SaveChangesAsync();
+                var actionName = newStatus == "Bị khóa" ? "Khóa" : "Mở khóa";
+                TempData["SuccessMessage"] = $"Đã {actionName} hồ sơ người hiến máu '{donor.HoTen}' thành công.";
+            }
+
+            if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+            {
+                return Redirect(returnUrl);
+            }
+            return RedirectToAction(nameof(NguoiHienMau));
+        }
+
+        // GET: /Admin/XuatDanhSachNguoiHienCsv
+        [HttpGet]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> XuatDanhSachNguoiHienCsv()
+        {
+            var donors = await _nguoiHienMauRepo.GetQueryableWithDetails()
+                .OrderByDescending(n => n.MaNguoiHien)
+                .ToListAsync();
+
+            var sb = new System.Text.StringBuilder();
+            sb.AppendLine("Mã người hiến,Họ và tên,Ngày sinh,Giới tính,Nhóm máu,Cân nặng (kg),Số điện thoại,Email,Địa chỉ,Số lần hiến thành công,Trạng thái");
+            foreach (var d in donors)
+            {
+                var soLan = d.PhieuDangKyHienMaus.Count(p => p.TrangThai == "Hiến máu thành công");
+                sb.AppendLine($"{d.MaNguoiHien},\"{d.HoTen.Replace("\"", "\"\"")}\",\"{(d.NgaySinh?.ToString("dd/MM/yyyy") ?? "")}\",\"{d.GioiTinh ?? ""}\",\"{d.NhomMau ?? ""}\",\"{d.CanNang?.ToString() ?? ""}\",\"{d.SoDienThoai ?? ""}\",\"{d.Email ?? ""}\",\"{(d.DiaChi ?? "").Replace("\"", "\"\"")}\",{soLan},\"{d.TrangThai ?? "Hoạt động"}\"");
+            }
+
+            var bytes = System.Text.Encoding.UTF8.GetPreamble().Concat(System.Text.Encoding.UTF8.GetBytes(sb.ToString())).ToArray();
+            return File(bytes, "text/csv; charset=utf-8", $"DanhSachNguoiHienMau_{DateTime.Now:yyyyMMdd_HHmm}.csv");
         }
 
         // GET: /Admin/DonViToChuc
@@ -1020,29 +1008,15 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
             int pageSize = 10;
             if (page < 1) page = 1;
 
-            var query = _context.KetQuaHienMaus
-                .Include(k => k.PhieuDangKyHienMau!)
-                    .ThenInclude(p => p.NguoiHienMau)
-                .Include(k => k.PhieuDangKyHienMau!)
-                    .ThenInclude(p => p.DotHienMau!)
-                        .ThenInclude(d => d.DonViToChuc)
-                .Include(k => k.PhieuDangKyHienMau!)
-                    .ThenInclude(p => p.LichKhamSangLocs)
-                .AsQueryable();
+            var query = _phieuRepository.GetKetQuaQueryableWithDetails();
 
             // Thống kê nhanh toàn bộ kết quả
-            ViewBag.TotalCount = await _context.KetQuaHienMaus.CountAsync();
-            ViewBag.SuccessCount = await _context.KetQuaHienMaus.CountAsync(k => k.KetQua == "Hiến máu thành công");
-            ViewBag.RejectCount = await _context.KetQuaHienMaus.CountAsync(k => k.KetQua == "Không đủ điều kiện hiến");
+            ViewBag.TotalCount = await _phieuRepository.CountKetQuaAsync();
+            ViewBag.SuccessCount = await _phieuRepository.CountKetQuaAsync("Hiến máu thành công");
+            ViewBag.RejectCount = await _phieuRepository.CountKetQuaAsync("Không đủ điều kiện hiến");
 
             // Danh sách phiếu "Đã khám sàng lọc" chưa có kết quả (để nhân viên y tế nhập kết quả)
-            ViewBag.PendingResults = await _context.PhieuDangKyHienMaus
-                .Include(p => p.NguoiHienMau)
-                .Include(p => p.DotHienMau)
-                .Where(p => p.TrangThai == "Đã khám sàng lọc" && p.KetQuaHienMau == null)
-                .OrderByDescending(p => p.NgayXuLy ?? p.NgayNop)
-                .Take(10)
-                .ToListAsync();
+            ViewBag.PendingResults = await _phieuRepository.GetPendingResultsAsync(10);
 
             // Bộ lọc tìm kiếm
             if (!string.IsNullOrWhiteSpace(search))
@@ -1069,7 +1043,7 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
             ViewBag.CurrentSearch = search;
             ViewBag.CurrentKetQua = ketQua;
             ViewBag.CurrentMaDot = maDot;
-            ViewBag.DotList = await _context.DotHienMaus.OrderByDescending(d => d.NgayBatDauDangKy).ToListAsync();
+            ViewBag.DotList = await _phieuRepository.GetAllDotHienMausOrderedAsync();
 
             int totalFiltered = await query.CountAsync();
             int totalPages = (int)Math.Ceiling(totalFiltered / (double)pageSize);
@@ -1099,16 +1073,7 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
         // GET: /Admin/ChiTietKetQua/{id}
         public async Task<IActionResult> ChiTietKetQua(int id)
         {
-            var ketQua = await _context.KetQuaHienMaus
-                .Include(k => k.PhieuDangKyHienMau!)
-                    .ThenInclude(p => p.NguoiHienMau!)
-                        .ThenInclude(n => n.TaiKhoan)
-                .Include(k => k.PhieuDangKyHienMau!)
-                    .ThenInclude(p => p.DotHienMau!)
-                        .ThenInclude(d => d.DonViToChuc)
-                .Include(k => k.PhieuDangKyHienMau!)
-                    .ThenInclude(p => p.LichKhamSangLocs)
-                .FirstOrDefaultAsync(k => k.MaKetQuaHienMau == id);
+            var ketQua = await _phieuRepository.GetKetQuaDetailsByIdAsync(id);
 
             if (ketQua == null)
             {

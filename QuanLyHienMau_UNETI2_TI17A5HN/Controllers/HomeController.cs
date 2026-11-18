@@ -1,3 +1,7 @@
+// Họ và tên: Nguyễn Tiến Nam
+// Mã sinh viên: 23103100275
+// Nội dung thực hiện: Module 1 - Trang chủ cổng thông tin hiến máu
+
 using Microsoft.AspNetCore.Mvc;
 using QuanLyHienMau_UNETI2_TI17A5HN.Models;
 using System.Diagnostics;

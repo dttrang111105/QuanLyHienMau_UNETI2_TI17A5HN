@@ -1,3 +1,8 @@
+@*
+    Họ và tên: Trần Đỗ Quang Minh
+    Mã sinh viên: DHTI17A5HN - Module 5
+    Nội dung thực hiện: Module 5 - Trang thống kê và báo cáo tổng hợp
+*@
 @model QuanLyHienMau_UNETI2_TI17A5HN.ViewModels.ThongKeViewModel
 @{
     Layout = "_AdminLayout";
@@ -5,11 +10,49 @@
 }
 <div class="m5-page">
     <partial name="HienMau/_DieuHuong" />
-    <div class="m5-header"><div><span class="m5-kicker">Tổng hợp hoạt động</span><h1>Thống kê hiến máu</h1><p>Toàn bộ dữ liệu · Cập nhật lúc @Model.ThoiDiemThongKe.ToString("HH:mm dd/MM/yyyy")</p></div><a asp-action="Dashboard" class="m5-btn secondary">Dashboard</a></div>
+    <div class="m5-header">
+        <div>
+            <span class="m5-kicker">Tổng hợp hoạt động</span>
+            <h1>Thống kê hiến máu</h1>
+            <p>Toàn bộ dữ liệu · Cập nhật lúc @Model.ThoiDiemThongKe.ToString("HH:mm dd/MM/yyyy")</p>
+        </div>
+        <div style="display:flex; gap:0.75rem; align-items:center;">
+            <a asp-action="XuatBaoCaoCsv" class="m5-btn primary" style="display:inline-flex; align-items:center; gap:0.4rem;">
+                <span class="material-symbols-outlined" style="font-size:18px;">download</span>
+                Xuất báo cáo CSV/Excel
+            </a>
+            <a asp-action="Dashboard" class="m5-btn secondary">Dashboard</a>
+        </div>
+    </div>
     <div class="m5-stats">
         <article class="m5-kpi"><div><small>Đợt nhận nhiều phiếu nhất</small><strong>@(Model.DotNhieuPhieuNhat.FirstOrDefault()?.TongPhieu ?? 0)</strong>@foreach (var dot in Model.DotNhieuPhieuNhat) { <small>@dot.TenDot</small> }@if (Model.DotNhieuPhieuNhat.Count == 0) { <small>Chưa có phiếu đăng ký</small> }</div><span class="m5-kpi-icon"><span class="material-symbols-outlined">leaderboard</span></span></article>
         <article class="m5-kpi"><div><small>Phiếu đã khám sàng lọc</small><strong>@Model.TongDaKham</strong><small>Bao gồm các phiếu đã có kết quả cuối cùng</small></div><span class="m5-kpi-icon amber"><span class="material-symbols-outlined">medical_services</span></span></article>
         <article class="m5-kpi"><div><small>Tỷ lệ hiến máu thành công</small><strong>@Model.TyLeThanhCong.ToString("0.##")%</strong><small>@Model.TongThanhCong thành công / @Model.TongDaKham phiếu đã khám</small></div><span class="m5-kpi-icon green"><span class="material-symbols-outlined">verified</span></span></article>
+    </div>
+
+    <div class="m5-two-columns" style="margin-bottom: 1.5rem;">
+        <section class="m5-card" style="padding: 1.25rem;">
+            <div class="m5-card-head">
+                <div>
+                    <h2>Biểu đồ phân bố phiếu theo trạng thái</h2>
+                    <p>Trực quan hóa tỷ trọng xử lý hồ sơ toàn hệ thống</p>
+                </div>
+            </div>
+            <div style="height: 280px; position: relative; display: flex; align-items: center; justify-content: center;">
+                <canvas id="statusChart"></canvas>
+            </div>
+        </section>
+        <section class="m5-card" style="padding: 1.25rem;">
+            <div class="m5-card-head">
+                <div>
+                    <h2>Biểu đồ số lượt đăng ký theo tháng</h2>
+                    <p>Xu hướng tiếp nhận phiếu đăng ký hiến máu theo thời gian</p>
+                </div>
+            </div>
+            <div style="height: 280px; position: relative;">
+                <canvas id="monthlyChart"></canvas>
+            </div>
+        </section>
     </div>
     <section class="m5-card"><div class="m5-card-head"><div><h2>Phiếu, xác nhận và kết quả theo đợt</h2><p>Tỷ lệ qua xác nhận tính trên tổng phiếu. Phiếu đã khám được tính một lần, kể cả khi đã có kết quả.</p></div></div><div class="m5-table-wrap"><table class="m5-table"><thead><tr><th>Đợt hiến máu</th><th class="number">Tổng phiếu</th><th class="number">Đã xác nhận hiện tại</th><th class="number">Đã qua xác nhận</th><th class="number">Tỷ lệ xác nhận</th><th class="number">Đã khám</th><th class="number">Thành công</th><th class="number">Tỷ lệ thành công</th><th>Chỉ tiêu</th></tr></thead><tbody>
         @if (Model.TheoDot.Count == 0) { <tr><td colspan="9" class="m5-empty">Chưa có đợt hiến máu.</td></tr> }
@@ -36,3 +79,61 @@
         </tbody></table></div></section>
     </div>
 </div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const statusLabels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.TheoTrangThai.Select(x => x.TrangThai)));
+            const statusData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.TheoTrangThai.Select(x => x.SoLuong)));
+
+            const ctxStatus = document.getElementById('statusChart');
+            if (ctxStatus) {
+                new Chart(ctxStatus, {
+                    type: 'doughnut',
+                    data: {
+                        labels: statusLabels,
+                        datasets: [{
+                            data: statusData,
+                            backgroundColor: ['#f59e0b', '#3b82f6', '#8b5cf6', '#06b6d4', '#10b981', '#ef4444', '#6b7280', '#9ca3af'],
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { position: 'right' }
+                        }
+                    }
+                });
+            }
+
+            const monthLabels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.PhieuTheoThang.OrderBy(x => x.Nam).ThenBy(x => x.Thang).Select(x => $"{x.Thang:00}/{x.Nam}")));
+            const monthData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.PhieuTheoThang.OrderBy(x => x.Nam).ThenBy(x => x.Thang).Select(x => x.SoLuong)));
+
+            const ctxMonthly = document.getElementById('monthlyChart');
+            if (ctxMonthly) {
+                new Chart(ctxMonthly, {
+                    type: 'bar',
+                    data: {
+                        labels: monthLabels,
+                        datasets: [{
+                            label: 'Số phiếu đăng ký',
+                            data: monthData,
+                            backgroundColor: '#a30428',
+                            borderRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: { beginAtZero: true, ticks: { precision: 0 } }
+                        }
+                    }
+                });
+            }
+        });
+    </script>
+}

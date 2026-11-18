@@ -1,3 +1,7 @@
+// Họ và tên: Trần Đỗ Quang Minh
+// Mã sinh viên: DHTI17A5HN - Module 5
+// Nội dung thực hiện: Module 5 - Hằng số chuẩn hóa trạng thái và vai trò
+
 namespace QuanLyHienMau_UNETI2_TI17A5HN.Models;
 
 public static class TrangThaiHienMau

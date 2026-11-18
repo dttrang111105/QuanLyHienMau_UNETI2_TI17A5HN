@@ -6,6 +6,14 @@ using QuanLyHienMau_UNETI2_TI17A5HN.Repositories;
 
 if (args.Contains("--live")) { await LiveChecks.Run(args.Contains("--keep-data")); return; }
 if (args.Contains("--cleanup")) { await LiveChecks.Cleanup(); return; }
+if (args.Contains("--seed"))
+{
+    await using var seedDb = new ApplicationDbContext(new DbContextOptionsBuilder<ApplicationDbContext>()
+        .UseSqlServer("Server=(localdb)\\mssqllocaldb;Database=QuanLyHienMau_UNETI;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True").Options);
+    DbInitializer.Initialize(seedDb);
+    Console.WriteLine($"SEEDED OK: TaiKhoan={await seedDb.TaiKhoans.CountAsync()}, DonVi={await seedDb.DonViToChucs.CountAsync()}, Dot={await seedDb.DotHienMaus.CountAsync()}, NguoiHien={await seedDb.NguoiHienMaus.CountAsync()}, Phieu={await seedDb.PhieuDangKyHienMaus.CountAsync()}, Lich={await seedDb.LichKhamSangLocs.CountAsync()}, KetQua={await seedDb.KetQuaHienMaus.CountAsync()}");
+    return;
+}
 
 int checks = 0;
 void Check(bool condition, string name) { if (!condition) throw new Exception(name); checks++; Console.WriteLine("PASS " + name); }

@@ -1,7 +1,9 @@
 // ============================================================================
 // DỰ ÁN QUẢN LÝ HIẾN MÁU NHÂN ĐẠO VITALIS - UNETI (TI17A5HN)
 // MODULE 3: QUẢN LÝ NGƯỜI HIẾN MÁU & PHIẾU ĐĂNG KÝ HIẾN MÁU
-// Phụ trách: Nhóm thực hiện Module 3 - Lớp DHTI17A5HN
+// Họ và tên: Đàm Thu Trang
+// Mã sinh viên: 23103100243
+// Nội dung thực hiện: Module 3 - Quản lý người hiến máu & Phiếu đăng ký hiến máu
 // ============================================================================
 
 using System.Linq.Expressions;

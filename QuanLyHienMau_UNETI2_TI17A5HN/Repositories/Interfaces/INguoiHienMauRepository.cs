@@ -1,7 +1,9 @@
 // ============================================================================
 // DỰ ÁN QUẢN LÝ HIẾN MÁU NHÂN ĐẠO VITALIS - UNETI (TI17A5HN)
 // MODULE 3: QUẢN LÝ NGƯỜI HIẾN MÁU & PHIẾU ĐĂNG KÝ HIẾN MÁU
-// Phụ trách: Nhóm thực hiện Module 3 - Lớp DHTI17A5HN
+// Họ và tên: Đàm Thu Trang
+// Mã sinh viên: 23103100243
+// Nội dung thực hiện: Module 3 - Quản lý người hiến máu & Phiếu đăng ký hiến máu
 // ============================================================================
 
 using QuanLyHienMau_UNETI2_TI17A5HN.Models;
@@ -42,5 +44,15 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Repositories.Interfaces
         /// Nạp tường minh (Explicit Loading) danh sách PhieuDangKyHienMaus và các quan hệ liên quan cho thực thể NguoiHienMau đang được theo dõi.
         /// </summary>
         Task LoadDonationHistoryCollectionAsync(NguoiHienMau nguoiHienMau);
+
+        /// <summary>
+        /// Truy vấn danh sách người hiến máu kèm tài khoản và lịch sử phiếu đăng ký/kết quả (phục vụ Admin).
+        /// </summary>
+        IQueryable<NguoiHienMau> GetQueryableWithDetails();
+
+        /// <summary>
+        /// Lấy hồ sơ người hiến máu theo mã người hiến kèm tài khoản liên kết (phục vụ Khóa/Mở khóa).
+        /// </summary>
+        Task<NguoiHienMau?> GetByIdWithTaiKhoanAsync(int maNguoiHien);
     }
 }

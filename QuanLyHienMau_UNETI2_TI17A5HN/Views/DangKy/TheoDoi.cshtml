@@ -1,4 +1,9 @@
 @*
+    Họ và tên: Đàm Thu Trang
+    Mã sinh viên: 23103100243
+    Nội dung thực hiện: Module 3 - Theo dõi trạng thái phiếu đăng ký hiến máu
+*@
+@*
     ============================================================================
     DỰ ÁN QUẢN LÝ HIẾN MÁU NHÂN ĐẠO VITALIS - UNETI (TI17A5HN)
     MODULE 3: QUẢN LÝ NGƯỜI HIẾN MÁU & PHIẾU ĐĂNG KÝ HIẾN MÁU
@@ -95,6 +100,61 @@
         }
         else
         {
+            var now = DateTime.Now;
+            var upcomingSchedule = Model.LichKhamSangLocs?
+                .Where(l => l.TrangThai == "Đã lên lịch" && l.ThoiGianBatDau > now && (l.ThoiGianBatDau - now).TotalHours <= 48)
+                .OrderBy(l => l.ThoiGianBatDau)
+                .FirstOrDefault();
+
+            var lastSuccessPhieu = danhSachPhieu
+                .Where(p => p.TrangThai == "Hiến máu thành công" || p.KetQuaHienMau?.KetQua == "Hiến máu thành công")
+                .OrderByDescending(p => p.KetQuaHienMau?.NgayCapNhat ?? p.NgayXuLy ?? p.NgayNop)
+                .FirstOrDefault();
+
+            @if (upcomingSchedule != null)
+            {
+                var hoursLeft = Math.Max(1, (int)Math.Ceiling((upcomingSchedule.ThoiGianBatDau - now).TotalHours));
+                <div class="w-full p-4 rounded-2xl bg-amber-50 border border-amber-300 text-amber-900 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
+                    <div class="flex items-start gap-3">
+                        <span class="material-symbols-outlined text-amber-600 text-[28px] animate-bounce">notifications_active</span>
+                        <div>
+                            <h3 class="font-bold text-sm uppercase tracking-wide text-amber-800">Nhắc lịch khám sàng lọc sắp diễn ra (còn khoảng @hoursLeft giờ)</h3>
+                            <p class="text-sm mt-0.5">
+                                Thời gian: <strong>@upcomingSchedule.ThoiGianBatDau.ToString("HH:mm dd/MM/yyyy") - @upcomingSchedule.ThoiGianKetThuc.ToString("HH:mm")</strong>
+                                tại <strong>@upcomingSchedule.DiaDiemHoacLienKet</strong> (Bác sĩ: @upcomingSchedule.BacSiSangLoc).
+                            </p>
+                        </div>
+                    </div>
+                    <span class="px-3 py-1 rounded-full bg-amber-200/70 text-amber-900 text-xs font-bold shrink-0">Sắp diễn ra trong 24–48h</span>
+                </div>
+            }
+
+            @if (lastSuccessPhieu != null)
+            {
+                var lastDate = (lastSuccessPhieu.KetQuaHienMau?.NgayCapNhat ?? lastSuccessPhieu.NgayXuLy ?? lastSuccessPhieu.NgayNop).Date;
+                var nextEligibleDate = lastDate.AddDays(84);
+                var daysRemaining = (nextEligibleDate - DateTime.Today).Days;
+                <div class="w-full p-4 rounded-2xl @(daysRemaining > 0 ? "bg-blue-50 border border-blue-200 text-blue-900" : "bg-emerald-50 border border-emerald-200 text-emerald-900") flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
+                    <div class="flex items-center gap-3">
+                        <span class="material-symbols-outlined @(daysRemaining > 0 ? "text-blue-600" : "text-emerald-600") text-[26px]">event_repeat</span>
+                        <div>
+                            <h3 class="font-bold text-sm">Chu kỳ an toàn 84 ngày giữa 2 lần hiến máu</h3>
+                            @if (daysRemaining > 0)
+                            {
+                                <p class="text-xs mt-0.5">Lần hiến thành công gần nhất: <strong>@lastDate.ToString("dd/MM/yyyy")</strong>. Bạn có thể đăng ký hiến máu lần tiếp theo từ ngày <strong>@nextEligibleDate.ToString("dd/MM/yyyy")</strong>.</p>
+                            }
+                            else
+                            {
+                                <p class="text-xs mt-0.5">Lần hiến thành công gần nhất: <strong>@lastDate.ToString("dd/MM/yyyy")</strong>. Bạn đã đủ điều kiện thời gian (≥ 84 ngày) để tham gia đợt hiến máu mới!</p>
+                            }
+                        </div>
+                    </div>
+                    <span class="px-3 py-1.5 rounded-xl @(daysRemaining > 0 ? "bg-blue-600 text-white" : "bg-emerald-600 text-white") text-xs font-bold shrink-0">
+                        @(daysRemaining > 0 ? $"Còn {daysRemaining} ngày" : "Đã đủ 84 ngày")
+                    </span>
+                </div>
+            }
+
             <!-- Ticket Selector Dropdown if multiple tickets exist -->
             @if (danhSachPhieu.Count > 1)
             {

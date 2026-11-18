@@ -1,7 +1,9 @@
 // ============================================================================
 // DỰ ÁN QUẢN LÝ HIẾN MÁU NHÂN ĐẠO VITALIS - UNETI (TI17A5HN)
 // MODULE 3: QUẢN LÝ NGƯỜI HIẾN MÁU & PHIẾU ĐĂNG KÝ HIẾN MÁU
-// Phụ trách: Nhóm thực hiện Module 3 - Lớp DHTI17A5HN
+// Họ và tên: Đàm Thu Trang
+// Mã sinh viên: 23103100243
+// Nội dung thực hiện: Module 3 - Quản lý người hiến máu & Phiếu đăng ký hiến máu
 // ============================================================================
 
 using Microsoft.EntityFrameworkCore;
@@ -72,6 +74,22 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Repositories
                     .Include(p => p.KetQuaHienMau)
                     .LoadAsync();
             }
+        }
+
+        public IQueryable<NguoiHienMau> GetQueryableWithDetails()
+        {
+            return _context.NguoiHienMaus
+                .Include(n => n.TaiKhoan)
+                .Include(n => n.PhieuDangKyHienMaus)
+                    .ThenInclude(p => p.KetQuaHienMau)
+                .AsQueryable();
+        }
+
+        public async Task<NguoiHienMau?> GetByIdWithTaiKhoanAsync(int maNguoiHien)
+        {
+            return await _context.NguoiHienMaus
+                .Include(n => n.TaiKhoan)
+                .FirstOrDefaultAsync(n => n.MaNguoiHien == maNguoiHien);
         }
     }
 }
