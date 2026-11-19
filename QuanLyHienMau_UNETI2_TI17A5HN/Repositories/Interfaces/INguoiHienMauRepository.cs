@@ -36,9 +36,14 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Repositories.Interfaces
         Task<NguoiHienMau?> GetProfileWithFullHistoryAsync(int maTaiKhoan);
 
         /// <summary>
-        /// Kiểm tra xem địa chỉ email đã được sử dụng bởi một tài khoản khác (khác maTaiKhoan hiện tại) hay chưa.
+        /// Kiểm tra xem địa chỉ email đã được sử dụng bởi một tài khoản hoặc hồ sơ người hiến khác (khác maTaiKhoan hiện tại) hay chưa.
         /// </summary>
         Task<bool> IsEmailTakenByOtherAccountAsync(int currentMaTaiKhoan, string email);
+
+        /// <summary>
+        /// Kiểm tra xem số điện thoại đã được sử dụng bởi một hồ sơ người hiến máu khác (khác maTaiKhoan hiện tại) hay chưa.
+        /// </summary>
+        Task<bool> IsSoDienThoaiTakenByOtherDonorAsync(int currentMaTaiKhoan, string soDienThoai);
 
         /// <summary>
         /// Nạp tường minh (Explicit Loading) danh sách PhieuDangKyHienMaus và các quan hệ liên quan cho thực thể NguoiHienMau đang được theo dõi.

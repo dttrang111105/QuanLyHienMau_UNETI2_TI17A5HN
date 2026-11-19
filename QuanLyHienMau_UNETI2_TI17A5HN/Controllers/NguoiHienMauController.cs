@@ -47,6 +47,11 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
                 return RedirectToAction("Login", "Account");
             }
 
+            if (TrangThaiHienMau.VaiTro.LaNhanVien(taiKhoan.VaiTro))
+            {
+                return RedirectToAction("NguoiHienMau", "Admin");
+            }
+
             var nguoiHienMau = await _nguoiHienMauRepo.GetProfileWithFullHistoryAsync(maTaiKhoan);
 
             if (nguoiHienMau == null)
@@ -82,6 +87,12 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
             {
                 TempData["ErrorMessage"] = "Tài khoản của bạn hiện không tồn tại hoặc đã bị khóa.";
                 return RedirectToAction("Login", "Account");
+            }
+
+            if (TrangThaiHienMau.VaiTro.LaNhanVien(taiKhoan.VaiTro))
+            {
+                TempData["ErrorMessage"] = "Chức năng cập nhật hồ sơ người hiến máu chỉ dành cho tài khoản Tình nguyện viên (Donor).";
+                return RedirectToAction("NguoiHienMau", "Admin");
             }
 
             var nguoiHienMau = await _nguoiHienMauRepo.GetByTaiKhoanWithAccountAsync(maTaiKhoan);
@@ -154,7 +165,7 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
                 ModelState.AddModelError("CanNang", "Cân nặng phải từ 30kg đến 200kg.");
             }
 
-            // 4. Kiểm tra Số điện thoại
+            // 4. Kiểm tra Số điện thoại & kiểm tra trùng lặp với người hiến máu khác
             if (string.IsNullOrWhiteSpace(model.SoDienThoai))
             {
                 ModelState.AddModelError("SoDienThoai", "Vui lòng nhập số điện thoại liên lạc.");
@@ -165,6 +176,14 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
                 if (!Regex.IsMatch(phone, @"^0[0-9]{9,10}$"))
                 {
                     ModelState.AddModelError("SoDienThoai", "Số điện thoại không hợp lệ (phải gồm 10-11 chữ số và bắt đầu bằng số 0).");
+                }
+                else
+                {
+                    bool phoneTaken = await _nguoiHienMauRepo.IsSoDienThoaiTakenByOtherDonorAsync(maTaiKhoan, phone);
+                    if (phoneTaken)
+                    {
+                        ModelState.AddModelError("SoDienThoai", "Số điện thoại này đã được liên kết với một hồ sơ người hiến máu khác.");
+                    }
                 }
             }
 

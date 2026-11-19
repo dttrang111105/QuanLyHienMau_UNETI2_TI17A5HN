@@ -1,4 +1,4 @@
-@*
+﻿@*
 Họ và tên: NGUYỄN THỊ PHƯƠNG THẢO
 Mã sinh viên: 23103100272
 Nội dung thực hiện: Quản lý đợt hiến máu,
@@ -527,10 +527,20 @@ tìm kiếm, lọc, sắp xếp và phân trang.
                                     </form>
                                 
                             }
-                            <a asp-controller="DotHienMau" asp-action="Details" asp-route-id="@item.MaDot" class="flex-1 inline-flex items-center justify-center gap-1.5 py-2.5 rounded-xl font-label-md text-label-md bg-gradient-to-r from-primary to-primary-container text-on-primary shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
-                                <span class="material-symbols-outlined text-[16px]">favorite</span>
-                                <span>@(coTheDangKy ? "Đăng ký ngay" : "Xem chi tiết")</span>
-                            </a>
+                            @if (coTheDangKy)
+                            {
+                                <a asp-controller="DangKy" asp-action="Create" asp-route-maDot="@item.MaDot" class="flex-1 inline-flex items-center justify-center gap-1.5 py-2.5 rounded-xl font-label-md text-label-md bg-gradient-to-r from-primary to-primary-container text-on-primary shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all">
+                                    <span class="material-symbols-outlined text-[16px]">favorite</span>
+                                    <span>Đăng ký ngay</span>
+                                </a>
+                            }
+                            else
+                            {
+                                <button type="button" disabled class="flex-1 inline-flex items-center justify-center gap-1.5 py-2.5 rounded-xl font-label-md text-label-md bg-surface-container-high text-on-surface-variant cursor-not-allowed opacity-60">
+                                    <span class="material-symbols-outlined text-[16px]">block</span>
+                                    <span>@(item.TrangThai != "Đang mở đăng ký" ? item.TrangThai : item.ThoiHanHienThi)</span>
+                                </button>
+                            }
                         </div>
                     </article>
                 }

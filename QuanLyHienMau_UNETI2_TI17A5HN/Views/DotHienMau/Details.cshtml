@@ -1,9 +1,4 @@
-@*
-    Họ và tên: Nguyễn Thị Phương Thảo
-    Mã sinh viên: 23103100272
-    Nội dung thực hiện: Module 2 - Chi tiết đợt hiến máu
-*@
-@model QuanLyHienMau_UNETI2_TI17A5HN.Models.DotHienMau
+﻿@model QuanLyHienMau_UNETI2_TI17A5HN.Models.DotHienMau
 
 @{
     ViewData["Title"] = $"Chi Tiết Đợt Hiến Máu – {Model.TenDot}";
@@ -30,6 +25,21 @@
             <span class="material-symbols-outlined text-[14px] text-outline-variant">chevron_right</span>
             <span class="text-on-surface font-semibold truncate max-w-xs sm:max-w-md">@Model.TenDot</span>
         </nav>
+
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="mb-6 rounded-2xl bg-emerald-50 px-4 py-3.5 text-emerald-800 border border-emerald-200 flex items-center gap-3 shadow-sm">
+                <span class="material-symbols-outlined text-emerald-600 text-[22px]">check_circle</span>
+                <span class="font-body-md text-sm font-semibold">@TempData["SuccessMessage"]</span>
+            </div>
+        }
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="mb-6 rounded-2xl bg-rose-50 px-4 py-3.5 text-rose-800 border border-rose-200 flex items-center gap-3 shadow-sm">
+                <span class="material-symbols-outlined text-rose-600 text-[22px]">error</span>
+                <span class="font-body-md text-sm font-semibold">@TempData["ErrorMessage"]</span>
+            </div>
+        }
 
         <!-- 2. Campaign Header & Impact Bar -->
         <section class="bg-surface-container-lowest rounded-3xl p-6 sm:p-8 shadow-sm mb-8 relative">

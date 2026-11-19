@@ -56,9 +56,23 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Repositories
 
         public async Task<bool> IsEmailTakenByOtherAccountAsync(int currentMaTaiKhoan, string email)
         {
-            var normalizedEmail = email.ToLower();
-            return await _context.TaiKhoans
+            if (string.IsNullOrWhiteSpace(email)) return false;
+            var normalizedEmail = email.Trim().ToLower();
+
+            bool takenInAccounts = await _context.TaiKhoans
                 .AnyAsync(t => t.MaTaiKhoan != currentMaTaiKhoan && t.Email != null && t.Email.ToLower() == normalizedEmail);
+            if (takenInAccounts) return true;
+
+            return await _context.NguoiHienMaus
+                .AnyAsync(n => (n.MaTaiKhoan == null || n.MaTaiKhoan != currentMaTaiKhoan) && n.Email != null && n.Email.ToLower() == normalizedEmail);
+        }
+
+        public async Task<bool> IsSoDienThoaiTakenByOtherDonorAsync(int currentMaTaiKhoan, string soDienThoai)
+        {
+            if (string.IsNullOrWhiteSpace(soDienThoai)) return false;
+            var cleanPhone = soDienThoai.Trim();
+            return await _context.NguoiHienMaus
+                .AnyAsync(n => (n.MaTaiKhoan == null || n.MaTaiKhoan != currentMaTaiKhoan) && n.SoDienThoai != null && n.SoDienThoai == cleanPhone);
         }
 
         public async Task LoadDonationHistoryCollectionAsync(NguoiHienMau nguoiHienMau)

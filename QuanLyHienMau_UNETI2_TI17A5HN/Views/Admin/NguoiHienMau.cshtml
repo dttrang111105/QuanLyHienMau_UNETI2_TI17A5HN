@@ -64,9 +64,9 @@
                     <span class="material-symbols-outlined text-[18px] animate-pulse">crisis_alert</span>
                     <span>Kêu Gọi Khẩn Cấp</span>
                 </button>
-                <a asp-controller="DangKy" asp-action="Create" class="h-10 px-5 rounded-xl bg-primary text-on-primary shadow-md hover:bg-primary-container transition-all flex items-center gap-2 font-label-md text-label-md font-bold">
-                    <span class="material-symbols-outlined text-[18px]">person_add</span>
-                    <span>Thêm Hồ Sơ Mới</span>
+                <a asp-controller="Admin" asp-action="NhanSu" asp-route-vaiTro="Donor" class="h-10 px-5 rounded-xl bg-primary text-on-primary shadow-md hover:bg-primary-container transition-all flex items-center gap-2 font-label-md text-label-md font-bold" title="Quản lý tài khoản tình nguyện viên (Hồ sơ cá nhân do chính người hiến máu tự cập nhật)">
+                    <span class="material-symbols-outlined text-[18px]">manage_accounts</span>
+                    <span>Quản Lý Tài Khoản Người Hiến</span>
                 </a>
             </div>
         </div>
@@ -407,8 +407,9 @@
                         {
                             @foreach (var donor in Model)
                             {
-                                var isRare = donor.NhomMau != null && (donor.NhomMau.Contains("-") || donor.NhomMau.Contains("Rh(-)") || donor.NhomMau.Contains("Rh-"));
-                                var soLanHien = donor.PhieuDangKyHienMaus.Count(p => p.TrangThai == "Hiến máu thành công" || p.KetQuaHienMau != null);
+                                var isRare = donor.NhomMau != null && (donor.NhomMau.Contains("-") || donor.NhomMau.Contains("Rh(-)") || donor.NhomMau.Contains("Rh-") || donor.NhomMau.ToLower().Contains("âm"));
+                                var donorEligibility = QuanLyHienMau_UNETI2_TI17A5HN.Controllers.DangKyController.EvaluateRecentDonationEligibility(donor.PhieuDangKyHienMaus, DateTime.Today);
+                                var soLanHien = donorEligibility.TotalSuccessfulDonations;
                                 var tongLuongMau = soLanHien * 350;
 
                                 string tierName = "Chưa hiến";
@@ -418,10 +419,8 @@
                                 else if (soLanHien >= 5) { tierName = "Hạng Bạc"; tierBadgeClass = "bg-slate-100 text-slate-700 font-semibold"; }
                                 else if (soLanHien >= 1) { tierName = "Hạng Đồng"; tierBadgeClass = "bg-amber-50 text-amber-900 font-semibold"; }
 
-                                var lastPhieu = donor.PhieuDangKyHienMaus
-                                    .Where(p => p.TrangThai == "Hiến máu thành công" || p.KetQuaHienMau != null)
-                                    .OrderByDescending(p => p.NgayXuLy ?? p.NgayNop)
-                                    .FirstOrDefault();
+                                var lastPhieu = donorEligibility.LastSuccessfulPhieu;
+                                var lastActualDate = donorEligibility.LastActualDonationDate;
 
                                 var initials = string.Join("", (donor.HoTen ?? "N H").Split(' ', StringSplitOptions.RemoveEmptyEntries).TakeLast(2).Select(s => s[0]));
                                 int age = 0;
@@ -496,11 +495,11 @@
                                                 </span>
                                                 <span class="font-body-sm text-body-sm text-secondary">Trạng thái: @donor.TrangThai</span>
                                             }
-                                            else if (lastPhieu != null)
+                                            else if (lastActualDate.HasValue && donorEligibility.NextEligibleDate.HasValue)
                                             {
-                                                var ngayHien = lastPhieu.NgayXuLy ?? lastPhieu.NgayNop;
-                                                var daysPassed = (int)(DateTime.Now - ngayHien).TotalDays;
-                                                if (daysPassed >= 84)
+                                                var ngayHien = lastActualDate.Value.Date;
+                                                var daysPassed = donorEligibility.DaysSinceLastDonation ?? 0;
+                                                if (donorEligibility.IsEligible)
                                                 {
                                                     <span class="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 font-label-sm text-label-sm font-bold flex items-center gap-1 w-fit">
                                                         <span class="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse"></span>
@@ -510,7 +509,7 @@
                                                 }
                                                 else
                                                 {
-                                                    var remaining = 84 - daysPassed;
+                                                    var remaining = donorEligibility.RemainingCooldownDays;
                                                     var pct = Math.Min(100, Math.Max(5, (daysPassed * 100) / 84));
                                                     <div class="flex items-center justify-between text-body-sm">
                                                         <span class="text-secondary">Lần cuối: <strong>@ngayHien.ToString("dd/MM/yyyy")</strong></span>
@@ -519,8 +518,16 @@
                                                     <div class="w-36 bg-surface-container rounded-full h-1.5 overflow-hidden">
                                                         <div class="bg-amber-500 h-full rounded-full" style="width: @pct%;"></div>
                                                     </div>
-                                                    <span class="font-body-sm text-body-sm text-secondary">Dự kiến: @ngayHien.AddDays(84).ToString("dd/MM/yyyy")</span>
+                                                    <span class="font-body-sm text-body-sm text-secondary">Dự kiến: @donorEligibility.NextEligibleDate.Value.ToString("dd/MM/yyyy")</span>
                                                 }
+                                            }
+                                            else if (donorEligibility.HasMissingActualDonationDate)
+                                            {
+                                                <span class="px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 font-label-sm text-label-sm font-bold flex items-center gap-1 w-fit">
+                                                    <span class="w-1.5 h-1.5 rounded-full bg-amber-600"></span>
+                                                    CHỜ CẬP NHẬT NGÀY HIẾN
+                                                </span>
+                                                <span class="font-body-sm text-body-sm text-secondary">Phiếu #DKHM-@(lastPhieu?.MaPhieu.ToString("D5")) thiếu ngày hiến</span>
                                             }
                                             else
                                             {
@@ -528,7 +535,7 @@
                                                     <span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
                                                     SẴN SÀNG HIẾN LẦN ĐẦU
                                                 </span>
-                                                <span class="font-body-sm text-body-sm text-secondary">Chưa có lịch sử hiến</span>
+                                                <span class="font-body-sm text-body-sm text-secondary">Chưa có lần hiến thành công</span>
                                             }
                                         </div>
                                     </td>

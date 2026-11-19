@@ -1,7 +1,7 @@
 @*
     Họ và tên: Đàm Thu Trang
     Mã sinh viên: 23103100243
-    Nội dung thực hiện: Module 3 - Theo dõi trạng thái phiếu đăng ký hiến máu
+    Nội dung thực hiện: Module 3 - Theo dõi trạng thái phiếu đăng ký & Hủy phiếu
 *@
 @*
     ============================================================================
@@ -106,10 +106,7 @@
                 .OrderBy(l => l.ThoiGianBatDau)
                 .FirstOrDefault();
 
-            var lastSuccessPhieu = danhSachPhieu
-                .Where(p => p.TrangThai == "Hiến máu thành công" || p.KetQuaHienMau?.KetQua == "Hiến máu thành công")
-                .OrderByDescending(p => p.KetQuaHienMau?.NgayCapNhat ?? p.NgayXuLy ?? p.NgayNop)
-                .FirstOrDefault();
+            var recentEligibility = QuanLyHienMau_UNETI2_TI17A5HN.Controllers.DangKyController.EvaluateRecentDonationEligibility(danhSachPhieu, DateTime.Today);
 
             @if (upcomingSchedule != null)
             {
@@ -129,11 +126,11 @@
                 </div>
             }
 
-            @if (lastSuccessPhieu != null)
+            @if (recentEligibility.TotalSuccessfulDonations > 0 && recentEligibility.LastActualDonationDate.HasValue && recentEligibility.NextEligibleDate.HasValue)
             {
-                var lastDate = (lastSuccessPhieu.KetQuaHienMau?.NgayCapNhat ?? lastSuccessPhieu.NgayXuLy ?? lastSuccessPhieu.NgayNop).Date;
-                var nextEligibleDate = lastDate.AddDays(84);
-                var daysRemaining = (nextEligibleDate - DateTime.Today).Days;
+                var lastDate = recentEligibility.LastActualDonationDate.Value.Date;
+                var nextEligibleDate = recentEligibility.NextEligibleDate.Value.Date;
+                var daysRemaining = recentEligibility.RemainingCooldownDays;
                 <div class="w-full p-4 rounded-2xl @(daysRemaining > 0 ? "bg-blue-50 border border-blue-200 text-blue-900" : "bg-emerald-50 border border-emerald-200 text-emerald-900") flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-sm">
                     <div class="flex items-center gap-3">
                         <span class="material-symbols-outlined @(daysRemaining > 0 ? "text-blue-600" : "text-emerald-600") text-[26px]">event_repeat</span>

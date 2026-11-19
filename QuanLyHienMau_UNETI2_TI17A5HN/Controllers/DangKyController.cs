@@ -10,14 +10,16 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using QuanLyHienMau_UNETI2_TI17A5HN.Models;
 using QuanLyHienMau_UNETI2_TI17A5HN.Repositories.Interfaces;
+using IModule3PhieuDangKyRepository = QuanLyHienMau_UNETI2_TI17A5HN.Repositories.Interfaces.IPhieuDangKyRepository;
+using IModule3NguoiHienMauRepository = QuanLyHienMau_UNETI2_TI17A5HN.Repositories.Interfaces.INguoiHienMauRepository;
 
 namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
 {
     [Authorize]
     public class DangKyController : Controller
     {
-        private readonly IPhieuDangKyRepository _phieuDangKyRepo;
-        private readonly INguoiHienMauRepository _nguoiHienMauRepo;
+        private readonly IModule3PhieuDangKyRepository _phieuDangKyRepo;
+        private readonly IModule3NguoiHienMauRepository _nguoiHienMauRepo;
 
         public const int SoNgayChoToiThieuGiuaHaiLanHien = 84;
 
@@ -177,8 +179,8 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
         }
 
         public DangKyController(
-            IPhieuDangKyRepository phieuDangKyRepo,
-            INguoiHienMauRepository nguoiHienMauRepo)
+            IModule3PhieuDangKyRepository phieuDangKyRepo,
+            IModule3NguoiHienMauRepository nguoiHienMauRepo)
         {
             _phieuDangKyRepo = phieuDangKyRepo;
             _nguoiHienMauRepo = nguoiHienMauRepo;
@@ -193,7 +195,7 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
 
         // GET: /DangKy/Create?maDot=1
         [HttpGet]
-        public async Task<IActionResult> Create(int? maDot)
+        public async Task<IActionResult> Create(int? maDot, int? maDotHienMau = null, int? id = null)
         {
             var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out int maTaiKhoan))
@@ -206,6 +208,12 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
             {
                 TempData["ErrorMessage"] = "Tài khoản của bạn hiện không tồn tại hoặc đã bị khóa.";
                 return RedirectToAction("Login", "Account");
+            }
+
+            if (TrangThaiHienMau.VaiTro.LaNhanVien(taiKhoan.VaiTro))
+            {
+                TempData["ErrorMessage"] = "Chức năng nộp phiếu đăng ký hiến máu chỉ dành cho tài khoản Tình nguyện viên (Người hiến máu).";
+                return RedirectToAction("Index", "DotHienMau");
             }
 
             var nguoiHienMau = await _nguoiHienMauRepo.GetByTaiKhoanWithAccountAsync(maTaiKhoan);
@@ -230,19 +238,18 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
                 return RedirectToAction("HoSoCaNhan", "NguoiHienMau");
             }
 
-            DotHienMau? dotHienMau = null;
-            if (maDot.HasValue)
+            // Bắt buộc phải xác định rõ mã đợt hiến máu hợp lệ khi truy cập biểu mẫu đăng ký
+            int? selectedMaDot = maDot ?? maDotHienMau ?? id;
+            if (!selectedMaDot.HasValue || selectedMaDot.Value <= 0)
             {
-                dotHienMau = await _phieuDangKyRepo.GetDotHienMauWithDonViByIdAsync(maDot.Value);
-            }
-            else
-            {
-                dotHienMau = await _phieuDangKyRepo.GetLatestOpenDotHienMauAsync(DateTime.Today);
+                TempData["ErrorMessage"] = "Vui lòng chọn một đợt hiến máu đang mở đăng ký từ danh sách trước khi lập phiếu.";
+                return RedirectToAction("Index", "DotHienMau");
             }
 
+            var dotHienMau = await _phieuDangKyRepo.GetDotHienMauWithDonViByIdAsync(selectedMaDot.Value);
             if (dotHienMau == null)
             {
-                TempData["ErrorMessage"] = "Hiện tại không tìm thấy đợt hiến máu nào phù hợp để đăng ký.";
+                TempData["ErrorMessage"] = "Không tìm thấy đợt hiến máu hợp lệ. Vui lòng chọn một đợt hiến máu đang mở đăng ký từ danh sách.";
                 return RedirectToAction("Index", "DotHienMau");
             }
 
@@ -317,7 +324,8 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
             string? lyDoHienMau,
             string? ghiChu,
             string? health_q1 = null,
-            string? health_q2 = null)
+            string? health_q2 = null,
+            int? maDotHienMau = null)
         {
             var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userIdStr) || !int.TryParse(userIdStr, out int maTaiKhoan))
@@ -330,6 +338,12 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
             {
                 TempData["ErrorMessage"] = "Tài khoản của bạn hiện không tồn tại hoặc đã bị khóa.";
                 return RedirectToAction("Login", "Account");
+            }
+
+            if (TrangThaiHienMau.VaiTro.LaNhanVien(taiKhoan.VaiTro))
+            {
+                TempData["ErrorMessage"] = "Chức năng nộp phiếu đăng ký hiến máu chỉ dành cho tài khoản Tình nguyện viên (Người hiến máu).";
+                return RedirectToAction("Index", "DotHienMau");
             }
 
             var nguoiHienMau = await _nguoiHienMauRepo.GetByTaiKhoanWithAccountAsync(maTaiKhoan);
@@ -347,11 +361,18 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
                 return RedirectToAction("HoSoCaNhan", "NguoiHienMau");
             }
 
-            var dotHienMau = await _phieuDangKyRepo.GetDotHienMauWithDonViByIdAsync(maDot);
+            int selectedMaDot = maDot > 0 ? maDot : (maDotHienMau ?? 0);
+            if (selectedMaDot <= 0)
+            {
+                TempData["ErrorMessage"] = "Không xác định được đợt hiến máu hợp lệ. Vui lòng chọn một đợt hiến máu đang mở đăng ký.";
+                return RedirectToAction("Index", "DotHienMau");
+            }
+
+            var dotHienMau = await _phieuDangKyRepo.GetDotHienMauWithDonViByIdAsync(selectedMaDot);
 
             if (dotHienMau == null)
             {
-                TempData["ErrorMessage"] = "Đợt hiến máu không tồn tại.";
+                TempData["ErrorMessage"] = "Đợt hiến máu không tồn tại hoặc không hợp lệ.";
                 return RedirectToAction("Index", "DotHienMau");
             }
 
@@ -453,6 +474,11 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
             {
                 return ReturnInvalidForm("Số điện thoại không hợp lệ (phải gồm 10-11 chữ số và bắt đầu bằng số 0).");
             }
+            bool phoneExistsInOtherDonor = await _nguoiHienMauRepo.IsSoDienThoaiTakenByOtherDonorAsync(maTaiKhoan, finalPhone);
+            if (phoneExistsInOtherDonor)
+            {
+                return ReturnInvalidForm("Số điện thoại này đã được liên kết với một hồ sơ người hiến máu khác trong hệ thống.");
+            }
 
             var finalEmail = !string.IsNullOrWhiteSpace(email) ? email.Trim() : nguoiHienMau.Email?.Trim();
             if (!string.IsNullOrWhiteSpace(finalEmail))
@@ -527,7 +553,7 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
                 }
 
                 var existingPhieu = lichSuPhieuInTx
-                    .FirstOrDefault(p => p.MaDot == maDot
+                    .FirstOrDefault(p => p.MaDot == selectedMaDot
                                       && p.TrangThai != "Đã hủy"
                                       && p.TrangThai != "Từ chối"
                                       && p.TrangThai != "Không đủ điều kiện hiến"
@@ -570,7 +596,7 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
                 var phieu = new PhieuDangKyHienMau
                 {
                     MaNguoiHien = nguoiHienMau.MaNguoiHien,
-                    MaDot = maDot,
+                    MaDot = selectedMaDot,
                     NgayNop = DateTime.Now,
                     TrangThai = "Chờ xác nhận",
                     LyDoHienMau = formattedLyDo,

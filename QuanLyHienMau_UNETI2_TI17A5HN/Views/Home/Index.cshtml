@@ -28,7 +28,7 @@
                         Đăng ký hiến máu nhanh chóng, theo dõi lịch hẹn thuận tiện và cùng Vitalis Blood Community kịp thời thắp lên nguồn sống cho hàng ngàn người bệnh.
                     </p>
                     <div class="flex flex-wrap items-center gap-4 pt-2 w-full sm:w-auto">
-                        <a asp-controller="DangKy" asp-action="Create" class="inline-flex items-center justify-center gap-2 bg-primary-container hover:bg-primary text-on-primary font-label-lg text-label-lg px-8 py-3.5 rounded-xl shadow-md hover:shadow-lg transition-all duration-200">
+                        <a asp-controller="DotHienMau" asp-action="Index" class="inline-flex items-center justify-center gap-2 bg-primary-container hover:bg-primary text-on-primary font-label-lg text-label-lg px-8 py-3.5 rounded-xl shadow-md hover:shadow-lg transition-all duration-200">
                             <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">water_drop</span>
                             <span>ĐĂNG KÝ HIẾN MÁU</span>
                         </a>
@@ -121,7 +121,7 @@
                     </div>
                 </a>
                 <!-- Action 2 -->
-                <a asp-controller="DangKy" asp-action="Create" class="group p-6 rounded-2xl bg-surface hover:bg-surface-container transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between">
+                <a asp-controller="DotHienMau" asp-action="Index" class="group p-6 rounded-2xl bg-surface hover:bg-surface-container transition-all duration-200 shadow-sm hover:shadow-md flex flex-col justify-between">
                     <div class="flex items-center justify-between mb-4">
                         <div class="w-13 h-13 p-3 rounded-xl bg-secondary-fixed text-tertiary group-hover:scale-110 transition-transform">
                             <span class="material-symbols-outlined text-[28px]">stylus_note</span>
@@ -229,166 +229,95 @@
                     <span class="material-symbols-outlined text-[18px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
                 </a>
             </div>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                <!-- Campaign Card 1 -->
-                <div class="bg-surface-container-lowest rounded-2xl p-6 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
-                    <div>
-                        <div class="flex items-center justify-between mb-4">
-                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 font-label-sm text-label-sm font-bold">
-                                <span class="w-2 h-2 rounded-full bg-emerald-600"></span>
-                                ĐANG MỞ
-                            </span>
-                            <span class="font-label-sm text-label-sm text-secondary">Hạn: 25/11/2026</span>
-                        </div>
-                        <h3 class="font-headline-sm text-headline-sm text-inverse-surface font-bold leading-snug">
-                            Giọt Hồng UNETI – Trao Đời Sự Sống
-                        </h3>
-                        <p class="font-body-sm text-body-sm text-secondary mt-1">
-                            Đoàn Thanh Niên UNETI &amp; Viện Huyết Học TW
-                        </p>
-                        <div class="mt-5 space-y-2.5">
-                            <div class="flex items-start gap-2.5 text-secondary font-body-sm text-body-sm">
-                                <span class="material-symbols-outlined text-primary text-[18px] shrink-0 mt-0.5">calendar_today</span>
-                                <span>Bắt đầu: <strong class="text-inverse-surface">15/11/2026</strong></span>
-                            </div>
-                            <div class="flex items-start gap-2.5 text-secondary font-body-sm text-body-sm">
-                                <span class="material-symbols-outlined text-primary text-[18px] shrink-0 mt-0.5">pin_drop</span>
-                                <span class="line-clamp-1">Cơ sở 218 Lĩnh Nam, Hoàng Mai, Hà Nội</span>
-                            </div>
-                            <div class="flex items-center gap-2 pt-1">
-                                <span class="font-label-sm text-label-sm text-secondary">Ưu tiên:</span>
-                                <span class="px-2 py-0.5 rounded-md bg-secondary-container text-primary font-bold text-xs">O</span>
-                                <span class="px-2 py-0.5 rounded-md bg-secondary-container text-primary font-bold text-xs">A</span>
-                                <span class="px-2 py-0.5 rounded-md bg-secondary-container text-primary font-bold text-xs">B</span>
-                                <span class="text-xs text-secondary ml-auto">Tối thiểu: 45kg</span>
-                            </div>
-                        </div>
-                        <!-- Progress Bar -->
-                        <div class="mt-6 pt-4 bg-surface-container-low p-3.5 rounded-xl">
-                            <div class="flex justify-between items-center text-xs font-label-md mb-2">
-                                <span class="text-secondary">Tiến độ tiếp nhận</span>
-                                <span class="font-bold text-primary">142 / 200 đơn vị (71%)</span>
-                            </div>
-                            <div class="w-full bg-surface-dim h-2 rounded-full overflow-hidden">
-                                <div class="bg-primary-container h-full rounded-full transition-all duration-500" style="width: 71%;"></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-2 gap-3 mt-6">
-                        <a asp-controller="DotHienMau" asp-action="Details" asp-route-id="1" class="inline-flex items-center justify-center py-2.5 px-3 rounded-xl bg-surface-container hover:bg-surface-container-high text-inverse-surface font-label-md text-label-md transition-colors text-center">
-                            Xem chi tiết
-                        </a>
-                        <a asp-controller="DangKy" asp-action="Create" class="inline-flex items-center justify-center py-2.5 px-3 rounded-xl bg-primary-container hover:bg-primary text-on-primary font-label-md text-label-md shadow-sm transition-colors text-center">
-                            Đăng ký ngay
-                        </a>
-                    </div>
+            @{
+                var openCampaigns = ViewBag.OpenCampaigns as List<QuanLyHienMau_UNETI2_TI17A5HN.Models.DotHienMau> ?? new List<QuanLyHienMau_UNETI2_TI17A5HN.Models.DotHienMau>();
+            }
+            @if (openCampaigns.Count == 0)
+            {
+                <div class="bg-surface-container-lowest rounded-2xl p-10 text-center shadow-sm border border-surface-container">
+                    <span class="material-symbols-outlined text-primary text-[48px]">event_busy</span>
+                    <h3 class="font-headline-sm text-lg text-inverse-surface font-bold mt-2">Hiện chưa có đợt hiến máu nào đang trong thời gian mở nhận đăng ký</h3>
+                    <p class="font-body-sm text-sm text-secondary mt-1">Vui lòng tra cứu danh sách đầy đủ các đợt hiến máu sắp mở hoặc đã tổ chức tại trang Đợt hiến máu.</p>
+                    <a asp-controller="DotHienMau" asp-action="Index" class="mt-4 inline-flex items-center gap-2 bg-primary-container hover:bg-primary text-on-primary font-label-md px-5 py-2.5 rounded-xl shadow-sm transition-colors">
+                        <span>Xem danh sách đợt hiến máu</span>
+                    </a>
                 </div>
+            }
+            else
+            {
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    @foreach (var dot in openCampaigns)
+                    {
+                        var registeredCount = dot.PhieuDangKyHienMaus?.Count(p => p.TrangThai != "Đã hủy" && p.TrangThai != "Từ chối") ?? 0;
+                        var quota = dot.ChiTieuDonViMau > 0 ? dot.ChiTieuDonViMau : 100;
+                        var progressPct = Math.Min(100, (int)Math.Round(registeredCount * 100.0 / quota));
+                        var priorityGroups = !string.IsNullOrWhiteSpace(dot.NhomMauUuTien)
+                            ? dot.NhomMauUuTien.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                            : Array.Empty<string>();
 
-                <!-- Campaign Card 2 -->
-                <div class="bg-surface-container-lowest rounded-2xl p-6 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
-                    <div>
-                        <div class="flex items-center justify-between mb-4">
-                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 font-label-sm text-label-sm font-bold">
-                                <span class="w-2 h-2 rounded-full bg-emerald-600"></span>
-                                ĐANG MỞ
-                            </span>
-                            <span class="font-label-sm text-label-sm text-secondary">Hạn: 28/11/2026</span>
+                        <div class="bg-surface-container-lowest rounded-2xl p-6 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+                            <div>
+                                <div class="flex items-center justify-between mb-4">
+                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 font-label-sm text-label-sm font-bold">
+                                        <span class="w-2 h-2 rounded-full bg-emerald-600"></span>
+                                        ĐANG MỞ ĐĂNG KÝ
+                                    </span>
+                                    <span class="font-label-sm text-label-sm text-secondary">Hạn: @dot.HanDangKy.ToString("dd/MM/yyyy")</span>
+                                </div>
+                                <h3 class="font-headline-sm text-headline-sm text-inverse-surface font-bold leading-snug">
+                                    @dot.TenDot
+                                </h3>
+                                <p class="font-body-sm text-body-sm text-secondary mt-1">
+                                    @(dot.DonViToChuc?.TenDonViToChuc ?? "Đơn vị tổ chức UNETI")
+                                </p>
+                                <div class="mt-5 space-y-2.5">
+                                    <div class="flex items-start gap-2.5 text-secondary font-body-sm text-body-sm">
+                                        <span class="material-symbols-outlined text-primary text-[18px] shrink-0 mt-0.5">calendar_today</span>
+                                        <span>Bắt đầu: <strong class="text-inverse-surface">@dot.NgayBatDauDangKy.ToString("dd/MM/yyyy")</strong></span>
+                                    </div>
+                                    <div class="flex items-start gap-2.5 text-secondary font-body-sm text-body-sm">
+                                        <span class="material-symbols-outlined text-primary text-[18px] shrink-0 mt-0.5">pin_drop</span>
+                                        <span class="line-clamp-1">@(string.IsNullOrWhiteSpace(dot.MoTaDot) ? (dot.DonViToChuc?.TenDonViToChuc ?? "Cơ sở UNETI") : dot.MoTaDot)</span>
+                                    </div>
+                                    <div class="flex items-center gap-2 pt-1 flex-wrap">
+                                        <span class="font-label-sm text-label-sm text-secondary">Ưu tiên:</span>
+                                        @if (priorityGroups.Length > 0)
+                                        {
+                                            foreach (var grp in priorityGroups)
+                                            {
+                                                <span class="px-2 py-0.5 rounded-md bg-secondary-container text-primary font-bold text-xs">@grp</span>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <span class="px-2 py-0.5 rounded-md bg-secondary-container text-primary font-bold text-xs">Tất cả nhóm máu</span>
+                                        }
+                                        <span class="text-xs text-secondary ml-auto">Tối thiểu: @dot.CanNangToiThieu kg</span>
+                                    </div>
+                                </div>
+                                <!-- Progress Bar -->
+                                <div class="mt-6 pt-4 bg-surface-container-low p-3.5 rounded-xl">
+                                    <div class="flex justify-between items-center text-xs font-label-md mb-2">
+                                        <span class="text-secondary">Chỉ tiêu tiếp nhận</span>
+                                        <span class="font-bold text-primary">@registeredCount / @dot.ChiTieuDonViMau đơn vị (@progressPct%)</span>
+                                    </div>
+                                    <div class="w-full bg-surface-dim h-2 rounded-full overflow-hidden">
+                                        <div class="bg-primary-container h-full rounded-full transition-all duration-500" style="width: @(progressPct)%;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3 mt-6">
+                                <a asp-controller="DotHienMau" asp-action="Details" asp-route-id="@dot.MaDot" class="inline-flex items-center justify-center py-2.5 px-3 rounded-xl bg-surface-container hover:bg-surface-container-high text-inverse-surface font-label-md text-label-md transition-colors text-center">
+                                    Xem chi tiết
+                                </a>
+                                <a asp-controller="DangKy" asp-action="Create" asp-route-maDot="@dot.MaDot" class="inline-flex items-center justify-center py-2.5 px-3 rounded-xl bg-primary-container hover:bg-primary text-on-primary font-label-md text-label-md shadow-sm transition-colors text-center">
+                                    Đăng ký ngay
+                                </a>
+                            </div>
                         </div>
-                        <h3 class="font-headline-sm text-headline-sm text-inverse-surface font-bold leading-snug">
-                            Trái Tim Đỏ – Chung Tay Vì Người Bệnh
-                        </h3>
-                        <p class="font-body-sm text-body-sm text-secondary mt-1">
-                            Cơ sở Minh Khai - UNETI Hà Nội
-                        </p>
-                        <div class="mt-5 space-y-2.5">
-                            <div class="flex items-start gap-2.5 text-secondary font-body-sm text-body-sm">
-                                <span class="material-symbols-outlined text-primary text-[18px] shrink-0 mt-0.5">calendar_today</span>
-                                <span>Bắt đầu: <strong class="text-inverse-surface">18/11/2026</strong></span>
-                            </div>
-                            <div class="flex items-start gap-2.5 text-secondary font-body-sm text-body-sm">
-                                <span class="material-symbols-outlined text-primary text-[18px] shrink-0 mt-0.5">pin_drop</span>
-                                <span class="line-clamp-1">456 Minh Khai, Hai Bà Trưng, Hà Nội</span>
-                            </div>
-                            <div class="flex items-center gap-2 pt-1">
-                                <span class="font-label-sm text-label-sm text-secondary">Ưu tiên:</span>
-                                <span class="px-2 py-0.5 rounded-md bg-secondary-container text-primary font-bold text-xs">O</span>
-                                <span class="px-2 py-0.5 rounded-md bg-secondary-container text-primary font-bold text-xs">AB</span>
-                                <span class="text-xs text-secondary ml-auto">Tối thiểu: 45kg</span>
-                            </div>
-                        </div>
-                        <!-- Progress Bar -->
-                        <div class="mt-6 pt-4 bg-surface-container-low p-3.5 rounded-xl">
-                            <div class="flex justify-between items-center text-xs font-label-md mb-2">
-                                <span class="text-secondary">Tiến độ tiếp nhận</span>
-                                <span class="font-bold text-primary">88 / 150 đơn vị (58%)</span>
-                            </div>
-                            <div class="w-full bg-surface-dim h-2 rounded-full overflow-hidden">
-                                <div class="bg-primary-container h-full rounded-full transition-all duration-500" style="width: 58%;"></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-2 gap-3 mt-6">
-                        <a asp-controller="DotHienMau" asp-action="Details" asp-route-id="2" class="inline-flex items-center justify-center py-2.5 px-3 rounded-xl bg-surface-container hover:bg-surface-container-high text-inverse-surface font-label-md text-label-md transition-colors text-center">
-                            Xem chi tiết
-                        </a>
-                        <a asp-controller="DangKy" asp-action="Create" class="inline-flex items-center justify-center py-2.5 px-3 rounded-xl bg-primary-container hover:bg-primary text-on-primary font-label-md text-label-md shadow-sm transition-colors text-center">
-                            Đăng ký ngay
-                        </a>
-                    </div>
+                    }
                 </div>
-
-                <!-- Campaign Card 3 -->
-                <div class="bg-surface-container-lowest rounded-2xl p-6 shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
-                    <div>
-                        <div class="flex items-center justify-between mb-4">
-                            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 font-label-sm text-label-sm font-bold">
-                                <span class="w-2 h-2 rounded-full bg-emerald-600"></span>
-                                ĐANG MỞ
-                            </span>
-                            <span class="font-label-sm text-label-sm text-secondary">Hạn: 30/11/2026</span>
-                        </div>
-                        <h3 class="font-headline-sm text-headline-sm text-inverse-surface font-bold leading-snug">
-                            Nắng Hồng Yêu Thương – Cơ sở Nam Định
-                        </h3>
-                        <p class="font-body-sm text-body-sm text-secondary mt-1">
-                            Hội Chữ Thập Đỏ &amp; UNETI Nam Định
-                        </p>
-                        <div class="mt-5 space-y-2.5">
-                            <div class="flex items-start gap-2.5 text-secondary font-body-sm text-body-sm">
-                                <span class="material-symbols-outlined text-primary text-[18px] shrink-0 mt-0.5">calendar_today</span>
-                                <span>Bắt đầu: <strong class="text-inverse-surface">22/11/2026</strong></span>
-                            </div>
-                            <div class="flex items-start gap-2.5 text-secondary font-body-sm text-body-sm">
-                                <span class="material-symbols-outlined text-primary text-[18px] shrink-0 mt-0.5">pin_drop</span>
-                                <span class="line-clamp-1">353 Trần Hưng Đạo, TP. Nam Định</span>
-                            </div>
-                            <div class="flex items-center gap-2 pt-1">
-                                <span class="font-label-sm text-label-sm text-secondary">Ưu tiên:</span>
-                                <span class="px-2 py-0.5 rounded-md bg-secondary-container text-primary font-bold text-xs">Tất cả nhóm máu</span>
-                                <span class="text-xs text-secondary ml-auto">Tối thiểu: 45kg</span>
-                            </div>
-                        </div>
-                        <!-- Progress Bar -->
-                        <div class="mt-6 pt-4 bg-surface-container-low p-3.5 rounded-xl">
-                            <div class="flex justify-between items-center text-xs font-label-md mb-2">
-                                <span class="text-secondary">Tiến độ tiếp nhận</span>
-                                <span class="font-bold text-primary">195 / 250 đơn vị (78%)</span>
-                            </div>
-                            <div class="w-full bg-surface-dim h-2 rounded-full overflow-hidden">
-                                <div class="bg-primary-container h-full rounded-full transition-all duration-500" style="width: 78%;"></div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="grid grid-cols-2 gap-3 mt-6">
-                        <a asp-controller="DotHienMau" asp-action="Details" asp-route-id="3" class="inline-flex items-center justify-center py-2.5 px-3 rounded-xl bg-surface-container hover:bg-surface-container-high text-inverse-surface font-label-md text-label-md transition-colors text-center">
-                            Xem chi tiết
-                        </a>
-                        <a asp-controller="DangKy" asp-action="Create" class="inline-flex items-center justify-center py-2.5 px-3 rounded-xl bg-primary-container hover:bg-primary text-on-primary font-label-md text-label-md shadow-sm transition-colors text-center">
-                            Đăng ký ngay
-                        </a>
-                    </div>
-                </div>
-            </div>
+            }
         </div>
     </section>
 
@@ -649,7 +578,7 @@
                         Một lần đăng ký hôm nay có thể trở thành một cơ hội tái sinh kỳ diệu cho người bệnh. Hãy gia nhập đại gia đình Vitalis Blood Community ngay hôm nay.
                     </p>
                     <div class="flex flex-wrap items-center justify-center gap-4 mt-8 w-full sm:w-auto">
-                        <a asp-controller="DangKy" asp-action="Create" class="inline-flex items-center justify-center gap-2.5 bg-primary-container hover:bg-primary text-on-primary font-label-lg text-label-lg px-8 py-4 rounded-xl shadow-md hover:shadow-lg transition-all duration-200">
+                        <a asp-controller="DotHienMau" asp-action="Index" class="inline-flex items-center justify-center gap-2.5 bg-primary-container hover:bg-primary text-on-primary font-label-lg text-label-lg px-8 py-4 rounded-xl shadow-md hover:shadow-lg transition-all duration-200">
                             <span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">favorite</span>
                             <span>ĐĂNG KÝ HIẾN MÁU NGAY</span>
                         </a>

@@ -604,24 +604,15 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
             var bAm = await allDonorsQuery.CountAsync(n => n.NhomMau != null && n.NhomMau.ToUpper().Contains("B") && !n.NhomMau.ToUpper().Contains("AB") && (n.NhomMau.Contains("-") || n.NhomMau.Contains("Rh(-)") || n.NhomMau.Contains("Rh-") || n.NhomMau.ToLower().Contains("âm")));
             var abAm = await allDonorsQuery.CountAsync(n => n.NhomMau != null && n.NhomMau.ToUpper().Contains("AB") && (n.NhomMau.Contains("-") || n.NhomMau.Contains("Rh(-)") || n.NhomMau.Contains("Rh-") || n.NhomMau.ToLower().Contains("âm")));
 
-            // Tính toán KPI người đủ điều kiện và tích cực từ dữ liệu đã nạp
-            // Người đủ điều kiện: Hoạt động và (chưa từng hiến hoặc lần hiến thành công gần nhất >= 84 ngày)
-            // Người hiến tích cực: Số lần hiến thành công >= 5
-            var allDonorsForKpi = await allDonorsQuery.Select(n => new
-            {
-                n.MaNguoiHien,
-                n.TrangThai,
-                SoLanHien = n.PhieuDangKyHienMaus.Count(p => p.TrangThai == "Hiến máu thành công" || p.KetQuaHienMau != null),
-                LanHienCuoi = n.PhieuDangKyHienMaus
-                    .Where(p => p.TrangThai == "Hiến máu thành công" || p.KetQuaHienMau != null)
-                    .OrderByDescending(p => p.NgayXuLy ?? p.NgayNop)
-                    .Select(p => p.NgayXuLy ?? p.NgayNop)
-                    .FirstOrDefault()
-            }).ToListAsync();
-
-            var now = DateTime.Now;
-            var duDieuKienCount = allDonorsForKpi.Count(d => (d.TrangThai == "Hoạt động" || string.IsNullOrEmpty(d.TrangThai)) && (d.LanHienCuoi == default || (now - d.LanHienCuoi).TotalDays >= 84));
-            var hienTichCucCount = allDonorsForKpi.Count(d => d.SoLanHien >= 5);
+            // Tính toán KPI người đủ điều kiện và tích cực theo chuẩn quy tắc 84 ngày của Module 3
+            // Chỉ tính các lần hiến máu có kết quả thực sự là "Hiến máu thành công" và lấy ngày từ KetQuaHienMau.NgayCapNhat
+            var allDonorsListForKpi = await allDonorsQuery.AsNoTracking().ToListAsync();
+            var today = DateTime.Today;
+            var duDieuKienCount = allDonorsListForKpi.Count(d =>
+                (d.TrangThai == "Hoạt động" || string.IsNullOrEmpty(d.TrangThai)) &&
+                DangKyController.EvaluateRecentDonationEligibility(d.PhieuDangKyHienMaus, today).IsEligible);
+            var hienTichCucCount = allDonorsListForKpi.Count(d =>
+                DangKyController.EvaluateRecentDonationEligibility(d.PhieuDangKyHienMaus, today).TotalSuccessfulDonations >= 5);
 
             // 3. Áp dụng các bộ lọc
             var query = allDonorsQuery;
@@ -689,31 +680,31 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
             // Lấy toàn bộ danh sách phù hợp để xử lý tier hoặc phân trang
             var donorList = await query.OrderByDescending(n => n.MaNguoiHien).ToListAsync();
 
-            // Lọc theo phân hạng cống hiến nếu có
+            // Lọc theo phân hạng cống hiến nếu có (chỉ tính các lần "Hiến máu thành công")
             if (!string.IsNullOrWhiteSpace(tier) && tier != "all")
             {
                 if (tier == "diamond")
                 {
-                    donorList = donorList.Where(d => d.PhieuDangKyHienMaus.Count(p => p.TrangThai == "Hiến máu thành công" || p.KetQuaHienMau != null) >= 20).ToList();
+                    donorList = donorList.Where(d => d.PhieuDangKyHienMaus.Count(DangKyController.IsConfirmedSuccessfulDonation) >= 20).ToList();
                 }
                 else if (tier == "gold")
                 {
                     donorList = donorList.Where(d => {
-                        var c = d.PhieuDangKyHienMaus.Count(p => p.TrangThai == "Hiến máu thành công" || p.KetQuaHienMau != null);
+                        var c = d.PhieuDangKyHienMaus.Count(DangKyController.IsConfirmedSuccessfulDonation);
                         return c >= 10 && c < 20;
                     }).ToList();
                 }
                 else if (tier == "silver")
                 {
                     donorList = donorList.Where(d => {
-                        var c = d.PhieuDangKyHienMaus.Count(p => p.TrangThai == "Hiến máu thành công" || p.KetQuaHienMau != null);
+                        var c = d.PhieuDangKyHienMaus.Count(DangKyController.IsConfirmedSuccessfulDonation);
                         return c >= 5 && c < 10;
                     }).ToList();
                 }
                 else if (tier == "bronze")
                 {
                     donorList = donorList.Where(d => {
-                        var c = d.PhieuDangKyHienMaus.Count(p => p.TrangThai == "Hiến máu thành công" || p.KetQuaHienMau != null);
+                        var c = d.PhieuDangKyHienMaus.Count(DangKyController.IsConfirmedSuccessfulDonation);
                         return c >= 1 && c < 5;
                     }).ToList();
                 }
@@ -722,15 +713,9 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
             // Lọc theo điều kiện sẵn sàng hiến ngay nếu status == "dudieukien"
             if (status == "dudieukien")
             {
-                donorList = donorList.Where(d => {
-                    var lastSuccess = d.PhieuDangKyHienMaus
-                        .Where(p => p.TrangThai == "Hiến máu thành công" || p.KetQuaHienMau != null)
-                        .OrderByDescending(p => p.NgayXuLy ?? p.NgayNop)
-                        .Select(p => p.NgayXuLy ?? p.NgayNop)
-                        .FirstOrDefault();
-                    return (d.TrangThai == "Hoạt động" || string.IsNullOrEmpty(d.TrangThai)) &&
-                           (lastSuccess == default || (now - lastSuccess).TotalDays >= 84);
-                }).ToList();
+                donorList = donorList.Where(d =>
+                    (d.TrangThai == "Hoạt động" || string.IsNullOrEmpty(d.TrangThai)) &&
+                    DangKyController.EvaluateRecentDonationEligibility(d.PhieuDangKyHienMaus, today).IsEligible).ToList();
             }
 
             // 4. Phân trang
@@ -811,7 +796,7 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
             sb.AppendLine("Mã người hiến,Họ và tên,Ngày sinh,Giới tính,Nhóm máu,Cân nặng (kg),Số điện thoại,Email,Địa chỉ,Số lần hiến thành công,Trạng thái");
             foreach (var d in donors)
             {
-                var soLan = d.PhieuDangKyHienMaus.Count(p => p.TrangThai == "Hiến máu thành công");
+                var soLan = d.PhieuDangKyHienMaus.Count(DangKyController.IsConfirmedSuccessfulDonation);
                 sb.AppendLine($"{d.MaNguoiHien},\"{d.HoTen.Replace("\"", "\"\"")}\",\"{(d.NgaySinh?.ToString("dd/MM/yyyy") ?? "")}\",\"{d.GioiTinh ?? ""}\",\"{d.NhomMau ?? ""}\",\"{d.CanNang?.ToString() ?? ""}\",\"{d.SoDienThoai ?? ""}\",\"{d.Email ?? ""}\",\"{(d.DiaChi ?? "").Replace("\"", "\"\"")}\",{soLan},\"{d.TrangThai ?? "Hoạt động"}\"");
             }
 

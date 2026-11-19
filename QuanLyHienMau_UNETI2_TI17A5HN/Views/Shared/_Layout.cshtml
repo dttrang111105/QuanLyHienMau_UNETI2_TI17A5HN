@@ -103,7 +103,7 @@
             <nav class="hidden xl:flex items-center gap-6">
                 <a asp-controller="Home" asp-action="Index" class="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors py-2">Trang chủ</a>
                 <a asp-controller="DotHienMau" asp-action="Index" class="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors py-2">Đợt hiến máu</a>
-                <a asp-controller="DangKy" asp-action="Create" class="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors py-2">Quy trình</a>
+                <a asp-controller="Home" asp-action="Index" asp-fragment="process" class="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors py-2">Quy trình</a>
                 <a asp-controller="DangKy" asp-action="TheoDoi" class="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors py-2">Tra cứu phiếu</a>
                 <a asp-controller="NguoiHienMau" asp-action="HoSoCaNhan" class="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors py-2">Hồ sơ cá nhân</a>
                 
@@ -158,7 +158,7 @@
                     </a>
                 }
 
-                <a asp-controller="DangKy" asp-action="Create" class="inline-flex items-center gap-2 bg-gradient-to-r from-primary to-primary-container text-on-primary font-label-md text-label-md px-5 py-2.5 rounded-xl shadow-[0_4px_20px_-2px_rgba(198,40,61,0.25)] hover:shadow-[0_10px_25px_-3px_rgba(198,40,61,0.35)] hover:-translate-y-0.5 active:translate-y-0 transition-all">
+                <a asp-controller="DotHienMau" asp-action="Index" class="inline-flex items-center gap-2 bg-gradient-to-r from-primary to-primary-container text-on-primary font-label-md text-xs sm:text-label-md px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl whitespace-nowrap shadow-[0_4px_20px_-2px_rgba(198,40,61,0.25)] hover:shadow-[0_10px_25px_-3px_rgba(198,40,61,0.35)] hover:-translate-y-0.5 active:translate-y-0 transition-all">
                     <span class="material-symbols-outlined text-[18px]">favorite</span>
                     <span>ĐĂNG KÝ HIẾN MÁU</span>
                 </a>
@@ -194,7 +194,7 @@
                     <h4 class="font-headline-sm text-title-md text-on-surface mb-4">Hiến Máu Nhân Đạo</h4>
                     <ul class="space-y-2.5 font-body-sm text-body-sm text-on-surface-variant">
                         <li><a asp-controller="DotHienMau" asp-action="Index" class="hover:text-primary transition-colors">Các đợt hiến máu</a></li>
-                        <li><a asp-controller="DangKy" asp-action="Create" class="hover:text-primary transition-colors">Đăng ký hiến máu</a></li>
+                        <li><a asp-controller="DotHienMau" asp-action="Index" class="hover:text-primary transition-colors">Đăng ký hiến máu</a></li>
                         <li><a asp-controller="DangKy" asp-action="TheoDoi" class="hover:text-primary transition-colors">Tra cứu phiếu đăng ký</a></li>
                         <li><a asp-controller="NguoiHienMau" asp-action="HoSoCaNhan" class="hover:text-primary transition-colors">Hồ sơ cá nhân</a></li>
                     </ul>

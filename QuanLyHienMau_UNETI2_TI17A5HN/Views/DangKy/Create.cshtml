@@ -182,8 +182,9 @@
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
                 <!-- Left Column: Form Content -->
                 <div class="lg:col-span-8 space-y-8">
-                    <form asp-controller="DangKy" asp-action="Create" method="post" class="space-y-8" id="bloodDonationForm">
+                    <form asp-controller="DangKy" asp-action="Create" asp-route-maDot="@Model.MaDot" method="post" class="space-y-8" id="bloodDonationForm">
                         <input type="hidden" name="maDot" value="@Model.MaDot" />
+                        <input type="hidden" name="maDotHienMau" value="@Model.MaDot" />
 
                         <!-- GROUP 1: Identification & Contact Information -->
                         <div class="bg-surface-container-lowest p-6 sm:p-8 rounded-2xl shadow-sm space-y-6">

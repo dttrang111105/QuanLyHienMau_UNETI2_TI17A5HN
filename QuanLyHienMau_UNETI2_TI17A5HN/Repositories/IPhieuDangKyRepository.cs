@@ -1,7 +1,3 @@
-// Họ và tên: Vương Văn Thái (Phụ trách Module 4)
-// Mã sinh viên: DHTI17A5HN - Module 4
-// Nội dung thực hiện: Module 4 - Interface Repository quản lý và duyệt phiếu đăng ký
-
 using System.Data;
 using Microsoft.EntityFrameworkCore.Storage;
 using QuanLyHienMau_UNETI2_TI17A5HN.Models;

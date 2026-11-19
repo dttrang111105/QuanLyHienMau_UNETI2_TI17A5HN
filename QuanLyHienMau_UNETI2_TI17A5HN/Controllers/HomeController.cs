@@ -1,18 +1,30 @@
-// Họ và tên: Nguyễn Tiến Nam
-// Mã sinh viên: 23103100275
-// Nội dung thực hiện: Module 1 - Trang chủ cổng thông tin hiến máu
-
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using QuanLyHienMau_UNETI2_TI17A5HN.Models;
+using QuanLyHienMau_UNETI2_TI17A5HN.Repositories;
 using System.Diagnostics;
 
 namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
 {
     public class HomeController : Controller
     {
-        public IActionResult Index()
+        private readonly IDotHienMauRepository _dotRepo;
+
+        public HomeController(IDotHienMauRepository dotRepo)
         {
-            return View();
+            _dotRepo = dotRepo;
+        }
+
+        public async Task<IActionResult> Index()
+        {
+            var openQuery = _dotRepo.ApplyFilterDangNhanDangKy(_dotRepo.GetQueryable())
+                .Include(d => d.PhieuDangKyHienMaus)
+                .OrderBy(d => d.HanDangKy)
+                .ThenByDescending(d => d.MaDot);
+
+            var openCampaigns = await openQuery.Take(3).ToListAsync();
+            ViewBag.OpenCampaigns = openCampaigns;
+            return View(openCampaigns);
         }
 
         public IActionResult Privacy()
