@@ -71,15 +71,36 @@ builder.Services.AddAuthentication("QuanLyHienMau.Auth")
                 }
 
                 var taiKhoanRepo = context.HttpContext.RequestServices.GetRequiredService<ITaiKhoanRepository>();
-                var taiKhoan = await taiKhoanRepo.GetByIdAsync(maTaiKhoan);
+                var taiKhoan = await taiKhoanRepo.GetByIdWithProfileAsync(maTaiKhoan);
 
                 // Nếu tài khoản không còn tồn tại hoặc vừa bị khóa bởi Admin -> Đăng xuất ngay lập tức
-                if (taiKhoan == null || taiKhoan.TrangThai != "Hoạt động")
+                if (taiKhoan == null || taiKhoan.TrangThai != "Hoạt động" ||
+                    (taiKhoan.NguoiHienMau != null && taiKhoan.NguoiHienMau.TrangThai == "Bị khóa"))
                 {
                     context.RejectPrincipal();
                     context.HttpContext.Session.Clear();
                     await context.HttpContext.SignOutAsync("QuanLyHienMau.Auth");
                     return;
+                }
+
+                // Tự động đồng bộ lại Claim VaiTro nếu Admin vừa thay đổi phân quyền của tài khoản
+                var currentRoleClaim = context.Principal?.FindFirstValue(ClaimTypes.Role);
+                if (currentRoleClaim != taiKhoan.VaiTro)
+                {
+                    var claims = new List<Claim>
+                    {
+                        new(ClaimTypes.NameIdentifier, taiKhoan.MaTaiKhoan.ToString()),
+                        new(ClaimTypes.Name, taiKhoan.HoTen),
+                        new(ClaimTypes.Role, taiKhoan.VaiTro),
+                        new("TenDangNhap", taiKhoan.TenDangNhap)
+                    };
+                    if (!string.IsNullOrEmpty(taiKhoan.Email))
+                    {
+                        claims.Add(new Claim(ClaimTypes.Email, taiKhoan.Email));
+                    }
+                    context.ReplacePrincipal(new ClaimsPrincipal(new ClaimsIdentity(claims, "QuanLyHienMau.Auth")));
+                    context.ShouldRenew = true;
+                    context.HttpContext.Session.SetString("VaiTro", taiKhoan.VaiTro);
                 }
 
                 // Tự động đồng bộ lại Session nếu Session hết hạn trước Cookie (RememberMe)

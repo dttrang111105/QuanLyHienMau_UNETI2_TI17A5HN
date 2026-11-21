@@ -322,7 +322,7 @@
             @Html.AntiForgeryToken()
             <div>
                 <label class="font-label-md text-label-md text-on-surface block mb-1">Tên Đơn Vị Tổ Chức <span class="text-error">*</span></label>
-                <input id="create_ten" name="TenDonViToChuc" required maxlength="200" class="w-full h-11 px-3.5 bg-surface-container-low text-on-surface rounded-xl border border-surface-container focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors" placeholder="VD: Đoàn Thanh Niên UNETI" oninput="validateCreateName()" onblur="checkDuplicateCreateName()" />
+                <input id="create_ten" name="TenDonViToChuc" required minlength="3" maxlength="200" class="w-full h-11 px-3.5 bg-surface-container-low text-on-surface rounded-xl border border-surface-container focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors" placeholder="VD: Đoàn Thanh Niên UNETI" oninput="validateCreateName()" onblur="checkDuplicateCreateName()" />
                 <p id="create_ten_error" class="hidden mt-1.5 text-error text-xs font-medium flex items-center gap-1">
                     <span class="material-symbols-outlined text-[14px]">error</span>
                     <span id="create_ten_error_text"></span>
@@ -371,7 +371,7 @@
             <input type="hidden" id="edit_id_param" name="id" />
             <div>
                 <label class="font-label-md text-label-md text-on-surface block mb-1">Tên Đơn Vị Tổ Chức <span class="text-error">*</span></label>
-                <input id="edit_ten" name="TenDonViToChuc" required maxlength="200" class="w-full h-11 px-3.5 bg-surface-container-low text-on-surface rounded-xl border border-surface-container focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors" oninput="validateEditName()" onblur="checkDuplicateEditName()" />
+                <input id="edit_ten" name="TenDonViToChuc" required minlength="3" maxlength="200" class="w-full h-11 px-3.5 bg-surface-container-low text-on-surface rounded-xl border border-surface-container focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors" oninput="validateEditName()" onblur="checkDuplicateEditName()" />
                 <p id="edit_ten_error" class="hidden mt-1.5 text-error text-xs font-medium flex items-center gap-1">
                     <span class="material-symbols-outlined text-[14px]">error</span>
                     <span id="edit_ten_error_text"></span>
@@ -468,6 +468,9 @@
             showFieldError('create_ten', 'create_ten_error', 'create_ten_error_text', 'Tên đơn vị tổ chức không được để trống.');
             createNameValid = false;
             createNameDuplicate = false;
+        } else if (val.length < 3) {
+            showFieldError('create_ten', 'create_ten_error', 'create_ten_error_text', 'Tên đơn vị tổ chức phải có tối thiểu 3 ký tự.');
+            createNameValid = false;
         } else {
             hideFieldError('create_ten', 'create_ten_error', !createNameDuplicate);
             createNameValid = true;
@@ -539,6 +542,9 @@
             showFieldError('edit_ten', 'edit_ten_error', 'edit_ten_error_text', 'Tên đơn vị tổ chức không được để trống.');
             editNameValid = false;
             editNameDuplicate = false;
+        } else if (val.length < 3) {
+            showFieldError('edit_ten', 'edit_ten_error', 'edit_ten_error_text', 'Tên đơn vị tổ chức phải có tối thiểu 3 ký tự.');
+            editNameValid = false;
         } else {
             hideFieldError('edit_ten', 'edit_ten_error', !editNameDuplicate);
             editNameValid = true;

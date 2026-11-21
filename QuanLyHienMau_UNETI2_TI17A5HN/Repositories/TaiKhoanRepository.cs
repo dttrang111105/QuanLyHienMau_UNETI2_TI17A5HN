@@ -40,25 +40,25 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Repositories
         public async Task<bool> IsTenDangNhapExistsAsync(string tenDangNhap, int? excludeId = null)
         {
             if (string.IsNullOrWhiteSpace(tenDangNhap)) return false;
-            var clean = tenDangNhap.Trim();
+            var clean = tenDangNhap.Trim().ToLower();
             var query = _dbSet.AsNoTracking();
             if (excludeId.HasValue)
             {
                 query = query.Where(t => t.MaTaiKhoan != excludeId.Value);
             }
-            return await query.AnyAsync(t => t.TenDangNhap == clean);
+            return await query.AnyAsync(t => t.TenDangNhap.ToLower() == clean);
         }
 
         public async Task<bool> IsEmailExistsAsync(string email, int? excludeId = null)
         {
             if (string.IsNullOrWhiteSpace(email)) return false;
-            var clean = email.Trim();
+            var clean = email.Trim().ToLower();
             var query = _dbSet.AsNoTracking();
             if (excludeId.HasValue)
             {
                 query = query.Where(t => t.MaTaiKhoan != excludeId.Value);
             }
-            return await query.AnyAsync(t => t.Email != null && t.Email == clean);
+            return await query.AnyAsync(t => t.Email != null && t.Email.ToLower() == clean);
         }
 
         public async Task<bool> IsSoDienThoaiExistsAsync(string soDienThoai, int? excludeMaTaiKhoan = null)
@@ -173,6 +173,29 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Repositories
             if (account.NguoiHienMau != null)
             {
                 account.NguoiHienMau.TrangThai = newStatus;
+            }
+
+            return await _context.SaveChangesAsync() > 0;
+        }
+
+        public async Task<bool> UpdateAccountRoleAsync(int id, string newRole)
+        {
+            var account = await _dbSet
+                .Include(t => t.NguoiHienMau)
+                .FirstOrDefaultAsync(t => t.MaTaiKhoan == id);
+
+            if (account == null) return false;
+
+            account.VaiTro = newRole;
+            if (newRole == "Donor" && account.NguoiHienMau == null)
+            {
+                await _context.NguoiHienMaus.AddAsync(new NguoiHienMau
+                {
+                    MaTaiKhoan = account.MaTaiKhoan,
+                    HoTen = account.HoTen,
+                    Email = account.Email,
+                    TrangThai = account.TrangThai ?? "Hoạt động"
+                });
             }
 
             return await _context.SaveChangesAsync() > 0;

@@ -269,6 +269,110 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Data
                     MoTa = "Điểm hiến máu cố định cuối tuần hỗ trợ bệnh nhân điều trị nội trú và cấp cứu.",
                     DieuKien = "Tình nguyện viên 18-60 tuổi, huyết áp ổn định, ngủ đủ giấc trước ngày hiến máu.",
                     TrangThai = "Đang mở đăng ký"
+                },
+                new
+                {
+                    TenDot = "Giọt Máu Nghĩa Tình – Tuổi Trẻ Hai Bà Trưng 2026",
+                    MaDonVi = allOrgs[Math.Min(2, allOrgs.Count - 1)].MaDonViToChuc,
+                    ChiTieu = 220,
+                    NhomMau = "O, A",
+                    CanNang = 45.0,
+                    BatDau = DateTime.Today.AddDays(-4),
+                    KetThuc = DateTime.Today.AddDays(14),
+                    MoTa = "Ngày hội hiến máu liên trường khu vực quận Hai Bà Trưng và Hoàng Mai.",
+                    DieuKien = "Sinh viên và đoàn viên thanh niên từ 18 tuổi, cân nặng ≥ 45kg.",
+                    TrangThai = "Đang mở đăng ký"
+                },
+                new
+                {
+                    TenDot = "Sắc Đỏ Quân Y – Chung Dòng Máu Lạc Hồng",
+                    MaDonVi = allOrgs[Math.Min(4, allOrgs.Count - 1)].MaDonViToChuc,
+                    ChiTieu = 300,
+                    NhomMau = "O, B, A",
+                    CanNang = 50.0,
+                    BatDau = DateTime.Today.AddDays(-6),
+                    KetThuc = DateTime.Today.AddDays(22),
+                    MoTa = "Đợt tiếp nhận máu phục vụ công tác điều trị ngoại khoa và chấn thương tại BV Quân Y 103.",
+                    DieuKien = "Công dân từ 18-60 tuổi, cân nặng ≥ 50kg, sức khỏe ổn định.",
+                    TrangThai = "Đang mở đăng ký"
+                },
+                new
+                {
+                    TenDot = "Lễ Hội Trăng Hồng – Trao Giọt Máu Yêu Thương",
+                    MaDonVi = allOrgs[Math.Min(1, allOrgs.Count - 1)].MaDonViToChuc,
+                    ChiTieu = 280,
+                    NhomMau = "O, A, B, AB",
+                    CanNang = 45.0,
+                    BatDau = DateTime.Today.AddDays(-45),
+                    KetThuc = DateTime.Today.AddDays(-15),
+                    MoTa = "Chương trình hiến máu dành cho bệnh nhi huyết học điều trị tại Viện Huyết học TW.",
+                    DieuKien = "Tình nguyện viên khỏe mạnh, đã qua 84 ngày từ lần hiến máu gần nhất.",
+                    TrangThai = "Đã đóng"
+                },
+                new
+                {
+                    TenDot = "Tuần Lễ Hồng UNETI – Cơ Sở Minh Khai",
+                    MaDonVi = allOrgs[0].MaDonViToChuc,
+                    ChiTieu = 160,
+                    NhomMau = "A, B, O",
+                    CanNang = 45.0,
+                    BatDau = DateTime.Today.AddDays(-20),
+                    KetThuc = DateTime.Today.AddDays(-2), // Đợt đã hết hạn nhận phiếu để kiểm thử bộ lọc Hết hạn
+                    MoTa = "Đợt tiếp nhận máu tại cơ sở 454 Minh Khai, Hai Bà Trưng, Hà Nội.",
+                    DieuKien = "Cán bộ, giảng viên, sinh viên UNETI có cân nặng ≥ 45kg.",
+                    TrangThai = "Đang mở đăng ký"
+                },
+                new
+                {
+                    TenDot = "Giọt Hồng Hy Vọng – Cấp Cứu Ngoại Khoa Việt Đức",
+                    MaDonVi = allOrgs[Math.Min(3, allOrgs.Count - 1)].MaDonViToChuc,
+                    ChiTieu = 240,
+                    NhomMau = "O, AB",
+                    CanNang = 47.0,
+                    BatDau = DateTime.Today.AddDays(-8),
+                    KetThuc = DateTime.Today.AddDays(12),
+                    MoTa = "Đợt tiếp nhận máu tạm dừng kỹ thuật để bảo trì thiết bị bảo quản lạnh.",
+                    DieuKien = "Người hiến máu từ 18-60 tuổi, cân nặng ≥ 47kg.",
+                    TrangThai = "Tạm dừng"
+                },
+                new
+                {
+                    TenDot = "Chiến Dịch Kết Nối Trái Tim – Mùa Đông Ấm 2026",
+                    MaDonVi = allOrgs[Math.Min(2, allOrgs.Count - 1)].MaDonViToChuc,
+                    ChiTieu = 400,
+                    NhomMau = "O, A, B, AB",
+                    CanNang = 45.0,
+                    BatDau = DateTime.Today.AddDays(10),
+                    KetThuc = DateTime.Today.AddDays(35),
+                    MoTa = "Chiến dịch dự trữ máu mùa đông chuẩn bị cho dịp cuối năm tại TP. Hà Nội.",
+                    DieuKien = "Công dân từ 18-60 tuổi, không mắc bệnh truyền nhiễm.",
+                    TrangThai = "Chưa mở"
+                },
+                new
+                {
+                    TenDot = "Ngày Hội Hiến Máu Khoa CNTT & Điện Tử UNETI",
+                    MaDonVi = allOrgs[0].MaDonViToChuc,
+                    ChiTieu = 150,
+                    NhomMau = "O, A, B",
+                    CanNang = 45.0,
+                    BatDau = DateTime.Today.AddDays(15),
+                    KetThuc = DateTime.Today.AddDays(40),
+                    MoTa = "Ngày hội hiến máu chuyên đề của Liên chi đoàn Khoa Công nghệ thông tin.",
+                    DieuKien = "Sinh viên từ 18 tuổi trở lên, cân nặng ≥ 45kg, mang theo CCCD.",
+                    TrangThai = "Chưa mở"
+                },
+                new
+                {
+                    TenDot = "Giọt Máu Tri Ân – Ngày Thầy Thuốc Việt Nam",
+                    MaDonVi = allOrgs[Math.Min(5, allOrgs.Count - 1)].MaDonViToChuc,
+                    ChiTieu = 250,
+                    NhomMau = "A, B, AB, O",
+                    CanNang = 45.0,
+                    BatDau = DateTime.Today.AddDays(-95),
+                    KetThuc = DateTime.Today.AddDays(-70),
+                    MoTa = "Chương trình hiến máu của đội ngũ y bác sĩ và sinh viên y dược tại BV Bạch Mai.",
+                    DieuKien = "Cán bộ y tế và tình nguyện viên đủ tiêu chuẩn sức khỏe.",
+                    TrangThai = "Đã đóng"
                 }
             };
             foreach (var d in extraDots)
@@ -342,7 +446,12 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Data
                 new { Username = "donor_hoanglong", HoTen = "Lương Hoàng Long", Email = "demo.hoanglong@example.test", Phone = "0981000019", Blood = "O-", Weight = 71.0, Gender = "Nam", Address = "12 Kim Mã, Ba Đình, Hà Nội", Job = "Chuyên viên phân tích dữ liệu", AccountStatus = "Hoạt động", DayOffset = 40 },
                 new { Username = "donor_myduyen", HoTen = "Hồ Mỹ Duyên", Email = "demo.myduyen@example.test", Phone = "0981000020", Blood = "A-", Weight = 49.5, Gender = "Nữ", Address = "81 Nguyễn Trãi, Thanh Xuân, Hà Nội", Job = "Nhân viên thiết kế đồ họa", AccountStatus = "Hoạt động", DayOffset = 42 },
                 new { Username = "donor_ducmanh", HoTen = "Tạ Đức Mạnh", Email = "demo.ducmanh@example.test", Phone = "0981000021", Blood = "B-", Weight = 74.0, Gender = "Nam", Address = "301 Giải Phóng, Thanh Xuân, Hà Nội", Job = "Quản lý dự án CNTT", AccountStatus = "Hoạt động", DayOffset = 45 },
-                new { Username = "donor_kimngan", HoTen = "Chu Kim Ngân", Email = "demo.kimngan@example.test", Phone = "0981000022", Blood = "O+", Weight = 48.0, Gender = "Nữ", Address = "90 Láng Hạ, Đống Đa, Hà Nội", Job = "Nhân viên hành chính", AccountStatus = "Bị khóa", DayOffset = 50 }
+                new { Username = "donor_kimngan", HoTen = "Chu Kim Ngân", Email = "demo.kimngan@example.test", Phone = "0981000022", Blood = "O+", Weight = 48.0, Gender = "Nữ", Address = "90 Láng Hạ, Đống Đa, Hà Nội", Job = "Nhân viên hành chính", AccountStatus = "Bị khóa", DayOffset = 50 },
+                new { Username = "donor_vietanh", HoTen = "Đinh Việt Anh", Email = "demo.vietanh@example.test", Phone = "0981000023", Blood = "O+", Weight = 66.0, Gender = "Nam", Address = "18 Tam Trinh, Hoàng Mai, Hà Nội", Job = "Sinh viên UNETI", AccountStatus = "Hoạt động", DayOffset = 52 },
+                new { Username = "donor_thanhhang", HoTen = "Lê Thanh Hằng", Email = "demo.thanhhang@example.test", Phone = "0981000024", Blood = "A+", Weight = 53.0, Gender = "Nữ", Address = "210 Đội Cấn, Ba Đình, Hà Nội", Job = "Chuyên viên nhân sự", AccountStatus = "Hoạt động", DayOffset = 54 },
+                new { Username = "donor_quangvinh", HoTen = "Bùi Quang Vinh", Email = "demo.quangvinh@example.test", Phone = "0981000025", Blood = "B+", Weight = 69.5, Gender = "Nam", Address = "45 Lĩnh Nam, Hoàng Mai, Hà Nội", Job = "Kỹ sư cơ khí", AccountStatus = "Hoạt động", DayOffset = 56 },
+                new { Username = "donor_anhngoc", HoTen = "Phạm Ánh Ngọc", Email = "demo.anhngoc@example.test", Phone = "0981000026", Blood = "AB+", Weight = 51.0, Gender = "Nữ", Address = "125 Phố Huế, Hai Bà Trưng, Hà Nội", Job = "Giảng viên UNETI", AccountStatus = "Hoạt động", DayOffset = 58 },
+                new { Username = "donor_minhtuan", HoTen = "Trương Minh Tuấn", Email = "demo.minhtuan@example.test", Phone = "0981000027", Blood = "O-", Weight = 64.0, Gender = "Nam", Address = "68 Cầu Giấy, Hà Nội", Job = "Chuyên viên kiểm thử phần mềm", AccountStatus = "Hoạt động", DayOffset = 60 }
             };
 
             var sampleEmails = samples.Select(s => s.Email).ToArray();

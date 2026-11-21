@@ -11,6 +11,8 @@
     var activeCount = (int?)ViewBag.ActiveCount ?? (totalAccounts - lockedCount);
     var currentUserIdStr = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
     int.TryParse(currentUserIdStr, out int currentUserId);
+    var currentVaiTro = (string?)ViewBag.CurrentVaiTro ?? "";
+    var accountList = Model?.ToList() ?? new List<QuanLyHienMau_UNETI2_TI17A5HN.Models.TaiKhoan>();
 }
 
 <!-- Subtle Ambient Glow -->
@@ -70,12 +72,8 @@
             <div class="flex items-center gap-space-sm shrink-0">
                 <button class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-surface-container-lowest shadow-sm hover:shadow-md hover:bg-surface-container-low text-on-surface transition-all duration-180 font-label-md text-label-md cursor-pointer" type="button" onclick="document.getElementById('auditTrailSection').scrollIntoView({behavior: 'smooth'})">
                     <span class="material-symbols-outlined text-[18px] text-on-surface-variant">history</span>
-                    <span>Lịch Sử Hoạt Động</span>
+                    <span>Danh Sách Mới Cấp</span>
                 </button>
-                <a asp-controller="Admin" asp-action="RBAC" class="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-surface-container-lowest shadow-sm hover:shadow-md hover:bg-surface-container-low text-on-surface transition-all duration-180 font-label-md text-label-md">
-                    <span class="material-symbols-outlined text-[18px] text-on-surface-variant">tune</span>
-                    <span>Cấu Hình Phân Quyền</span>
-                </a>
                 <button class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-on-primary shadow-md hover:bg-primary-container active:scale-[0.98] transition-all duration-180 font-label-md text-label-md cursor-pointer" type="button" onclick="document.getElementById('modalCreateAccount').classList.remove('hidden')">
                     <span class="material-symbols-outlined text-[20px]">person_add</span>
                     <span>+ Thêm Tài Khoản Mới</span>
@@ -171,29 +169,29 @@
         </div>
     </section>
 
-    <!-- 3. Block 1: Role Permission Matrix (5 Cards Grid) -->
+    <!-- 3. Block 1: Role Permission Matrix (3 Core Roles Grid) -->
     <section class="flex flex-col gap-space-sm">
         <div class="flex items-center justify-between">
             <div class="flex items-center gap-2">
                 <span class="w-2.5 h-6 bg-primary rounded-full inline-block"></span>
                 <h2 class="font-headline-sm text-headline-sm text-on-surface">
-                    Nhóm Vai Trò &amp; Chức Năng Nghiệp Vụ
+                    3 Nhóm Vai Trò &amp; Phân Quyền Hệ Thống
                 </h2>
-                <span class="font-label-sm text-label-sm px-2.5 py-0.5 rounded-full bg-surface-container-high text-on-surface-variant">Phân công nhiệm vụ</span>
+                <span class="font-label-sm text-label-sm px-2.5 py-0.5 rounded-full bg-surface-container-high text-on-surface-variant">Chuẩn phân quyền Module 1</span>
             </div>
-            <a asp-controller="Admin" asp-action="RBAC" class="font-label-md text-label-md text-primary hover:text-primary-container font-semibold inline-flex items-center gap-1 transition-colors">
-                <span>Xem bảng phân quyền chi tiết</span>
-                <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+            <a asp-controller="Admin" asp-action="NhanSu" class="font-label-md text-label-md text-primary hover:text-primary-container font-semibold inline-flex items-center gap-1 transition-colors">
+                <span>Hiển thị tất cả tài khoản (@totalAccounts)</span>
+                <span class="material-symbols-outlined text-[16px]">filter_alt_off</span>
             </a>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-space-md">
-            <!-- Role 1: Quản Trị Viên -->
-            <div class="flex flex-col justify-between rounded-xl bg-surface-container-lowest p-space-md shadow-sm hover:shadow-md transition-all duration-200">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-space-md">
+            <!-- Role 1: Quản Trị Viên (Admin) -->
+            <div class="flex flex-col justify-between rounded-xl bg-surface-container-lowest p-space-md shadow-sm hover:shadow-md transition-all duration-200 border @(currentVaiTro == "Admin" ? "border-primary ring-2 ring-primary/20" : "border-transparent")">
                 <div>
                     <div class="flex items-center justify-between mb-3">
                         <span class="px-2.5 py-1 rounded-lg bg-primary-fixed text-primary font-label-sm text-label-sm font-bold uppercase tracking-wider">
-                            Quản trị hệ thống
+                            Vai trò: Admin (@adminCount)
                         </span>
                         <span class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary">
                             <span class="material-symbols-outlined text-[18px]">verified_user</span>
@@ -203,165 +201,81 @@
                         Quản Trị Viên Hệ Thống
                     </h3>
                     <p class="font-label-sm text-label-sm text-on-surface-variant mt-1 mb-3">
-                        Điều hành chung toàn hệ thống
+                        Toàn quyền quản trị hệ thống và cấu hình danh mục
                     </p>
                     <div class="space-y-1.5 pt-2 border-t border-surface-container-low font-body-sm text-body-sm text-on-surface-variant">
                         <div class="flex items-start gap-1.5">
                             <span class="material-symbols-outlined text-primary text-[16px] shrink-0 mt-0.5">check_circle</span>
-                            <span>Quản lý tài khoản &amp; phân quyền</span>
+                            <span>Quản lý tài khoản, cấp mới, khóa/mở khóa, phân quyền</span>
                         </div>
                         <div class="flex items-start gap-1.5">
                             <span class="material-symbols-outlined text-primary text-[16px] shrink-0 mt-0.5">check_circle</span>
-                            <span>Quản lý đơn vị tổ chức hiến máu</span>
+                            <span>Thêm, sửa, xóa Đơn vị tổ chức hiến máu</span>
                         </div>
                         <div class="flex items-start gap-1.5">
                             <span class="material-symbols-outlined text-primary text-[16px] shrink-0 mt-0.5">check_circle</span>
-                            <span>Quản lý đợt hiến máu nhân đạo</span>
+                            <span>Quản lý hồ sơ Người hiến máu &amp; Đợt hiến máu</span>
                         </div>
                         <div class="flex items-start gap-1.5">
                             <span class="material-symbols-outlined text-primary text-[16px] shrink-0 mt-0.5">check_circle</span>
-                            <span>Theo dõi báo cáo tổng hợp</span>
+                            <span>Theo dõi và xuất báo cáo thống kê tổng hợp</span>
                         </div>
                     </div>
                 </div>
-                <a asp-controller="Admin" asp-action="RBAC" class="mt-4 w-full py-2 px-3 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-sm text-label-sm font-semibold transition-colors flex items-center justify-center gap-1">
-                    <span class="material-symbols-outlined text-[16px]">edit</span>
-                    <span>Xem quyền hạn vai trò</span>
+                <a asp-controller="Admin" asp-action="NhanSu" asp-route-vaiTro="Admin" class="mt-4 w-full py-2 px-3 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-sm text-label-sm font-semibold transition-colors flex items-center justify-center gap-1">
+                    <span class="material-symbols-outlined text-[16px]">filter_list</span>
+                    <span>Lọc tài khoản Quản trị viên (@adminCount)</span>
                 </a>
             </div>
 
-            <!-- Role 2: Bác Sĩ Sàng Lọc -->
-            <div class="flex flex-col justify-between rounded-xl bg-surface-container-lowest p-space-md shadow-sm hover:shadow-md transition-all duration-200">
+            <!-- Role 2: Nhân Viên Y Tế (Medical Staff) -->
+            <div class="flex flex-col justify-between rounded-xl bg-surface-container-lowest p-space-md shadow-sm hover:shadow-md transition-all duration-200 border @(currentVaiTro == "Medical Staff" ? "border-primary ring-2 ring-primary/20" : "border-transparent")">
                 <div>
                     <div class="flex items-center justify-between mb-3">
                         <span class="px-2.5 py-1 rounded-lg bg-surface-container-high text-on-surface font-label-sm text-label-sm font-bold uppercase tracking-wider">
-                            Khám sàng lọc
+                            Vai trò: Medical Staff (@medicalStaffCount)
                         </span>
                         <span class="w-8 h-8 rounded-full bg-surface-container flex items-center justify-center text-on-surface">
                             <span class="material-symbols-outlined text-[18px]">clinical_notes</span>
                         </span>
                     </div>
                     <h3 class="font-title-md text-title-md text-on-surface font-bold leading-snug">
-                        Bác Sĩ Khám Sàng Lọc
+                        Nhân Viên Y Tế (Bác sĩ / Điều dưỡng)
                     </h3>
                     <p class="font-label-sm text-label-sm text-on-surface-variant mt-1 mb-3">
-                        Chuyên môn khám trước hiến máu
+                        Phụ trách chuyên môn đợt hiến, duyệt phiếu, khám &amp; kết quả
                     </p>
                     <div class="space-y-1.5 pt-2 border-t border-surface-container-low font-body-sm text-body-sm text-on-surface-variant">
                         <div class="flex items-start gap-1.5">
                             <span class="material-symbols-outlined text-primary text-[16px] shrink-0 mt-0.5">check_circle</span>
-                            <span>Khám thể lực &amp; tiền sử sức khỏe</span>
+                            <span>Quản lý đợt hiến máu &amp; xét duyệt phiếu đăng ký</span>
                         </div>
                         <div class="flex items-start gap-1.5">
                             <span class="material-symbols-outlined text-primary text-[16px] shrink-0 mt-0.5">check_circle</span>
-                            <span>Đánh giá điều kiện tham gia hiến</span>
+                            <span>Lập lịch khám sàng lọc &amp; xác nhận hoàn thành khám</span>
                         </div>
                         <div class="flex items-start gap-1.5">
                             <span class="material-symbols-outlined text-primary text-[16px] shrink-0 mt-0.5">check_circle</span>
-                            <span>Chỉ định lượng máu tiếp nhận</span>
+                            <span>Ghi nhận kết quả hiến máu &amp; xem thống kê y tế</span>
                         </div>
                         <div class="flex items-start gap-1.5 text-on-surface-variant/50">
                             <span class="material-symbols-outlined text-[16px] shrink-0 mt-0.5">block</span>
-                            <span>Không quản lý tài khoản hệ thống</span>
+                            <span>Không quản lý tài khoản hoặc khóa người hiến máu</span>
                         </div>
                     </div>
                 </div>
-                <a asp-controller="Admin" asp-action="RBAC" class="mt-4 w-full py-2 px-3 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-sm text-label-sm font-semibold transition-colors flex items-center justify-center gap-1">
-                    <span class="material-symbols-outlined text-[16px]">edit</span>
-                    <span>Xem quyền hạn vai trò</span>
+                <a asp-controller="Admin" asp-action="NhanSu" asp-route-vaiTro="Medical Staff" class="mt-4 w-full py-2 px-3 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-sm text-label-sm font-semibold transition-colors flex items-center justify-center gap-1">
+                    <span class="material-symbols-outlined text-[16px]">filter_list</span>
+                    <span>Lọc tài khoản Nhân viên y tế (@medicalStaffCount)</span>
                 </a>
             </div>
 
-            <!-- Role 3: Nhân Viên Xét Nghiệm -->
-            <div class="flex flex-col justify-between rounded-xl bg-surface-container-lowest p-space-md shadow-sm hover:shadow-md transition-all duration-200">
-                <div>
-                    <div class="flex items-center justify-between mb-3">
-                        <span class="px-2.5 py-1 rounded-lg bg-emerald-100 text-emerald-800 font-label-sm text-label-sm font-bold uppercase tracking-wider">
-                            Xét nghiệm máu
-                        </span>
-                        <span class="w-8 h-8 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-700">
-                            <span class="material-symbols-outlined text-[18px]">biotech</span>
-                        </span>
-                    </div>
-                    <h3 class="font-title-md text-title-md text-on-surface font-bold leading-snug">
-                        Kỹ Thuật Viên Xét Nghiệm
-                    </h3>
-                    <p class="font-label-sm text-label-sm text-on-surface-variant mt-1 mb-3">
-                        Ghi nhận kết quả hiến máu
-                    </p>
-                    <div class="space-y-1.5 pt-2 border-t border-surface-container-low font-body-sm text-body-sm text-on-surface-variant">
-                        <div class="flex items-start gap-1.5">
-                            <span class="material-symbols-outlined text-emerald-700 text-[16px] shrink-0 mt-0.5">check_circle</span>
-                            <span>Ghi nhận kết quả sàng lọc máu</span>
-                        </div>
-                        <div class="flex items-start gap-1.5">
-                            <span class="material-symbols-outlined text-emerald-700 text-[16px] shrink-0 mt-0.5">check_circle</span>
-                            <span>Xác định nhóm máu người hiến</span>
-                        </div>
-                        <div class="flex items-start gap-1.5">
-                            <span class="material-symbols-outlined text-emerald-700 text-[16px] shrink-0 mt-0.5">check_circle</span>
-                            <span>Cập nhật nhận xét sau hiến máu</span>
-                        </div>
-                        <div class="flex items-start gap-1.5 text-on-surface-variant/50">
-                            <span class="material-symbols-outlined text-[16px] shrink-0 mt-0.5">block</span>
-                            <span>Không sửa thông tin cá nhân</span>
-                        </div>
-                    </div>
-                </div>
-                <a asp-controller="Admin" asp-action="RBAC" class="mt-4 w-full py-2 px-3 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-sm text-label-sm font-semibold transition-colors flex items-center justify-center gap-1">
-                    <span class="material-symbols-outlined text-[16px]">edit</span>
-                    <span>Xem quyền hạn vai trò</span>
-                </a>
-            </div>
-
-            <!-- Role 4: Cán Bộ Quản Lý Kho Máu -->
-            <div class="flex flex-col justify-between rounded-xl bg-surface-container-lowest p-space-md shadow-sm hover:shadow-md transition-all duration-200">
-                <div>
-                    <div class="flex items-center justify-between mb-3">
-                        <span class="px-2.5 py-1 rounded-lg bg-sky-100 text-sky-800 font-label-sm text-label-sm font-bold uppercase tracking-wider">
-                            Lưu trữ &amp; Bảo quản
-                        </span>
-                        <span class="w-8 h-8 rounded-full bg-sky-50 flex items-center justify-center text-sky-700">
-                            <span class="material-symbols-outlined text-[18px]">ac_unit</span>
-                        </span>
-                    </div>
-                    <h3 class="font-title-md text-title-md text-on-surface font-bold leading-snug">
-                        Cán Bộ Quản Lý Kho Máu
-                    </h3>
-                    <p class="font-label-sm text-label-sm text-on-surface-variant mt-1 mb-3">
-                        Theo dõi tiếp nhận &amp; bảo quản
-                    </p>
-                    <div class="space-y-1.5 pt-2 border-t border-surface-container-low font-body-sm text-body-sm text-on-surface-variant">
-                        <div class="flex items-start gap-1.5">
-                            <span class="material-symbols-outlined text-sky-700 text-[16px] shrink-0 mt-0.5">check_circle</span>
-                            <span>Tiếp nhận đơn vị máu đạt chuẩn</span>
-                        </div>
-                        <div class="flex items-start gap-1.5">
-                            <span class="material-symbols-outlined text-sky-700 text-[16px] shrink-0 mt-0.5">check_circle</span>
-                            <span>Theo dõi điều kiện bảo quản máu</span>
-                        </div>
-                        <div class="flex items-start gap-1.5">
-                            <span class="material-symbols-outlined text-sky-700 text-[16px] shrink-0 mt-0.5">check_circle</span>
-                            <span>Điều phối cung cấp cho bệnh viện</span>
-                        </div>
-                        <div class="flex items-start gap-1.5 text-on-surface-variant/50">
-                            <span class="material-symbols-outlined text-[16px] shrink-0 mt-0.5">block</span>
-                            <span>Không sửa kết quả xét nghiệm</span>
-                        </div>
-                    </div>
-                </div>
-                <a asp-controller="Admin" asp-action="RBAC" class="mt-4 w-full py-2 px-3 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-sm text-label-sm font-semibold transition-colors flex items-center justify-center gap-1">
-                    <span class="material-symbols-outlined text-[16px]">edit</span>
-                    <span>Xem quyền hạn vai trò</span>
-                </a>
-            </div>
-
-            <!-- Role 5: Người Hiến Máu -->
-            <div class="flex flex-col justify-between rounded-xl bg-surface-container-lowest p-space-md shadow-sm hover:shadow-md transition-all duration-200">
+            <!-- Role 3: Người Hiến Máu (Donor) -->
+            <div class="flex flex-col justify-between rounded-xl bg-surface-container-lowest p-space-md shadow-sm hover:shadow-md transition-all duration-200 border @(currentVaiTro == "Donor" ? "border-primary ring-2 ring-primary/20" : "border-transparent")">
                 <div>
                     <div class="flex items-center justify-between mb-3">
                         <span class="px-2.5 py-1 rounded-lg bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-bold uppercase tracking-wider">
-                            Tình nguyện viên
+                            Vai trò: Donor (@donorCount)
                         </span>
                         <span class="w-8 h-8 rounded-full bg-secondary-container/60 flex items-center justify-center text-on-secondary-container">
                             <span class="material-symbols-outlined text-[18px]">groups</span>
@@ -371,30 +285,30 @@
                         Người Hiến Máu Tình Nguyện
                     </h3>
                     <p class="font-label-sm text-label-sm text-on-surface-variant mt-1 mb-3">
-                        Tham gia các đợt hiến máu
+                        Tình nguyện viên đăng ký và theo dõi hành trình hiến máu
                     </p>
                     <div class="space-y-1.5 pt-2 border-t border-surface-container-low font-body-sm text-body-sm text-on-surface-variant">
                         <div class="flex items-start gap-1.5">
                             <span class="material-symbols-outlined text-primary text-[16px] shrink-0 mt-0.5">check_circle</span>
-                            <span>Đăng ký tham gia đợt hiến máu</span>
+                            <span>Cập nhật hồ sơ cá nhân &amp; đăng ký đợt hiến máu</span>
                         </div>
                         <div class="flex items-start gap-1.5">
                             <span class="material-symbols-outlined text-primary text-[16px] shrink-0 mt-0.5">check_circle</span>
-                            <span>Theo dõi lịch hẹn khám sàng lọc</span>
+                            <span>Theo dõi trạng thái phiếu &amp; lịch hẹn khám sàng lọc</span>
                         </div>
                         <div class="flex items-start gap-1.5">
                             <span class="material-symbols-outlined text-primary text-[16px] shrink-0 mt-0.5">check_circle</span>
-                            <span>Tra cứu lịch sử &amp; kết quả hiến máu</span>
+                            <span>Tra cứu kết quả hiến máu &amp; chu kỳ an toàn 84 ngày</span>
                         </div>
                         <div class="flex items-start gap-1.5 text-on-surface-variant/50">
                             <span class="material-symbols-outlined text-[16px] shrink-0 mt-0.5">block</span>
-                            <span>Không truy cập trang quản trị</span>
+                            <span>Không truy cập khu vực quản trị &amp; nghiệp vụ y tế</span>
                         </div>
                     </div>
                 </div>
-                <a asp-controller="Admin" asp-action="RBAC" class="mt-4 w-full py-2 px-3 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-sm text-label-sm font-semibold transition-colors flex items-center justify-center gap-1">
-                    <span class="material-symbols-outlined text-[16px]">edit</span>
-                    <span>Xem quyền hạn vai trò</span>
+                <a asp-controller="Admin" asp-action="NhanSu" asp-route-vaiTro="Donor" class="mt-4 w-full py-2 px-3 rounded-lg bg-surface-container-low hover:bg-surface-container text-on-surface font-label-sm text-label-sm font-semibold transition-colors flex items-center justify-center gap-1">
+                    <span class="material-symbols-outlined text-[16px]">filter_list</span>
+                    <span>Lọc tài khoản Người hiến máu (@donorCount)</span>
                 </a>
             </div>
         </div>
@@ -552,7 +466,14 @@
                                     }
                                 </td>
                                 <td class="py-3.5 px-space-md text-right">
-                                    <div class="inline-flex items-center gap-2">
+                                    <div class="inline-flex items-center gap-1.5">
+                                        @if (acc.MaTaiKhoan != currentUserId)
+                                        {
+                                            <button type="button" onclick='openChangeRoleModal(@acc.MaTaiKhoan, @Html.Raw(System.Text.Json.JsonSerializer.Serialize(acc.TenDangNhap)), @Html.Raw(System.Text.Json.JsonSerializer.Serialize(acc.HoTen)), @Html.Raw(System.Text.Json.JsonSerializer.Serialize(acc.VaiTro)))' class="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer bg-primary-fixed/60 hover:bg-primary-fixed text-primary" title="Thay đổi phân quyền vai trò">
+                                                <span class="material-symbols-outlined text-[15px]">manage_accounts</span>
+                                                <span>Phân quyền</span>
+                                            </button>
+                                        }
                                         <button type="button" onclick='openResetPasswordModal(@acc.MaTaiKhoan, @Html.Raw(System.Text.Json.JsonSerializer.Serialize(acc.TenDangNhap)), @Html.Raw(System.Text.Json.JsonSerializer.Serialize(acc.HoTen)))' class="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer bg-surface-container hover:bg-surface-container-high text-on-surface" title="Đặt lại mật khẩu">
                                             <span class="material-symbols-outlined text-[16px]">lock_reset</span>
                                             <span>Đổi MK</span>
@@ -606,7 +527,7 @@
         </div>
     </section>
 
-    <!-- 5. Block 3: Activity History Log -->
+    <!-- 5. Block 3: Danh sách Tài khoản vừa khởi tạo gần nhất (Dữ liệu thật từ Database) -->
     <section id="auditTrailSection" class="rounded-xl bg-surface-container-lowest p-space-lg shadow-sm flex flex-col gap-space-md">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-surface-container-low pb-space-sm">
             <div class="flex items-center gap-2.5">
@@ -615,87 +536,55 @@
                 </div>
                 <div>
                     <h3 class="font-headline-sm text-headline-sm text-on-surface leading-snug">
-                        Lịch Sử Hoạt Động Quản Trị &amp; Nghiệp Vụ
+                        Tài Khoản Khởi Tạo &amp; Cập Nhật Gần Nhất Trên Hệ Thống
                     </h3>
                     <p class="font-label-sm text-label-sm text-on-surface-variant">
-                        Theo dõi các hoạt động cập nhật tài khoản, phân công nhân sự và phê duyệt chuyên môn
+                        Dữ liệu trực tiếp từ bảng Tài khoản (TaiKhoan) và Hồ sơ người hiến máu (NguoiHienMau)
                     </p>
                 </div>
             </div>
             <div class="flex items-center gap-2">
                 <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 font-label-sm text-label-sm font-semibold">
                     <span class="w-2 h-2 rounded-full bg-emerald-600 animate-ping"></span>
-                    Ghi nhận hoạt động: Bình thường
+                    Đồng bộ CSDL: @activeCount/@totalAccounts đang hoạt động
                 </span>
             </div>
         </div>
 
-        <!-- Activity Log Items -->
-        <div class="space-y-3 font-body-sm text-body-sm">
-            <!-- Log Item 1 -->
-            <div class="flex items-start gap-3 p-3 rounded-xl bg-surface-container-low/70 hover:bg-surface-container-low transition-colors">
-                <span class="px-2 py-0.5 rounded text-label-sm font-bold bg-primary text-on-primary shrink-0 mt-0.5">
-                    08:42
-                </span>
-                <div class="flex-1 min-w-0">
-                    <div class="flex flex-wrap items-center gap-2">
-                        <span class="font-bold text-on-surface">BS. CKI Trần Mai Linh</span>
-                        <span class="text-on-surface-variant">đã xác nhận phê duyệt</span>
-                        <span class="px-2 py-0.5 rounded bg-surface-container-highest text-on-surface font-semibold text-label-sm">Phiếu điều phối máu cấp cứu</span>
-                        <span class="text-on-surface-variant">với</span>
-                        <strong class="text-primary font-semibold">04 đơn vị máu nhóm O Rh(-)</strong>
-                        <span class="text-on-surface-variant">hỗ trợ Bệnh viện Hữu nghị Việt Đức.</span>
+        <div class="space-y-2.5 font-body-sm text-body-sm">
+            @foreach (var recentAcc in accountList.Take(5))
+            {
+                var recentRoleLabel = recentAcc.VaiTro switch
+                {
+                    "Admin" => "Quản trị viên",
+                    "Medical Staff" => "Nhân viên y tế",
+                    _ => "Người hiến máu"
+                };
+                <div class="flex items-center justify-between gap-3 p-3 rounded-xl bg-surface-container-low/70 hover:bg-surface-container-low transition-colors">
+                    <div class="flex items-center gap-3 min-w-0">
+                        <span class="px-2 py-0.5 rounded text-label-sm font-bold bg-primary text-on-primary shrink-0">
+                            #@recentAcc.MaTaiKhoan
+                        </span>
+                        <div class="min-w-0">
+                            <div class="flex flex-wrap items-center gap-2">
+                                <span class="font-bold text-on-surface">@recentAcc.HoTen</span>
+                                <span class="text-xs text-on-surface-variant">(@recentAcc.TenDangNhap)</span>
+                                <span class="px-2 py-0.5 rounded bg-surface-container-highest text-on-surface font-semibold text-label-sm">@recentRoleLabel</span>
+                            </div>
+                            <div class="text-[11px] text-on-surface-variant mt-0.5">
+                                Email: @(recentAcc.Email ?? "Chưa cập nhật")
+                                @if (!string.IsNullOrEmpty(recentAcc.NguoiHienMau?.NhomMau))
+                                {
+                                    <span> • Nhóm máu: <strong>@recentAcc.NguoiHienMau.NhomMau</strong></span>
+                                }
+                            </div>
+                        </div>
                     </div>
-                    <div class="mt-1 flex items-center gap-2 text-[11px] text-on-surface-variant">
-                        <span>Đơn vị: Viện Huyết học - Truyền máu TW</span>
-                        <span>•</span>
-                        <span class="text-emerald-700 font-semibold">Đã hoàn tất thủ tục bàn giao</span>
-                    </div>
+                    <span class="px-2.5 py-0.5 rounded-full text-xs font-bold @(recentAcc.TrangThai == "Bị khóa" ? "bg-red-100 text-red-700" : "bg-emerald-50 text-emerald-700") shrink-0">
+                        @(recentAcc.TrangThai ?? "Hoạt động")
+                    </span>
                 </div>
-                <span class="material-symbols-outlined text-emerald-600 text-[20px] shrink-0">verified</span>
-            </div>
-
-            <!-- Log Item 2 -->
-            <div class="flex items-start gap-3 p-3 rounded-xl bg-surface-container-low/70 hover:bg-surface-container-low transition-colors">
-                <span class="px-2 py-0.5 rounded text-label-sm font-bold bg-surface-container-highest text-on-surface shrink-0 mt-0.5">
-                    08:30
-                </span>
-                <div class="flex-1 min-w-0">
-                    <div class="flex flex-wrap items-center gap-2">
-                        <span class="font-bold text-on-surface">KTV. Lê Thảo Trang</span>
-                        <span class="text-on-surface-variant">đã hoàn thành cập nhật kết quả xét nghiệm sàng lọc cho phiếu hiến máu</span>
-                        <span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-semibold text-label-sm">Đạt tiêu chuẩn tiếp nhận</span>.
-                    </div>
-                    <div class="mt-1 flex items-center gap-2 text-[11px] text-on-surface-variant">
-                        <span>Bộ phận: Khoa Xét nghiệm sàng lọc máu</span>
-                        <span>•</span>
-                        <span>Đã cập nhật vào hồ sơ người hiến máu</span>
-                    </div>
-                </div>
-                <span class="material-symbols-outlined text-emerald-600 text-[20px] shrink-0">check_circle</span>
-            </div>
-
-            <!-- Log Item 3 -->
-            <div class="flex items-start gap-3 p-3 rounded-xl bg-surface-container-low/70 hover:bg-surface-container-low transition-colors">
-                <span class="px-2 py-0.5 rounded text-label-sm font-bold bg-surface-container-highest text-on-surface shrink-0 mt-0.5">
-                    07:15
-                </span>
-                <div class="flex-1 min-w-0">
-                    <div class="flex flex-wrap items-center gap-2">
-                        <span class="font-bold text-on-surface">Quản trị viên hệ thống</span>
-                        <span class="text-on-surface-variant">đã phân công nhân sự phụ trách</span>
-                        <span class="px-2 py-0.5 rounded bg-secondary-container text-on-secondary-container font-semibold text-label-sm">Điểm hiến máu lưu động</span>
-                        <span class="text-on-surface-variant">phục vụ đợt tiếp nhận hiến máu tình nguyện tại</span>
-                        <span class="font-semibold text-on-surface">Trường Đại học Kinh tế - Kỹ thuật Công nghiệp (UNETI)</span>.
-                    </div>
-                    <div class="mt-1 flex items-center gap-2 text-[11px] text-on-surface-variant">
-                        <span>Kíp trực khám sàng lọc &amp; tiếp nhận máu</span>
-                        <span>•</span>
-                        <span>Đã thông báo lịch làm việc cho cán bộ y tế</span>
-                    </div>
-                </div>
-                <span class="material-symbols-outlined text-on-surface-variant text-[20px] shrink-0">badge</span>
-            </div>
+            }
         </div>
     </section>
 
@@ -805,7 +694,7 @@
 
                 <div>
                     <label class="block text-xs font-bold text-on-surface mb-1">Mật Khẩu Mới <span class="text-primary">*</span></label>
-                    <input name="matKhauMoi" type="password" required minlength="6" placeholder="Nhập mật khẩu mới (tối thiểu 6 ký tự)" class="w-full h-11 px-3.5 rounded-xl border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20 text-sm bg-surface-container-low" />
+                    <input name="matKhauMoi" type="password" required minlength="6" maxlength="100" placeholder="Nhập mật khẩu mới (từ 6 đến 100 ký tự)" class="w-full h-11 px-3.5 rounded-xl border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20 text-sm bg-surface-container-low" />
                 </div>
 
                 <div class="flex items-center justify-end gap-3 pt-3 border-t border-surface-container">
@@ -820,6 +709,51 @@
             </form>
         </div>
     </div>
+
+    <!-- Modal Thay Đổi Phân Quyền Vai Trò -->
+    <div id="modalChangeRole" class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs hidden">
+        <div class="bg-surface-container-lowest rounded-3xl p-6 sm:p-8 max-w-md w-full mx-4 shadow-2xl border border-surface-container relative">
+            <div class="flex items-center justify-between mb-4 pb-3 border-b border-surface-container">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-10 h-10 rounded-xl bg-primary-fixed flex items-center justify-center text-primary">
+                        <span class="material-symbols-outlined text-[22px]">manage_accounts</span>
+                    </div>
+                    <div>
+                        <h3 class="font-title-lg font-bold text-on-surface">Phân Quyền Vai Trò Tài Khoản</h3>
+                        <p class="text-xs text-on-surface-variant" id="changeRoleAccountLabel">Cập nhật vai trò người dùng</p>
+                    </div>
+                </div>
+                <button onclick="document.getElementById('modalChangeRole').classList.add('hidden')" class="p-1 rounded-lg text-on-surface-variant hover:bg-surface-container cursor-pointer" type="button">
+                    <span class="material-symbols-outlined text-[20px]">close</span>
+                </button>
+            </div>
+
+            <form method="post" asp-controller="Admin" asp-action="CapNhatVaiTro" class="space-y-4">
+                @Html.AntiForgeryToken()
+                <input type="hidden" id="changeRoleAccountId" name="id" />
+                <input type="hidden" name="returnUrl" value="@Context.Request.Path@Context.Request.QueryString" />
+
+                <div>
+                    <label class="block text-xs font-bold text-on-surface mb-1">Chọn Vai Trò Mới <span class="text-primary">*</span></label>
+                    <select id="changeRoleSelect" name="vaiTroMoi" required class="w-full h-11 px-3.5 rounded-xl border border-outline-variant focus:border-primary focus:ring-2 focus:ring-primary/20 text-sm bg-surface-container-low">
+                        <option value="Donor">Người Hiến Máu (Donor)</option>
+                        <option value="Medical Staff">Nhân Viên Y Tế (Medical Staff)</option>
+                        <option value="Admin">Quản Trị Viên (Admin)</option>
+                    </select>
+                </div>
+
+                <div class="flex items-center justify-end gap-3 pt-3 border-t border-surface-container">
+                    <button onclick="document.getElementById('modalChangeRole').classList.add('hidden')" type="button" class="px-4 py-2.5 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface text-sm font-semibold cursor-pointer">
+                        Hủy bỏ
+                    </button>
+                    <button type="submit" class="px-5 py-2.5 rounded-xl bg-primary text-on-primary text-sm font-bold shadow-md hover:bg-primary-container cursor-pointer flex items-center gap-1.5">
+                        <span class="material-symbols-outlined text-[18px]">check</span>
+                        <span>Lưu Phân Quyền</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -827,5 +761,12 @@
         document.getElementById('resetPwdAccountId').value = id;
         document.getElementById('resetPwdAccountLabel').textContent = 'Tài khoản: ' + fullName + ' (' + username + ')';
         document.getElementById('modalResetPassword').classList.remove('hidden');
+    }
+
+    function openChangeRoleModal(id, username, fullName, currentRole) {
+        document.getElementById('changeRoleAccountId').value = id;
+        document.getElementById('changeRoleAccountLabel').textContent = 'Tài khoản: ' + fullName + ' (' + username + ')';
+        document.getElementById('changeRoleSelect').value = currentRole;
+        document.getElementById('modalChangeRole').classList.remove('hidden');
     }
 </script>

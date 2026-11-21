@@ -26,6 +26,7 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Repositories
         Task<AccountStats> GetAccountStatsAsync();
         Task<bool> RegisterDonorAccountAsync(TaiKhoan account, NguoiHienMau? donorProfile);
         Task<bool> UpdateAccountStatusAsync(int id, string newStatus);
+        Task<bool> UpdateAccountRoleAsync(int id, string newRole);
         Task<bool> ChangePasswordAsync(int id, string hashedPassword);
         Task<int> CountByRoleAsync(string vaiTro);
         Task<int> CountByStatusAsync(string trangThai);

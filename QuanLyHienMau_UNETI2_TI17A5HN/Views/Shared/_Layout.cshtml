@@ -100,11 +100,12 @@
             </a>
 
             <!-- Desktop Navigation Links -->
-            <nav class="hidden xl:flex items-center gap-6">
+            <nav class="hidden xl:flex items-center gap-5">
                 <a asp-controller="Home" asp-action="Index" class="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors py-2">Trang chủ</a>
                 <a asp-controller="DotHienMau" asp-action="Index" class="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors py-2">Đợt hiến máu</a>
-                <a asp-controller="Home" asp-action="Index" asp-fragment="process" class="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors py-2">Quy trình</a>
                 <a asp-controller="DangKy" asp-action="TheoDoi" class="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors py-2">Tra cứu phiếu</a>
+                <a asp-controller="LichKhamSangLoc" asp-action="CuaToi" class="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors py-2">Lịch khám</a>
+                <a asp-controller="KetQuaHienMau" asp-action="CuaToi" class="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors py-2">Kết quả</a>
                 <a asp-controller="NguoiHienMau" asp-action="HoSoCaNhan" class="font-label-md text-label-md text-on-surface-variant hover:text-primary transition-colors py-2">Hồ sơ cá nhân</a>
                 
                 @if (User.Identity?.IsAuthenticated == true && (User.IsInRole("Admin") || User.IsInRole("Medical Staff")))

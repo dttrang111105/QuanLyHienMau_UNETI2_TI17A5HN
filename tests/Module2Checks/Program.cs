@@ -14,6 +14,63 @@ if (args.Contains("--seed"))
     Console.WriteLine($"SEEDED OK: TaiKhoan={await seedDb.TaiKhoans.CountAsync()}, DonVi={await seedDb.DonViToChucs.CountAsync()}, Dot={await seedDb.DotHienMaus.CountAsync()}, NguoiHien={await seedDb.NguoiHienMaus.CountAsync()}, Phieu={await seedDb.PhieuDangKyHienMaus.CountAsync()}, Lich={await seedDb.LichKhamSangLocs.CountAsync()}, KetQua={await seedDb.KetQuaHienMaus.CountAsync()}");
     return;
 }
+if (args.Contains("--module1"))
+{
+    int m1 = 0;
+    void CheckM1(bool cond, string msg) { if (!cond) throw new Exception("FAIL: " + msg); m1++; Console.WriteLine("PASS [Module 1] " + msg); }
+    bool ValidateObj(object o) => Validator.TryValidateObject(o, new ValidationContext(o), new List<ValidationResult>(), true);
+
+    // 1. Validate RegisterViewModel
+    QuanLyHienMau_UNETI2_TI17A5HN.Models.ViewModels.RegisterViewModel ValidReg() => new()
+    {
+        TenDangNhap = "nam_23103100275",
+        HoTen = "Nguyễn Tiến Nam",
+        Email = "nam@uneti.edu.vn",
+        SoDienThoai = "0912345678",
+        CanNang = 62,
+        MatKhau = "Password@123",
+        XacNhanMatKhau = "Password@123"
+    };
+    CheckM1(ValidateObj(ValidReg()), "RegisterViewModel hợp lệ được chấp nhận");
+    var r1 = ValidReg(); r1.TenDangNhap = "ab"; CheckM1(!ValidateObj(r1), "Tên đăng nhập < 3 ký tự bị từ chối");
+    var r2 = ValidReg(); r2.TenDangNhap = "user name!"; CheckM1(!ValidateObj(r2), "Tên đăng nhập chứa khoảng trắng/ký tự đặc biệt bị từ chối");
+    var r3 = ValidReg(); r3.Email = "invalid-email"; CheckM1(!ValidateObj(r3), "Email sai định dạng bị từ chối");
+    var r4 = ValidReg(); r4.SoDienThoai = "0123456789"; CheckM1(!ValidateObj(r4), "SĐT sai đầu số Việt Nam bị từ chối");
+    var r5 = ValidReg(); r5.CanNang = 20; CheckM1(!ValidateObj(r5), "Cân nặng ngoài khoảng [30, 200] bị từ chối");
+    var r6 = ValidReg(); r6.MatKhau = "12345"; r6.XacNhanMatKhau = "12345"; CheckM1(!ValidateObj(r6), "Mật khẩu < 6 ký tự bị từ chối");
+    var r7 = ValidReg(); r7.XacNhanMatKhau = "Mismatch@123"; CheckM1(!ValidateObj(r7), "Mật khẩu xác nhận không khớp bị từ chối");
+
+    // 2. Validate DonViToChuc
+    var dvValid = new DonViToChuc { TenDonViToChuc = "Đoàn Thanh Niên UNETI", EmailLienHe = "doantn@uneti.edu.vn", TrangThai = "Hoạt động" };
+    CheckM1(ValidateObj(dvValid), "DonViToChuc hợp lệ được chấp nhận");
+    var dvEmpty = new DonViToChuc { TenDonViToChuc = "" }; CheckM1(!ValidateObj(dvEmpty), "DonViToChuc trống tên bị từ chối");
+    var dvBadMail = new DonViToChuc { TenDonViToChuc = "Đơn vị A", EmailLienHe = "bad-email" }; CheckM1(!ValidateObj(dvBadMail), "DonViToChuc sai định dạng email bị từ chối");
+
+    // 3. Kiểm thử Repository & Nghiệp vụ Module 1 với Database thực tế
+    await using var db1 = new ApplicationDbContext(new DbContextOptionsBuilder<ApplicationDbContext>()
+        .UseSqlServer("Server=(localdb)\\mssqllocaldb;Database=QuanLyHienMau_UNETI;Trusted_Connection=True;MultipleActiveResultSets=true;TrustServerCertificate=True").Options);
+    var tkRepo = new TaiKhoanRepository(db1);
+    var dvRepo = new DonViToChucRepository(db1);
+
+    CheckM1((await tkRepo.FindForLoginAsync("admin")) != null, "Đăng nhập tìm theo TenDangNhap hoạt động");
+    CheckM1((await tkRepo.FindForLoginAsync("admin@uneti.edu.vn")) != null, "Đăng nhập tìm theo Email hoạt động");
+    CheckM1((await tkRepo.FindForLoginAsync("0912345678")) != null, "Đăng nhập tìm theo Số điện thoại người hiến hoạt động");
+    CheckM1(await tkRepo.IsTenDangNhapExistsAsync("ADMIN"), "Kiểm tra trùng tên đăng nhập không phân biệt hoa/thường");
+    CheckM1(await tkRepo.IsEmailExistsAsync("ADMIN@UNETI.EDU.VN"), "Kiểm tra trùng Email không phân biệt hoa/thường");
+    CheckM1(await tkRepo.IsSoDienThoaiExistsAsync("0912345678"), "Kiểm tra trùng Số điện thoại hoạt động");
+
+    var accStats = await tkRepo.GetAccountStatsAsync();
+    CheckM1(accStats.TotalCount == accStats.AdminCount + accStats.MedicalStaffCount + accStats.DonorCount, "Thống kê tổng số tài khoản khớp tổng 3 vai trò");
+    CheckM1(accStats.TotalCount == accStats.ActiveCount + accStats.LockedCount, "Thống kê tài khoản khớp Đang hoạt động + Bị khóa");
+
+    var firstDv = (await dvRepo.GetAllWithDotHienMauAsync()).Last();
+    CheckM1(await dvRepo.IsTenDonViExistsAsync(firstDv.TenDonViToChuc.ToUpper()), "Kiểm tra trùng tên Đơn vị tổ chức không phân biệt hoa/thường");
+    CheckM1(!await dvRepo.IsTenDonViExistsAsync(firstDv.TenDonViToChuc, firstDv.MaDonViToChuc), "Kiểm tra trùng tên Đơn vị tổ chức loại trừ chính nó khi Edit");
+    CheckM1(await dvRepo.HasDotHienMauAsync(firstDv.MaDonViToChuc), "Kiểm tra ràng buộc chặn xóa Đơn vị tổ chức đã có Đợt hiến máu");
+
+    Console.WriteLine($"ALL {m1} MODULE 1 CHECKS PASSED!");
+    return;
+}
 
 int checks = 0;
 void Check(bool condition, string name) { if (!condition) throw new Exception(name); checks++; Console.WriteLine("PASS " + name); }

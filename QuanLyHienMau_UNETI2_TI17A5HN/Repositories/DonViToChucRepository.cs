@@ -64,13 +64,13 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Repositories
         public async Task<bool> IsTenDonViExistsAsync(string tenDonVi, int? excludeId = null)
         {
             if (string.IsNullOrWhiteSpace(tenDonVi)) return false;
-            var clean = tenDonVi.Trim();
+            var clean = tenDonVi.Trim().ToLower();
             var query = _dbSet.AsNoTracking();
             if (excludeId.HasValue)
             {
                 query = query.Where(d => d.MaDonViToChuc != excludeId.Value);
             }
-            return await query.AnyAsync(d => d.TenDonViToChuc == clean);
+            return await query.AnyAsync(d => d.TenDonViToChuc.ToLower() == clean);
         }
 
         public async Task<bool> HasDotHienMauAsync(int maDonViToChuc)

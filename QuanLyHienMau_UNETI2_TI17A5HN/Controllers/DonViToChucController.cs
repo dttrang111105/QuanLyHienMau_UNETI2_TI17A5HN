@@ -77,9 +77,9 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
             }
 
             var tenTrimmed = donVi.TenDonViToChuc.Trim();
-            if (tenTrimmed.Length > 200)
+            if (tenTrimmed.Length < 3 || tenTrimmed.Length > 200)
             {
-                TempData["ErrorMessage"] = "Tên đơn vị tổ chức không được vượt quá 200 ký tự.";
+                TempData["ErrorMessage"] = "Tên đơn vị tổ chức phải có độ dài từ 3 đến 200 ký tự.";
                 return RedirectToAction(nameof(Index));
             }
 
@@ -137,9 +137,9 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
             }
 
             var tenTrimmed = donVi.TenDonViToChuc.Trim();
-            if (tenTrimmed.Length > 200)
+            if (tenTrimmed.Length < 3 || tenTrimmed.Length > 200)
             {
-                TempData["ErrorMessage"] = "Tên đơn vị tổ chức không được vượt quá 200 ký tự.";
+                TempData["ErrorMessage"] = "Tên đơn vị tổ chức phải có độ dài từ 3 đến 200 ký tự.";
                 return RedirectToAction(nameof(Index));
             }
 

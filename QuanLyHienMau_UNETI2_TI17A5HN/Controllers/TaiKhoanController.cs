@@ -81,16 +81,16 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
             }
 
             // 3. Kiểm tra độ dài mật khẩu khởi tạo
-            if (model.MatKhau.Length < 6)
+            if (model.MatKhau.Length < 6 || model.MatKhau.Length > 100)
             {
-                SetModalError("Mật khẩu khởi tạo phải có tối thiểu 6 ký tự.", model);
+                SetModalError("Mật khẩu khởi tạo phải có độ dài từ 6 đến 100 ký tự.", model);
                 return RedirectToAction(nameof(Index));
             }
 
             // 4. Kiểm tra độ dài họ tên
-            if (cleanHoTen.Length > 100)
+            if (cleanHoTen.Length < 2 || cleanHoTen.Length > 100)
             {
-                SetModalError("Họ và tên không được vượt quá 100 ký tự.", model);
+                SetModalError("Họ và tên phải có độ dài từ 2 đến 100 ký tự.", model);
                 return RedirectToAction(nameof(Index));
             }
 
@@ -199,9 +199,9 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ResetPassword(int id, string matKhauMoi)
         {
-            if (string.IsNullOrWhiteSpace(matKhauMoi) || matKhauMoi.Length < 6)
+            if (string.IsNullOrWhiteSpace(matKhauMoi) || matKhauMoi.Length < 6 || matKhauMoi.Length > 100)
             {
-                TempData["ErrorMessage"] = "Mật khẩu mới phải có tối thiểu 6 ký tự.";
+                TempData["ErrorMessage"] = "Mật khẩu mới phải có độ dài từ 6 đến 100 ký tự và không chỉ chứa khoảng trắng.";
                 return RedirectToAction(nameof(Index));
             }
 
@@ -217,6 +217,43 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
 
             TempData["SuccessMessage"] = $"Đã đặt lại mật khẩu cho tài khoản '{account.TenDangNhap}' thành công.";
             return RedirectToAction(nameof(Index));
+        }
+
+        // POST: /TaiKhoan/ChangeRole
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ChangeRole(int id, string vaiTroMoi, string? returnUrl)
+        {
+            if (string.IsNullOrWhiteSpace(vaiTroMoi) || !AllowedRoles.Contains(vaiTroMoi.Trim()))
+            {
+                TempData["ErrorMessage"] = "Vai trò phân quyền không hợp lệ.";
+                return RedirectToLocalOrDefault(returnUrl);
+            }
+
+            var cleanRole = vaiTroMoi.Trim();
+            var account = await _taiKhoanRepository.GetByIdAsync(id);
+            if (account == null)
+            {
+                TempData["ErrorMessage"] = "Không tìm thấy tài khoản cần phân quyền.";
+                return RedirectToLocalOrDefault(returnUrl);
+            }
+
+            var currentUserIdStr = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (int.TryParse(currentUserIdStr, out int currentUserId) && currentUserId == id && cleanRole != "Admin")
+            {
+                TempData["ErrorMessage"] = "Không thể tự hạ quyền Quản trị viên của tài khoản đang đăng nhập.";
+                return RedirectToLocalOrDefault(returnUrl);
+            }
+
+            await _taiKhoanRepository.UpdateAccountRoleAsync(id, cleanRole);
+            var tenVaiTro = cleanRole switch
+            {
+                "Admin" => "Quản trị viên",
+                "Medical Staff" => "Nhân viên y tế",
+                _ => "Người hiến máu"
+            };
+            TempData["SuccessMessage"] = $"Đã cập nhật phân quyền tài khoản '{account.TenDangNhap}' sang vai trò '{tenVaiTro}' thành công.";
+            return RedirectToLocalOrDefault(returnUrl);
         }
 
         private void SetModalError(string errorMsg, CreateAccountAdminViewModel model)

@@ -64,6 +64,11 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
             }
 
             var trimmedInput = model.TenDangNhap.Trim();
+            if (trimmedInput.Length > 100 || model.MatKhau.Length > 100)
+            {
+                ViewBag.LoginError = "Thông tin đăng nhập vượt quá độ dài cho phép (tối đa 100 ký tự).";
+                return View();
+            }
 
             // 2. Truy vấn tài khoản qua Repository
             var taiKhoan = await _taiKhoanRepository.FindForLoginAsync(trimmedInput);
@@ -73,8 +78,8 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
                 return View();
             }
 
-            // 3. Nghiệp vụ: Tài khoản bị khóa KHÔNG được phép đăng nhập
-            if (taiKhoan.TrangThai != "Hoạt động")
+            // 3. Nghiệp vụ: Tài khoản bị khóa hoặc hồ sơ người hiến bị khóa KHÔNG được phép đăng nhập
+            if (taiKhoan.TrangThai != "Hoạt động" || (taiKhoan.NguoiHienMau != null && taiKhoan.NguoiHienMau.TrangThai == "Bị khóa"))
             {
                 ViewBag.LoginError = "Tài khoản của bạn hiện đang bị khóa hoặc tạm dừng. Vui lòng liên hệ ban quản trị để được hỗ trợ.";
                 return View();
@@ -155,16 +160,16 @@ namespace QuanLyHienMau_UNETI2_TI17A5HN.Controllers
                 return View("Login");
             }
 
-            if (cleanHoTen.Length > 100)
+            if (cleanHoTen.Length < 2 || cleanHoTen.Length > 100)
             {
-                ViewBag.RegisterError = "Họ và tên không được vượt quá 100 ký tự.";
+                ViewBag.RegisterError = "Họ và tên phải có độ dài từ 2 đến 100 ký tự.";
                 return View("Login");
             }
 
             // 3. Kiểm tra độ dài mật khẩu và khớp xác nhận
-            if (model.MatKhau.Length < 6)
+            if (model.MatKhau.Length < 6 || model.MatKhau.Length > 100)
             {
-                ViewBag.RegisterError = "Mật khẩu phải có tối thiểu 6 ký tự.";
+                ViewBag.RegisterError = "Mật khẩu phải có độ dài từ 6 đến 100 ký tự.";
                 return View("Login");
             }
 
